@@ -1,6 +1,6 @@
 # Local implementation acceptance report
 
-Recorded: 2026-10-02, Asia/Singapore (UTC+08:00). Source revision: `73f5410738821ce665e780759625beeebf68ba7c` on `codex/production-gateway`. Evidence is committed separately. Original `main` remains unchanged at `d0ce352b7ad76e6b427f68488c40346d0601d491`.
+Recorded: 2026-10-03, Asia/Singapore (UTC+08:00). Source revision: `e366e91dffb981f2b522985cf371aed5eacf4199` on `codex/production-gateway`. Evidence is committed separately. Original `main` remains unchanged at `d0ce352b7ad76e6b427f68488c40346d0601d491`.
 
 **Result: the local implementation is built and tested; real-Mac/public release is BLOCKED.** The delivered code includes the Java gateway, vanilla JavaScript PWA, official Guacamole integration, security tests, pinned runtime artifacts, ARM64 image, protected metadata backup and deployment/recovery instructions. No actual target Mac, Cloudflare account/policy, Tunnel, host permission, firewall, Screen Sharing, reboot or existing service was changed. Nothing was pushed or publicly published. This report contains implementer verification; no independent reviewer sign-off is claimed.
 
@@ -9,11 +9,12 @@ Recorded: 2026-10-02, Asia/Singapore (UTC+08:00). Source revision: `73f541073882
 | Layer | Result | Evidence and boundary |
 |---|---|---|
 | Reference and production JavaScript | PASS: 84 tests | [node-tests.txt](node-tests.txt); original 74 reference tests unchanged, 9 input and 1 atomic-artifact test |
-| Implemented Java gateway | PASS: 29 tests, 0 failures/errors/skips | [gateway-tests.json](gateway-tests.json); real local HTTP/javax WebSocket runtime, signed fixture identities and a disposable official-protocol peer |
+| Implemented Java gateway | PASS: 32 tests, 0 failures/errors/skips | [gateway-tests.json](gateway-tests.json); real local HTTP/javax WebSocket runtime, signed fixture identities and a disposable official-protocol peer |
 | Production UI in Chromium | PASS: 11 scenarios | [browser-results.json](browser-results.json); Chromium 153.0.8010.12 / Playwright 1.62.1 on macOS; 0 JavaScript errors, 0 unexpected console errors, 3 expected offline fetch errors |
 | Metadata backup/restore | PASS: 3 tests | [backup-tests.txt](backup-tests.txt); disposable SQLite data, node binding, owner-only files, symlink and unsafe-directory rejection |
 | Linux ARM64 image | PASS | [container-tests.txt](container-tests.txt); non-root, read-only root, noexec tmpfs, dropped capabilities, SQLite initialization, health, missing-JWT HTTP 401 and missing-config startup refusal; no network/ports or real VNC connection |
-| Dependency/build identity | PASS | [artifacts.json](artifacts.json), runtime lock and vendor provenance; 140 source/output digests verified; 11 runtime JARs, extracted SQLite natives and official browser artifact verified |
+| Actual official guacd failure path | PASS: 3 checks | [official-guacd-tests.txt](official-guacd-tests.txt); native VNC argument contract, control and view requests close after unreachable-target failure; no real VNC desktop or Mac |
+| Dependency/build identity | PASS | [artifacts.json](artifacts.json), runtime lock and vendor provenance; 142 source/output digests verified; 11 runtime JARs, extracted SQLite natives and official browser artifact verified |
 | Historical handoff manifest | FAIL | Untouched-main `npm run verify` returns `Missing/unreadable: .gitignore`; original archive manifest is preserved |
 | Real Mac/official guacd VNC interoperability | BLOCKED | No approved actual target or separate protected VNC credential/calibration record |
 | Windows/macOS controller and Safari/iOS PWA acceptance | BLOCKED | Actual required controller/target combinations, physical layouts and installation/recovery tests unavailable |
@@ -38,10 +39,10 @@ Only harmless protocol fixtures appear in these screenshots:
 
 ## Exact artifacts and versions
 
-- Gateway JAR SHA256: `950581af9ecc9bfca63bcec06db5ad1837afb7e2832f3781ae85078beef17498`.
+- Gateway JAR SHA256: `cbdb8badd531447d83bc38d8cca47445b6f30b95f0a63d0681875a986c2f2bfd`.
 - Web build: `37d1363d197142d5`. Per-file output/source hashes are in `artifacts.json`.
-- Local image/index ID: `sha256:06cd03d167c91d57dfa1d1a6dfdafcd46d1abcfc20616a6f89bc5c1729088511`; Linux ARM64. Local tag is a convenience only; it was not published.
-- Gateway image manifest: `sha256:96e6c7ef2de97924d8c577a0a54d017fca0c07f3f1a332bd93333471a9e1e443`.
+- Local image/index ID: `sha256:e2e995ed4b377ad7fde8e2d84741bc83bf8e7816b6362ecec4ae1575bd2e7f15`; Linux ARM64. Local tag is a convenience only; it was not published.
+- Gateway image manifest: `sha256:51986e6e50d2305f3e0827d06ae27452f7c9d86045f571e8dbd2b60e054f56d4`.
 - Guacamole Java/JS/guacd 1.6.0; Tomcat 9.0.122; build JDK 17.0.17; container Temurin 17.0.20.1+1; Maven 3.9.16; Node 23.10.0 / npm 10.9.2; Docker daemon 28.3.0.
 - Development computer only: macOS 26.6.2 (25G83), Darwin ARM64. It was not designated as a deployment target.
 
@@ -62,6 +63,7 @@ npm run verify:dependencies
 npm run test:browser
 docker build --platform linux/arm64 -t rdg-gateway:local-verified .
 npm run test:container
+npm run test:official-guacd
 npm run verify:artifacts
 ```
 
@@ -72,6 +74,8 @@ The browser check requires an existing Playwright library and Chromium executabl
 ## Failures resolved and remaining risks
 
 The read-only ARM64 image initially refused startup because SQLite JDBC tried loading a native library from noexec tmpfs. The fixed image selects a digest-checked native library from immutable `/app/lib`, preserving non-root/read-only/noexec restrictions. Container regression passed. [ADR-009](../../docs/17_IMPLEMENTATION_AND_OPERATIONS.md) records the decision; AMD64 execution remains unverified.
+
+An additional official-daemon regression exposed two transport cleanup gaps. The browser is now registered with the session before upstream negotiation, and upstream `error`/`disconnect` instructions cause server-owned teardown even when the browser ignores them. Three added Java regressions and the real pinned guacd failure-path check passed; no Mac compatibility is inferred.
 
 Other local regressions fixed during implementation include the official sample endpoint's close/send race, Guacamole's empty `?` WebSocket query interoperability, same-cookie second-tab bootstrap revocation, first-worker prompt timing, modifier alias refcounts/composition release, and wrapped mobile headers overflowing the workspace. Final relevant checks passed; none establish real-target compatibility.
 

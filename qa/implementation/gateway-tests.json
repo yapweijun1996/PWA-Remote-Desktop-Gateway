@@ -2,7 +2,7 @@
   "status": "PASS",
   "level": "LOCAL_PROTOCOL_FIXTURE",
   "realMac": false,
-  "tests": 29,
+  "tests": 32,
   "failures": 0,
   "errors": 0,
   "skipped": 0,
@@ -13,7 +13,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 1.262,
+      "seconds": 1.878,
       "cases": [
         "keyRotationCacheExpiryAndRefreshFailure",
         "wrongIssuerAudienceEmailTypeAndSubject",
@@ -29,7 +29,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.63,
+      "seconds": 1.547,
       "cases": [
         "retentionAndNodeRestoreBinding"
       ]
@@ -40,7 +40,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.004,
+      "seconds": 0.003,
       "cases": [
         "instructionBudgetRejectsOverflowAndResetsOnlyAfterConsumption"
       ]
@@ -51,7 +51,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.043,
+      "seconds": 0.045,
       "cases": [
         "missingConfigPlaceholdersAndUnsafeSecretRefuseStartup",
         "malformedJsonAndUnknownFieldsRefuseBeforeSideEffects"
@@ -59,11 +59,11 @@
     },
     {
       "suite": "com.rdg.GatewayIntegrationTest",
-      "tests": 7,
+      "tests": 9,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 5.64,
+      "seconds": 5.197,
       "cases": [
         "pendingIntentBlocksUpdateBoundaryAndEndCancelsIt",
         "liveAbsoluteExpiryClosesBothEvenWithRecentInput",
@@ -71,16 +71,18 @@
         "oversizedFrameAndMalformedInstructionEndTransport",
         "identityOriginCsrfAndTargetInjectionBeforeUpstream",
         "liveIdleExpiryClosesBrowserAndUpstreamDespiteHeartbeat",
+        "terminalUpstreamErrorClosesNonResponsiveBrowserAndUpstream",
+        "unavailableUpstreamClosesBrowserBeforeHandshakeAndReleasesLease",
         "rawViewInputClosesBothResources"
       ]
     },
     {
       "suite": "com.rdg.SessionsTest",
-      "tests": 12,
+      "tests": 13,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.356,
+      "seconds": 0.817,
       "cases": [
         "maintenanceRejectsPendingAndActiveSessions",
         "metadataContainsNoSessionOrPayload",
@@ -89,6 +91,7 @@
         "failedUpstreamCleanupBlocksNewTunnelsAndUpdates",
         "controllerRaceAndIdor",
         "logoutReleasesLeaseAndEndsTransport",
+        "browserIsOwnedAndClosedDuringUpstreamHandshakeDeadline",
         "secondTabBootstrapPreservesLiveDesktopAndDeadline",
         "secureBindingAndCsrf",
         "viewOnlyRawInputAndClipboardLimits",

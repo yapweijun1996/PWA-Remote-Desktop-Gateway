@@ -1,0 +1,5 @@
+PASS: official guacd VNC plugin exposes the expected maintained-library argument contract.
+PASS: control request through the production HTTP/WebSocket gateway closes after official guacd target failure and releases its lease.
+PASS: view request through the production HTTP/WebSocket gateway closes after official guacd target failure and releases its lease.
+SCOPE: official guacd failure path only; no real VNC desktop, Mac, Cloudflare account or public port.
+Official guacd: linux/arm64 sha256:8974eaa9ba32f713daf311e7cc8cd7e4cdfba1edea39eed75524e78ef4b08f4f

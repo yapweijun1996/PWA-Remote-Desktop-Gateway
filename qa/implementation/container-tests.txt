@@ -6,5 +6,5 @@ HTTP/1.1 401
 openjdk version "17.0.20.1" 2026-08-18
 OpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)
 OpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)
-linux/arm64 sha256:06cd03d167c91d57dfa1d1a6dfdafcd46d1abcfc20616a6f89bc5c1729088511
+linux/arm64 sha256:e2e995ed4b377ad7fde8e2d84741bc83bf8e7816b6362ecec4ae1575bd2e7f15
 PASS: isolated container liveness, SQLite initialization and missing-JWT rejection. No target or public port.
