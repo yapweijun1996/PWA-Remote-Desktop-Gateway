@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "version": "1.6.0",
-  "component": "Official Apache guacamole-server source, locally built VNC-only image",
+  "component": "Apache guacamole-server source with explicit local password-authentication integration policy, VNC-only build",
   "source": {
     "url": "https://archive.apache.org/dist/guacamole/1.6.0/source/guacamole-server-1.6.0.tar.gz",
     "sha256": "8bc45675da96d7b6f39728160181e3d4ff3c08f460f6d26de5805b642bf13f2b",
@@ -162,5 +162,16 @@
       "libxrender1_1%3a0.9.10-1.1build1_amd64.deb": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxrender/libxrender1_0.9.10-1.1build1_amd64.deb",
       "openssl_3.0.13-0ubuntu3.16_amd64.deb": "https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/openssl_3.0.13-0ubuntu3.16_amd64.deb"
     }
-  }
+  },
+  "localModifications": [
+    {
+      "path": "deployment/apply-vnc-password-policy.py",
+      "sha256": "a00d0ea1a1f3ac9fe80a99d40809840e256b6a214df16aea5ca19bbb640299db",
+      "upstreamFile": "src/protocols/vnc/vnc.c",
+      "upstreamSha256": "ba9d3241a337760e7a61218738ac369fd3c0ecedd2b2ad5c4aa9a39f43feef7e",
+      "modifiedSha256": "390bd0b076b2eb9f7b0586c0c31c73f42864b1966f5857e7eb523afd715a49eb",
+      "policy": "Server-owned separate VNC password; use maintained SetClientAuthSchemes for type2 and reject other completed schemes, including RFB3.3 bypass. No native authentication/codec reimplementation.",
+      "apiSource": "https://libvnc.github.io/doc/html/group__libvncclient__api.html"
+    }
+  ]
 }

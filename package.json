@@ -21,6 +21,8 @@
     "test:container": "./qa/test-container.sh",
     "verify:artifacts": "node scripts/verify-artifacts.mjs",
     "test:official-guacd": "./qa/test-official-guacd.sh",
-    "test:os-lock": "./qa/test-os-package-lock.sh"
+    "test:os-lock": "./qa/test-os-package-lock.sh",
+    "test:local-mac-view": "./qa/test-local-mac-view.sh",
+    "test:vnc-security": "./qa/test-vnc-security-selection.sh"
   }
 }

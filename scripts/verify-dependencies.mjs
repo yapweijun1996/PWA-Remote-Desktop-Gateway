@@ -15,6 +15,9 @@ for(const [file,digest] of Object.entries(lock.sqliteNative)){
 const provenance=JSON.parse(await readFile(path.join(root,'web/vendor/provenance.json')));
 if(hash(await readFile(path.join(root,'web/vendor/all.min.js')))!==provenance.sha256['all.min.js'])throw new Error('Guacamole browser artifact changed');
 const nativeProvenance=JSON.parse(await readFile(path.join(root,'deployment/guacd-provenance.json')));
+for(const entry of nativeProvenance.localModifications??[]){
+  if(entry.path!=='deployment/apply-vnc-password-policy.py'||hash(await readFile(path.join(root,entry.path)))!==entry.sha256)throw new Error('Native integration policy digest mismatch');
+}
 let osArtifacts=0;
 for(const entry of Object.values(nativeProvenance.packageLocks)){
   if(!/^deployment\/deb-locks\/[a-z0-9-]+\.lock$/.test(entry.path))throw new Error('Unsafe OS lock path');
