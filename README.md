@@ -33,11 +33,13 @@ See [deployment/README.md](deployment/README.md). Startup refuses missing/placeh
 
 ```sh
 docker build --platform linux/arm64 -t rdg-gateway:reviewed .
+docker build --platform linux/arm64 -f deployment/Guacd.Dockerfile -t rdg-guacd:reviewed .
 RDG_TEST_IMAGE=rdg-gateway:reviewed npm run test:container
-RDG_TEST_IMAGE=rdg-gateway:reviewed npm run test:official-guacd
+RDG_TEST_IMAGE=rdg-gateway:reviewed RDG_TEST_GUACD_IMAGE=rdg-guacd:reviewed npm run test:official-guacd
+npm run test:os-lock
 ```
 
-The pinned JRE and official guacd index support ARM64. No deployment, Tunnel/Access policy, Screen Sharing, firewall or existing host service was changed by implementation. `deployment/compose.blueprint.yaml` remains an operator-filled, approval-gated template; it publishes only gateway port 32120 on loopback and never guacd/VNC.
+The verified ARM64 images use pinned JRE/Ubuntu bases and locked Ubuntu packages. Guacd is built from signed, unchanged Apache 1.6.0 source with only VNC enabled; the published Alpine 3.18 image is excluded from deployment defaults because its OS is unsupported. Local scans and remaining vulnerabilities are recorded in the report. No deployment, Tunnel/Access policy, Screen Sharing, firewall or existing host service was changed by implementation. `deployment/compose.blueprint.yaml` remains an operator-filled, approval-gated template; it requires both reviewed image identities, publishes only gateway port 32120 on loopback and never guacd/VNC.
 
 ## Evidence and limits
 

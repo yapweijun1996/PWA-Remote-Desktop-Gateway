@@ -15,7 +15,7 @@ The routed investigation/architecture/verification module files were absent; cor
 | Tickets | Current result | Acceptance limit |
 |---|---|---|
 | RDG-001 | PASS for repo isolation, source inspection and development preflight | Actual targets/tunnel inventory BLOCKED |
-| RDG-002 | PASS for official provenance, pinned Java dependencies, javax build/WS and isolated ARM64 images | Image OS vulnerability scan and actual-host runtime acceptance remain open |
+| RDG-002 | PASS for official provenance, pinned Java/OS dependencies, javax build/WS, supported-OS VNC-only guacd and isolated ARM64 checks/scans | Unfixed vendor findings, AMD64 execution and actual-host runtime acceptance remain open |
 | RDG-003/004 | BLOCKED: no approved real Mac, VNC credential or modifier calibration | Protocol fixture is not a real desktop |
 | RDG-005/006/007 | Implemented and locally tested: signed JWT, owner/session/CSRF/intents, leases, read-only enforcement and expiry/logout teardown | Real Access/guacd/Mac path remains BLOCKED by 003/004 |
 | RDG-008/009/010 | Implemented and locally tested: focused input, virtual keys, explicit clipboard and truthful responsive UI | Physical key/AltGr/IME/retina and actual platform acceptance BLOCKED |
@@ -31,7 +31,9 @@ The routed investigation/architecture/verification module files were absent; cor
 - Browser: 11 PASS, 0 JavaScript errors and 0 unexpected console errors; expected offline fetch errors are recorded separately.
 - Backup/restore: 3 PASS, including wrong-node/symlink/permission rejection.
 - ARM64 container: pinned build PASS; read-only/non-root/noexec runtime initializes SQLite, responds to health, rejects missing JWT with HTTP 401 and refuses missing configuration. No published port or target connection.
-- Official guacd 1.6.0: native VNC argument contract and unreachable-target control/view cleanup PASS in a network-none container namespace. No real VNC desktop or Mac. The test exposed and fixed pre-handshake browser ownership and terminal error/disconnect cleanup.
+- Official-source guacd 1.6.0: four checks PASS: native VNC contract, unreachable-target control/view cleanup and non-root/VNC-only supported-OS inventory. The signed unmodified C source is built on pinned Ubuntu 24.04; the published unsupported Alpine 3.18 image is no longer a deployment default. No real VNC desktop or Mac. Earlier daemon tests exposed and fixed pre-handshake browser ownership and terminal error/disconnect cleanup.
+- OS supply chain: 393 exact Ubuntu package records in six ARM64/AMD64 locks; tampered archive digest refusal PASS before installation. AMD64 resolution in an emulator does not prove final AMD64 execution.
+- Final ARM64 image scans: attestation-verified Trivy 0.75.0, local Docker source only. Gateway OpenSSL patch resolves six prior findings including a High; final Ubuntu-priority High/Critical and fixed-version counts are zero. All remaining findings retained: gateway 13 Medium/16 Low, guacd 12 Medium/6 Low. Some Medium priorities have High CVSS scores; vendor fix/reachability review remains open before public release.
 - Runtime lock: 11 Maven JARs, extracted SQLite libraries and official Guacamole browser asset digests verified. Public-coordinate OSV query returned no advisories; this is not an OS image scan or blanket safety guarantee.
 - Compose template parses with fictional operator settings. It has not been deployed.
 - Historical handoff integrity: FAIL on untouched main because `MANIFEST.sha256` refers to a missing `.gitignore`; preserved and disclosed rather than concealed.

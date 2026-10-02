@@ -44,10 +44,17 @@ services:
     networks: [backend]
     security_opt: [no-new-privileges:true]
   guacd:
-    image: ${GUACD_IMAGE:-guacamole/guacd:1.6.0@sha256:8974eaa9ba32f713daf311e7cc8cd7e4cdfba1edea39eed75524e78ef4b08f4f}
+    image: ${GUACD_IMAGE:?Build and pin a supported-OS official-source guacd image digest}
     restart: unless-stopped
     # No host port for 4822. Never publish it.
     networks: [backend]
+    read_only: true
+    cap_drop: [ALL]
+    tmpfs: ["/tmp:size=32m,uid=10001,gid=10001,mode=0700,noexec,nosuid"]
+    pids_limit: 64
+    mem_limit: 256m
+    logging:
+      driver: none
     security_opt: [no-new-privileges:true]
 networks:
   backend:

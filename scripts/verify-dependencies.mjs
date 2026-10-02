@@ -14,4 +14,14 @@ for(const [file,digest] of Object.entries(lock.sqliteNative)){
 }
 const provenance=JSON.parse(await readFile(path.join(root,'web/vendor/provenance.json')));
 if(hash(await readFile(path.join(root,'web/vendor/all.min.js')))!==provenance.sha256['all.min.js'])throw new Error('Guacamole browser artifact changed');
-console.log(`Verified ${lock.runtime.length} runtime JAR digests, extracted SQLite natives and official browser artifact.`);
+const nativeProvenance=JSON.parse(await readFile(path.join(root,'deployment/guacd-provenance.json')));
+let osArtifacts=0;
+for(const entry of Object.values(nativeProvenance.packageLocks)){
+  if(!/^deployment\/deb-locks\/[a-z0-9-]+\.lock$/.test(entry.path))throw new Error('Unsafe OS lock path');
+  const data=await readFile(path.join(root,entry.path));
+  if(hash(data)!==entry.sha256)throw new Error('OS package lock digest mismatch');
+  const rows=data.toString('utf8').trim().split('\n');
+  if(rows.length!==entry.artifacts||rows.some(row=>!/^([a-f0-9]{64}) ([A-Za-z0-9_.+~%:-]+\.deb) ([a-z0-9+.-]+) ([A-Za-z0-9.+:~_-]+)$/.test(row)))throw new Error('Invalid OS package lock');
+  osArtifacts+=rows.length;
+}
+console.log(`Verified ${lock.runtime.length} runtime JAR digests, extracted SQLite natives, official browser artifact and ${osArtifacts} pinned Ubuntu package records in six locks. Image installation hashes are checked during Docker builds.`);

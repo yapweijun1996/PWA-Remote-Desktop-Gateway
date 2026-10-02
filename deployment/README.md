@@ -6,7 +6,17 @@ The Java/PWA implementation and Dockerfile exist. This template does not grant p
 
 Run `npm ci --ignore-scripts`, `npm test`, `npm run build`, `npm run test:backup` and `npm run test:browser`. Then build the Dockerfile for the intended architecture. Record the exact image manifest digest/ID; do not deploy a moving tag. Do not push this private gateway configuration, credentials or customer data to a public registry/repository.
 
-The guacd default is the verified 1.6.0 OCI index at `sha256:8974eaa9ba32f713daf311e7cc8cd7e4cdfba1edea39eed75524e78ef4b08f4f`. Its ARM64 manifest is `sha256:769987c20e99f59578305505ffa23418c24da73d579364f097cdf01d9866e5e5`. The JRE index is pinned in the Dockerfile. Recheck vendor advisories and the image OS packages before a public pilot; local Maven advisory checks are not an OS image vulnerability scan.
+Build the official-source VNC-only daemon separately:
+
+```sh
+docker build --platform linux/arm64 -f deployment/Guacd.Dockerfile -t rdg-guacd:reviewed .
+RDG_TEST_GUACD_IMAGE=rdg-guacd:reviewed npm run test:official-guacd
+npm run test:os-lock
+```
+
+`deployment/Guacd.Dockerfile` compiles the signed Apache 1.6.0 release without changing its C source. It uses pinned Ubuntu 24.04 and supplies only the VNC protocol plugin. The published 1.6.0 image's Alpine 3.18 is unsupported and is no longer a deployment default. The JRE index remains pinned; the gateway adds a locked `libssl3` security fix. Six architecture-specific locks contain exact Ubuntu package versions/archive SHA256 values, checked before offline installation. Missing, extra, replaced or retired artifacts refuse the build; refresh the locks only through a reviewed signed-APT resolution and re-run image tests/scans. Source/signature/package origins are recorded in `deployment/guacd-provenance.json`.
+
+The verified local ARM64 scans and remaining findings are in `qa/implementation/image-scan.json`. Remaining Medium/Low package findings have no fixed version in that database; some have High CVSS scores despite Ubuntu's Medium priority. Recheck vendor patches and assess their actual reachability before a public pilot. No blanket image safety approval is claimed. AMD64 locks were downloaded/verified in an emulator; final AMD64 runtime acceptance remains unverified.
 
 ## Operator-owned configuration
 
@@ -16,6 +26,7 @@ Keep `.env`, filled node JSON and credentials outside Git. Provision:
 |---|---|
 | `RDG_NODE_ID` | Unique approved node ID, matching the node JSON |
 | `GATEWAY_IMAGE` | Exact reviewed build digest/ID |
+| `GUACD_IMAGE` | Exact reviewed supported-OS official-source guacd digest/ID; mandatory |
 | `RDG_PUBLIC_ORIGIN` | Exact first-level HTTPS origin, no port/path/query |
 | `RDG_ACCESS_ISSUER` | Exact `https://<team>.cloudflareaccess.com` issuer |
 | `RDG_ACCESS_AUDIENCE` | Exact 64-character Access app audience |
