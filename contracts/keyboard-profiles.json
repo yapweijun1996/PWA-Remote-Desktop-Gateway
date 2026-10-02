@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "normalizationContract": "Only already-normalized logical input enters this map. Handle composition/AltGr before it; keysyms require real-Mac calibration.",
+  "profiles": [
+    {
+      "id": "mac-native",
+      "label": "Mac · native",
+      "changes": []
+    },
+    {
+      "id": "windows-native",
+      "label": "Windows · native",
+      "changes": []
+    },
+    {
+      "id": "windows-alt-command",
+      "label": "Windows · Left Alt → Command",
+      "changes": [
+        {
+          "code": "AltLeft",
+          "physicalOnly": true,
+          "from": "OptionLeft",
+          "to": "CommandLeft"
+        }
+      ]
+    }
+  ],
+  "invariants": [
+    "Control never globally becomes Command",
+    "Right Alt/AltGr is not an Alt→Command source",
+    "Virtual logical Option remains Option",
+    "Browser/OS reservations require virtual-key fallback",
+    "All keys release on profile/focus/session change"
+  ]
+}

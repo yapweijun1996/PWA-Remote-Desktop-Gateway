@@ -1,0 +1,65 @@
+id,area,priority,scenario,expected,status,environment,evidence,notes
+ACC-001,preflight,P0,Identify each actual Mac and runtime,OS/build/ARM64/runtime recorded; no VM substituted,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-002,preflight,P0,Preserve existing uncommitted work and tunnels,Isolated branch and approved additive config diff,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-003,preflight,P0,Validate image architecture and versions,Verified ARM64 artifacts and pinned safe dependencies,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-004,preflight,P0,Java javax/Jakarta compatibility,Actual build and WebSocket endpoint run,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-005,target,P0,VNC authentication on real Mac,Correct server and separate protected VNC credential,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-006,target,P0,Calibrate modifier keysyms,Command/Option/Control visibly act as intended,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-007,network,P0,VNC LAN and IPv6 exposure,Untrusted peers denied; intended local path works,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-008,network,P0,Loopback gateway / private guacd,32120 loopback only; 4822 not host-published,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-009,network,P0,Distinct target routes,Hostname always reaches correct Mac,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-010,auth,P0,Unauthorized email,Denied by Access and owner ACL,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-011,auth,P0,Missing/forged assertion,Gateway rejects before any upstream connection,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-012,auth,P0,Wrong JWT issuer/audience/algorithm,Rejected with no fallback trust of email header,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-013,auth,P0,Expired JWT and key rotation,Expired rejected; trusted key rotation handled safely,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-014,auth,P0,Wrong app session owner binding,No identity substitution or session fixation,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-015,auth,P0,CSRF / missing or hostile Origin,State changes and WebSocket upgrade denied,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-016,auth,P0,Intent expiration / replay,Expired/consumed intent rejected,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-017,auth,P0,Concurrent intent upgrades,"Exactly one atomic winner, no leaked upstream",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-018,auth,P0,Intent target/mode/session tampering,"No IDOR, SSRF or control escalation",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-019,auth,P0,Read-only raw input attack,Server denies keyboard/pointer/clipboard writes,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-020,auth,P0,Active absolute expiry,Browser AND guacd upstream close by deadline,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-021,auth,P0,Input idle with video/heartbeat traffic,Idle limit still enforced,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-022,auth,P0,Logout/local revoke during stream,"Upstream closes, cookie invalidated, lease released",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-023,auth,P0,Controller concurrency race,No uncontrolled simultaneous takeover,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-024,auth,P1,Cross-node app session / intent use,Rejected; no shared bearer credential shortcut,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-025,input,P1,LeftAlt profile Command+C/V,Remote Command actions; right Alt unaffected,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-026,input,P1,Terminal Ctrl+C,"Remote process interrupt, not copy shortcut",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-027,input,P1,Native Mac Cmd/Option/Control,Preserved semantic behavior on each target,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-028,input,P1,Windows AltGr international characters,No accidental Command/Control shortcut leak,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-029,input,P1,Chinese local and remote IME modes,Committed text once; clear capability fallback,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-030,input,P1,Dead keys / emoji / punctuation,Correct content or honest supported fallback,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-031,input,P1,Lost keyup on blur and tab switch,No stuck modifier or stale owner state,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-032,input,P1,Profile change with key held,Old mapping releases before new mapping,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-033,input,P1,Repeated keys and alias modifiers,Balanced state; no early modifier release,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-034,input,P1,OS-reserved shortcut fallback,Virtual controls work; local intercept disclosed,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-035,input,P1,Virtual latch / chord ownership,Correct release without dropping other sources,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-036,input,P1,Pointer retina/fit/100%/drag resize,Coordinates align; buttons release on loss,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-037,clipboard,P1,Remote shortcut versus clipboard transfer,"Directions distinct, no silent local overwrite",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-038,clipboard,P1,Clipboard denied/oversize/Unicode,Bounded explicit fallback; no content logs,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-039,lifecycle,P1,Network drop and fresh reconnect,No input replay and no reused stale tunnel,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-040,lifecycle,P1,Process restart,"Sessions invalidated, resources recovered",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-041,lifecycle,P1,Target lock / owner unlock,Expected Mac login screen; no stored account password,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-042,lifecycle,P1,Sleep/lid/power states,Truthful offline state and tested recovery conditions,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-043,lifecycle,P1,FileVault restart path,Documented tested availability; no protection weakened,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-044,pwa,P1,Offline launch after private session,Only generic offline content; no cached screen/user data,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-045,pwa,P1,Back/forward cache / pageshow,Old frame hidden and identity revalidated,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-046,pwa,P1,Worker update with active desktop,"Visible prompt, cleanup, no silent refresh",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-047,pwa,P1,Worker update with second/suspended tab,Server-aware clean boundary before activation,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-048,pwa,P1,Update failure and retry,No permanent loader or dead control,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-049,pwa,P1,Install + manifest + icons,Actual supported platforms tested; not manifest-only claim,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-050,ui,P1,Mobile portrait/landscape safe areas,"44px targets, >=16px inputs, no horizontal overflow",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-051,ui,P1,200% zoom / keyboard focus / reduced motion,No keyboard traps; labels and contrast usable,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-052,ui,P1,Gateway reachable versus desktop ready,Status reflects proven capability and timestamp,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-053,privacy,P0,Logs/cache/history/diagnostics secrets review,"No passwords, JWTs, clipboard, keys or frames",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-054,ops,P1,Backup and restore to intended node,No live session restore or wrong-target identity clone,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-055,ops,P1,Approved rollback and emergency stop,Alternate access retained; only project resources touched,NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-056,pilot,P1,External network full control,"Correct target, valid owner and actual harmless editor task",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-057,matrix,P1,macOS Chrome → Mac mini,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-058,matrix,P1,macOS Chrome → MacBook Air,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-059,matrix,P1,macOS Safari → Mac mini,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-060,matrix,P1,macOS Safari → MacBook Air,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-061,matrix,P1,Windows Chrome → Mac mini,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-062,matrix,P1,Windows Chrome → MacBook Air,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-063,matrix,P1,Windows Edge → Mac mini,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row
+ACC-064,matrix,P1,Windows Edge → MacBook Air,"Record versions/layout; editor shortcuts, Terminal Ctrl+C, focus loss, clipboard and pointer smoke",NOT_RUN,,,Real implementation/host acceptance; reference tests do not satisfy this row

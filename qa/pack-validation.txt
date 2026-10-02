@@ -1,0 +1,42 @@
+PWA REMOTE DESKTOP GATEWAY — HANDOFF VERIFICATION
+Prepared: 2026-10-02
+Artifact: specification + offline prototype + pure reference modules, not deployed software.
+
+ACTUALLY CHECKED
+PASS: 74 Node.js reference tests, 0 failures (Node v22.16.0).
+  Keyboard logical mapping and source ownership; session/intent predicates;
+  safe-list caching predicates. See reference-tests.tap.
+PASS: 25 prototype / preview-boundary checks, 0 failures.
+  Linux Chromium 144.0.7559.96 rendered authored HTML/CSS/modules as an
+  offline in-memory DOM fixture. Widths 390, 430, 768 and 1440 had no
+  horizontal overflow on overview/workspace screens. Logical input,
+  release controls, navigation, trace cleanup and labels were checked.
+  Separate Python HTTP requests checked the preview server's allowlist,
+  method and Host rejection. Four screenshots document this prototype.
+PASS: JSON/YAML parsing, both server device examples against JSON Schema,
+  OpenAPI internal-reference resolution, JavaScript and shell syntax.
+PASS: Source-reference IDs resolve to the 29-entry official source register.
+PASS: Heuristic scan found no private key, API key or JWT credential literals.
+  No user secrets were collected; deployment values are placeholders.
+PASS: No font files or third-party application/browser binaries included.
+
+LIMITATIONS / NOT RUN
+Chromium's localhost navigation was BLOCKED by environment policy. No policy
+was disabled or bypass flag used. The offline DOM fixture does not verify
+actual HTTP browser module loading, browser CSP enforcement or cookie behavior.
+Real macOS / Windows / Safari / Edge integration: NOT_RUN.
+Real VNC/Guacamole gateway, signed-JWT middleware, atomic server intent store,
+server timers, public Access/Tunnel configuration and PWA service worker: NOT_BUILT.
+Mac privacy permissions, LAN/IPv6 isolation, keysyms, AltGr/IME interoperability,
+clipboard, physical OS shortcut capture, sleep/restart recovery: NOT_RUN.
+All 64 real-system acceptance rows remain NOT_RUN.
+No Mac, Cloudflare account, GitHub repo or existing tunnel was changed.
+
+HOW TO REPRODUCE
+npm test          # supplied pure reference tests, no dependency download
+npm run verify    # checks all listed file hashes on the untouched archive
+npm run preview   # loopback-only interactive design prototype
+
+Archive CRC, extraction and fresh-copy hash/test results are validated by
+its creator before delivery. MANIFEST.sha256 verifies individual files but
+is not a publisher signature or proof of production security.

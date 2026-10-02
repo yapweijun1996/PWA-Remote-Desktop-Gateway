@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant B as Browser
+    participant A as Access edge
+    participant G as Gateway
+    participant D as guacd / Mac
+    B->>A: Node URL, approved email OTP
+    A->>G: Bootstrap with signed assertion
+    G-->>B: Host-only app cookie + CSRF
+    B->>G: POST connect intent (cookie + CSRF; edge JWT)
+    G-->>B: Owner-bound intent ID, expires in 30s
+    B->>G: WebSocket upgrade (exact Origin + cookie; edge JWT)
+    G->>G: Validate + atomic consume + controller lease
+    G->>D: Fixed target + server-owned credential
+    D-->>B: Desktop via guacd / gateway
+    Note over G,D: Server deadline, input idle and revoke apply while streaming
+    B->>G: End / logout
+    G->>D: Close upstream, release lease
+    G-->>B: Ended; no input replay on reconnect

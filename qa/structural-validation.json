@@ -1,0 +1,25 @@
+{
+  "json_parse_files": 8,
+  "yaml_parse_files": 3,
+  "device_schema_examples_validated": 2,
+  "openapi_internal_refs_resolved": 18,
+  "openapi_paths": 6,
+  "entrypoint_links_exist": 7,
+  "source_refs_valid": 29,
+  "font_files_included": 0,
+  "javascript_syntax_files": 9,
+  "macos_script_syntax": "PASS (not run on a Mac)",
+  "real_acceptance_not_run_rows": 64,
+  "heuristic_secret_literal_scan": "No matching private keys/API keys/JWT literals; templates contain placeholders only",
+  "unit_tests": {
+    "pass": 74,
+    "fail": 0,
+    "evidence": "qa/reference-tests.tap"
+  },
+  "prototype_checks": {
+    "pass": 25,
+    "fail": 0,
+    "scope": "LOCAL_UI: in-memory HTML/CSS/module render in Linux Chromium, plus separate Python HTTP boundary probes. Browser localhost navigation was blocked by environment policy; original policy unchanged. Not HTTP browser integration, Safari, Windows or live Mac acceptance",
+    "browser": "144.0.7559.96"
+  }
+}

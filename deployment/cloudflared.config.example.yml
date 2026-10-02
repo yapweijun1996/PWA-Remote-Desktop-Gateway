@@ -1,0 +1,8 @@
+# LOCALLY MANAGED EXAMPLE ONLY. Merge an approved additive route; never overwrite existing config.
+tunnel: REPLACE-WITH-THIS-MACS-APPROVED-TUNNEL-UUID
+credentials-file: /REPLACE/protected/tunnel-credentials.json
+ingress:
+  - hostname: remote-mini.example.com
+    service: http://127.0.0.1:32120
+  - service: http_status:404
+# Configure Access first. No public VNC/guacd route and no noTLSVerify bypass.

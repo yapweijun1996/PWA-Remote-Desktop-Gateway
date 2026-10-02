@@ -1,0 +1,179 @@
+{
+  "researchedAt": "2026-10-02",
+  "sources": [
+    {
+      "id": "S01",
+      "title": "Cloudflare Tunnel",
+      "url": "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/",
+      "evidenceScope": "Outbound connector architecture; not a remote-desktop engine."
+    },
+    {
+      "id": "S02",
+      "title": "Cloudflare Access one-time PIN",
+      "url": "https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/one-time-pin/",
+      "evidenceScope": "Provider-handled email OTP for allowed identities; verify current expiry/policy behavior at deployment."
+    },
+    {
+      "id": "S03",
+      "title": "Validate Access JWTs",
+      "url": "https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/",
+      "evidenceScope": "Signed assertion, issuer/audience/signature checks and trusted JWKS."
+    },
+    {
+      "id": "S04",
+      "title": "Access session management",
+      "url": "https://developers.cloudflare.com/cloudflare-one/access-controls/access-settings/session-management/",
+      "evidenceScope": "Access session behavior is not an application-specific active desktop timeout implementation."
+    },
+    {
+      "id": "S05",
+      "title": "Cloudflare WebSockets",
+      "url": "https://developers.cloudflare.com/network/websockets/",
+      "evidenceScope": "WebSocket proxy support, reconnect/keepalive considerations and upgrade behavior."
+    },
+    {
+      "id": "S06",
+      "title": "Universal SSL limitations",
+      "url": "https://developers.cloudflare.com/ssl/edge-certificates/universal-ssl/limitations/",
+      "evidenceScope": "Certificate hostname coverage; full-setup apex/first-level versus deeper names."
+    },
+    {
+      "id": "S07",
+      "title": "Apple Screen Sharing",
+      "url": "https://support.apple.com/en-sg/guide/mac-help/mh11848/mac",
+      "evidenceScope": "Native sharing settings and compatible VNC access option."
+    },
+    {
+      "id": "S08",
+      "title": "Apple VNC access/control",
+      "url": "https://support.apple.com/guide/remote-desktop/virtual-network-computing-access-and-control-apde0dd523e/mac",
+      "evidenceScope": "VNC interoperability and security distinctions; see also S28 for password separation."
+    },
+    {
+      "id": "S09",
+      "title": "Apple FileVault security",
+      "url": "https://support.apple.com/en-sg/guide/security/sec8447f5049/web",
+      "evidenceScope": "Qualified remote-unlock/restart behavior; not proof this gateway runs before login."
+    },
+    {
+      "id": "S10",
+      "title": "Writing a Guacamole application",
+      "url": "https://guacamole.apache.org/doc/gug/writing-you-own-guacamole-app.html",
+      "evidenceScope": "Official Java/JavaScript application and tunnel architecture."
+    },
+    {
+      "id": "S11",
+      "title": "Guacamole WebSocket endpoint 1.6.0",
+      "url": "https://guacamole.apache.org/doc/1.6.0/guacamole-common/org/apache/guacamole/websocket/GuacamoleWebSocketTunnelEndpoint.html",
+      "evidenceScope": "javax.websocket API compatibility; verify deployed runtime."
+    },
+    {
+      "id": "S12",
+      "title": "Guacamole Keyboard API 1.6.0",
+      "url": "https://guacamole.apache.org/doc/1.6.0/guacamole-common-js/Guacamole.Keyboard.html",
+      "evidenceScope": "Normalized keyboard/input/composition handling and reset behavior."
+    },
+    {
+      "id": "S13",
+      "title": "Guacamole Client API 1.6.0",
+      "url": "https://guacamole.apache.org/doc/1.6.0/guacamole-common-js/Guacamole.Client.html",
+      "evidenceScope": "Display, key and pointer client APIs."
+    },
+    {
+      "id": "S14",
+      "title": "Guacamole connection configuration",
+      "url": "https://guacamole.apache.org/doc/gug/configuring-guacamole.html",
+      "evidenceScope": "VNC options including server read-only and capability-specific settings."
+    },
+    {
+      "id": "S15",
+      "title": "Guacamole Docker deployment",
+      "url": "https://guacamole.apache.org/doc/gug/guacamole-docker.html",
+      "evidenceScope": "Official service separation and images; still verify architecture and digest."
+    },
+    {
+      "id": "S16",
+      "title": "Guacamole release index",
+      "url": "https://guacamole.apache.org/releases/",
+      "evidenceScope": "1.6.0 was the latest shown during research; dated 2025-06-22. Recheck before implementation."
+    },
+    {
+      "id": "S17",
+      "title": "Guacamole security advisories",
+      "url": "https://guacamole.apache.org/security/",
+      "evidenceScope": "Verify relevant fixed versions and dependencies at build time."
+    },
+    {
+      "id": "S18",
+      "title": "MDN Keyboard.lock",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Keyboard/lock",
+      "evidenceScope": "Limited availability and OS/browser restrictions; feature-detect."
+    },
+    {
+      "id": "S19",
+      "title": "Chrome Keyboard Lock",
+      "url": "https://developer.chrome.com/docs/capabilities/web-apis/keyboard-lock",
+      "evidenceScope": "Keyboard capture enhancement, permissions and limitations."
+    },
+    {
+      "id": "S20",
+      "title": "MDN KeyboardEvent.key",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key",
+      "evidenceScope": "Produced key values differ from physical codes."
+    },
+    {
+      "id": "S21",
+      "title": "Docker Desktop networking",
+      "url": "https://docs.docker.com/desktop/features/networking/",
+      "evidenceScope": "Container/host networking and host.docker.internal."
+    },
+    {
+      "id": "S22",
+      "title": "MDN Service Workers",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+      "evidenceScope": "Installation, activation and cache lifecycle APIs; product safety policy is this design."
+    },
+    {
+      "id": "S23",
+      "title": "OWASP WebSocket security cheat sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/WebSocket_Security_Cheat_Sheet.html",
+      "evidenceScope": "Origin, authentication, session expiry, validation and logging safeguards."
+    },
+    {
+      "id": "S24",
+      "title": "Guacamole header authentication",
+      "url": "https://guacamole.apache.org/doc/gug/header-auth.html",
+      "evidenceScope": "Trusted-header integration is distinct from signature verification/connection configuration."
+    },
+    {
+      "id": "S25",
+      "title": "noVNC project",
+      "url": "https://novnc.com/noVNC/",
+      "evidenceScope": "Alternative browser VNC foundation; not a required dependency for this baseline."
+    },
+    {
+      "id": "S26",
+      "title": "MDN Clipboard API",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API",
+      "evidenceScope": "Secure context, user activation and browser-specific clipboard permissions."
+    },
+    {
+      "id": "S27",
+      "title": "MDN KeyboardEvent.code",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code",
+      "evidenceScope": "Physical code semantics; do not derive non-US text from it."
+    },
+    {
+      "id": "S28",
+      "title": "Apple set up VNC software",
+      "url": "https://support.apple.com/guide/remote-desktop/set-up-a-computer-running-vnc-software-apdbed09830/mac",
+      "evidenceScope": "Use a VNC password distinct from the local computer/user password."
+    },
+    {
+      "id": "S29",
+      "title": "Guacamole FAQ",
+      "url": "https://guacamole.apache.org/faq/",
+      "evidenceScope": "Browser/OS reserved keyboard combinations and practical client limits."
+    }
+  ]
+}

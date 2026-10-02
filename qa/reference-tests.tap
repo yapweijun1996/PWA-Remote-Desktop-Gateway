@@ -1,0 +1,458 @@
+
+> pwa-remote-desktop-gateway-handoff@1.0.0 test
+> node --test reference/*.test.mjs
+
+TAP version 13
+# Subtest: Allowlisted generic JS can cache
+ok 1 - Allowlisted generic JS can cache
+  ---
+  duration_ms: 2.175388
+  type: 'test'
+  ...
+# Subtest: Generic offline page can cache
+ok 2 - Generic offline page can cache
+  ---
+  duration_ms: 0.239865
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /api/devices
+ok 3 - Private or unknown path denied: /api/devices
+  ---
+  duration_ms: 0.111125
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /api/session
+ok 4 - Private or unknown path denied: /api/session
+  ---
+  duration_ms: 0.07387
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /tunnel
+ok 5 - Private or unknown path denied: /tunnel
+  ---
+  duration_ms: 0.12815
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /cdn-cgi/access/login
+ok 6 - Private or unknown path denied: /cdn-cgi/access/login
+  ---
+  duration_ms: 0.070314
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /
+ok 7 - Private or unknown path denied: /
+  ---
+  duration_ms: 0.108641
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /assets/private.js
+ok 8 - Private or unknown path denied: /assets/private.js
+  ---
+  duration_ms: 0.113327
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /constructor
+ok 9 - Private or unknown path denied: /constructor
+  ---
+  duration_ms: 0.319663
+  type: 'test'
+  ...
+# Subtest: Private or unknown path denied: /toString
+ok 10 - Private or unknown path denied: /toString
+  ---
+  duration_ms: 0.295727
+  type: 'test'
+  ...
+# Subtest: POST never cached
+ok 11 - POST never cached
+  ---
+  duration_ms: 0.133257
+  type: 'test'
+  ...
+# Subtest: Error status never cached
+ok 12 - Error status never cached
+  ---
+  duration_ms: 0.073308
+  type: 'test'
+  ...
+# Subtest: Redirected login never cached
+ok 13 - Redirected login never cached
+  ---
+  duration_ms: 0.059347
+  type: 'test'
+  ...
+# Subtest: HTML returned for JS never cached
+ok 14 - HTML returned for JS never cached
+  ---
+  duration_ms: 0.109182
+  type: 'test'
+  ...
+# Subtest: Cross-origin never cached
+ok 15 - Cross-origin never cached
+  ---
+  duration_ms: 0.073018
+  type: 'test'
+  ...
+# Subtest: Query and URL credential variants never cached
+ok 16 - Query and URL credential variants never cached
+  ---
+  duration_ms: 0.089412
+  type: 'test'
+  ...
+# Subtest: Private and no-store override safelist
+ok 17 - Private and no-store override safelist
+  ---
+  duration_ms: 0.083774
+  type: 'test'
+  ...
+# Subtest: Invalid URL and HTTP origin fail closed
+ok 18 - Invalid URL and HTTP origin fail closed
+  ---
+  duration_ms: 0.104895
+  type: 'test'
+  ...
+# Subtest: Mac Command stays Command
+ok 19 - Mac Command stays Command
+  ---
+  duration_ms: 0.821986
+  type: 'test'
+  ...
+# Subtest: Windows native Alt stays Option
+ok 20 - Windows native Alt stays Option
+  ---
+  duration_ms: 0.147428
+  type: 'test'
+  ...
+# Subtest: Opt-in Left Alt becomes Command
+ok 21 - Opt-in Left Alt becomes Command
+  ---
+  duration_ms: 0.090224
+  type: 'test'
+  ...
+# Subtest: Opt-in Right Alt is not converted
+ok 22 - Opt-in Right Alt is not converted
+  ---
+  duration_ms: 0.078947
+  type: 'test'
+  ...
+# Subtest: Control remains Control in every profile
+ok 23 - Control remains Control in every profile
+  ---
+  duration_ms: 0.098716
+  type: 'test'
+  ...
+# Subtest: Virtual Option is never profile-remapped
+ok 24 - Virtual Option is never profile-remapped
+  ---
+  duration_ms: 0.088451
+  type: 'test'
+  ...
+# Subtest: Unknown profile is rejected
+ok 25 - Unknown profile is rejected
+  ---
+  duration_ms: 0.359872
+  type: 'test'
+  ...
+# Subtest: Missing transition sink is rejected
+ok 26 - Missing transition sink is rejected
+  ---
+  duration_ms: 0.134419
+  type: 'test'
+  ...
+# Subtest: Simple down and up pair
+ok 27 - Simple down and up pair
+  ---
+  duration_ms: 1.151603
+  type: 'test'
+  ...
+# Subtest: Repeat cannot add an owner
+ok 28 - Repeat cannot add an owner
+  ---
+  duration_ms: 0.311811
+  type: 'test'
+  ...
+# Subtest: Keyup uses original logical snapshot
+ok 29 - Keyup uses original logical snapshot
+  ---
+  duration_ms: 0.407372
+  type: 'test'
+  ...
+# Subtest: Unowned keyup does nothing
+ok 30 - Unowned keyup does nothing
+  ---
+  duration_ms: 0.089152
+  type: 'test'
+  ...
+# Subtest: Two physical aliases keep Command held
+ok 31 - Two physical aliases keep Command held
+  ---
+  duration_ms: 0.166276
+  type: 'test'
+  ...
+# Subtest: Profile switch releases original mapping first
+ok 32 - Profile switch releases original mapping first
+  ---
+  duration_ms: 0.228148
+  type: 'test'
+  ...
+# Subtest: Invalid profile switch does not mutate held keys
+ok 33 - Invalid profile switch does not mutate held keys
+  ---
+  duration_ms: 0.289749
+  type: 'test'
+  ...
+# Subtest: Same profile does not unexpectedly release keys
+ok 34 - Same profile does not unexpectedly release keys
+  ---
+  duration_ms: 0.105146
+  type: 'test'
+  ...
+# Subtest: Release all is reverse acquisition order
+ok 35 - Release all is reverse acquisition order
+  ---
+  duration_ms: 0.957306
+  type: 'test'
+  ...
+# Subtest: Release all handles alias count and is idempotent
+ok 36 - Release all handles alias count and is idempotent
+  ---
+  duration_ms: 0.117714
+  type: 'test'
+  ...
+# Subtest: Virtual chord has balanced transitions
+ok 37 - Virtual chord has balanced transitions
+  ---
+  duration_ms: 0.186165
+  type: 'test'
+  ...
+# Subtest: Virtual chord rejects held physical input
+ok 38 - Virtual chord rejects held physical input
+  ---
+  duration_ms: 0.289589
+  type: 'test'
+  ...
+# Subtest: Virtual chord preserves previously latched ownership
+ok 39 - Virtual chord preserves previously latched ownership
+  ---
+  duration_ms: 0.232214
+  type: 'test'
+  ...
+# Subtest: Duplicate and empty chords are rejected
+ok 40 - Duplicate and empty chords are rejected
+  ---
+  duration_ms: 0.118435
+  type: 'test'
+  ...
+# Subtest: Invalid input fails before state changes
+ok 41 - Invalid input fails before state changes
+  ---
+  duration_ms: 0.117003
+  type: 'test'
+  ...
+# Subtest: Sink error clears state and permanently ends this instance
+ok 42 - Sink error clears state and permanently ends this instance
+  ---
+  duration_ms: 0.221468
+  type: 'test'
+  ...
+# Subtest: Sink error on release also fails closed
+ok 43 - Sink error on release also fails closed
+  ---
+  duration_ms: 0.124775
+  type: 'test'
+  ...
+# Subtest: Snapshot mutation cannot alter internal state
+ok 44 - Snapshot mutation cannot alter internal state
+  ---
+  duration_ms: 0.094399
+  type: 'test'
+  ...
+# Subtest: Exact HTTPS origin is accepted
+ok 45 - Exact HTTPS origin is accepted
+  ---
+  duration_ms: 1.37935
+  type: 'test'
+  ...
+# Subtest: Origin rejected: null
+ok 46 - Origin rejected: null
+  ---
+  duration_ms: 0.339562
+  type: 'test'
+  ...
+# Subtest: Origin rejected: https://evil.example.com
+ok 47 - Origin rejected: https://evil.example.com
+  ---
+  duration_ms: 0.140638
+  type: 'test'
+  ...
+# Subtest: Origin rejected: https://remote-mini.example.com.evil.test
+ok 48 - Origin rejected: https://remote-mini.example.com.evil.test
+  ---
+  duration_ms: 0.133978
+  type: 'test'
+  ...
+# Subtest: Origin rejected: https://remote-mini.example.com/
+ok 49 - Origin rejected: https://remote-mini.example.com/
+  ---
+  duration_ms: 0.137864
+  type: 'test'
+  ...
+# Subtest: Origin rejected: http://remote-mini.example.com
+ok 50 - Origin rejected: http://remote-mini.example.com
+  ---
+  duration_ms: 0.165244
+  type: 'test'
+  ...
+# Subtest: Origin rejected: 
+ok 51 - Origin rejected: 
+  ---
+  duration_ms: 0.126467
+  type: 'test'
+  ...
+# Subtest: Malformed expected origin cannot authorize
+ok 52 - Malformed expected origin cannot authorize
+  ---
+  duration_ms: 0.312833
+  type: 'test'
+  ...
+# Subtest: Deadline bound to earlier verified Access expiry
+ok 53 - Deadline bound to earlier verified Access expiry
+  ---
+  duration_ms: 0.500701
+  type: 'test'
+  ...
+# Subtest: Deadline capped to one-hour design default
+ok 54 - Deadline capped to one-hour design default
+  ---
+  duration_ms: 0.495813
+  type: 'test'
+  ...
+# Subtest: Expired identity cannot bootstrap
+ok 55 - Expired identity cannot bootstrap
+  ---
+  duration_ms: 0.393412
+  type: 'test'
+  ...
+# Subtest: NaN/negative/overflow deadline rejected
+ok 56 - NaN/negative/overflow deadline rejected
+  ---
+  duration_ms: 0.229449
+  type: 'test'
+  ...
+# Subtest: Valid active session
+ok 57 - Valid active session
+  ---
+  duration_ms: 0.85157
+  type: 'test'
+  ...
+# Subtest: Absolute deadline is exclusive
+ok 58 - Absolute deadline is exclusive
+  ---
+  duration_ms: 0.08124
+  type: 'test'
+  ...
+# Subtest: Input idle timeout even with no notion of heartbeat
+ok 59 - Input idle timeout even with no notion of heartbeat
+  ---
+  duration_ms: 0.061612
+  type: 'test'
+  ...
+# Subtest: Revocation overrides otherwise active state
+ok 60 - Revocation overrides otherwise active state
+  ---
+  duration_ms: 0.967802
+  type: 'test'
+  ...
+# Subtest: Future or precreation activity fails closed
+ok 61 - Future or precreation activity fails closed
+  ---
+  duration_ms: 0.072998
+  type: 'test'
+  ...
+# Subtest: Invalid zero idle fails closed
+ok 62 - Invalid zero idle fails closed
+  ---
+  duration_ms: 0.055021
+  type: 'test'
+  ...
+# Subtest: Valid intent only eligible, not consumed by predicate
+ok 63 - Valid intent only eligible, not consumed by predicate
+  ---
+  duration_ms: 0.114078
+  type: 'test'
+  ...
+# Subtest: Intent rejects mismatched id
+ok 64 - Intent rejects mismatched id
+  ---
+  duration_ms: 0.061481
+  type: 'test'
+  ...
+# Subtest: Intent rejects mismatched ownerId
+ok 65 - Intent rejects mismatched ownerId
+  ---
+  duration_ms: 0.037907
+  type: 'test'
+  ...
+# Subtest: Intent rejects mismatched appSessionId
+ok 66 - Intent rejects mismatched appSessionId
+  ---
+  duration_ms: 0.129592
+  type: 'test'
+  ...
+# Subtest: Intent rejects mismatched nodeId
+ok 67 - Intent rejects mismatched nodeId
+  ---
+  duration_ms: 0.050565
+  type: 'test'
+  ...
+# Subtest: Intent rejects mismatched deviceId
+ok 68 - Intent rejects mismatched deviceId
+  ---
+  duration_ms: 0.033399
+  type: 'test'
+  ...
+# Subtest: Intent does not permit mode escalation
+ok 69 - Intent does not permit mode escalation
+  ---
+  duration_ms: 0.079578
+  type: 'test'
+  ...
+# Subtest: Intent rejects exact expiry boundary
+ok 70 - Intent rejects exact expiry boundary
+  ---
+  duration_ms: 0.058237
+  type: 'test'
+  ...
+# Subtest: Intent rejects reuse
+ok 71 - Intent rejects reuse
+  ---
+  duration_ms: 0.053539
+  type: 'test'
+  ...
+# Subtest: Intent rejects revocation and inactive owner session
+ok 72 - Intent rejects revocation and inactive owner session
+  ---
+  duration_ms: 0.101881
+  type: 'test'
+  ...
+# Subtest: Intent rejects excessive TTL and future creation
+ok 73 - Intent rejects excessive TTL and future creation
+  ---
+  duration_ms: 0.095892
+  type: 'test'
+  ...
+# Subtest: Incomplete intent fields fail closed
+ok 74 - Incomplete intent fields fail closed
+  ---
+  duration_ms: 0.178204
+  type: 'test'
+  ...
+1..74
+# tests 74
+# suites 0
+# pass 74
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 87.932719

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/rdg/device.schema.json",
+  "title": "Server-owned RDG node configuration; never sent as-is to browser",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "nodeId",
+    "publicOrigin",
+    "localDevice",
+    "bookmarks"
+  ],
+  "properties": {
+    "nodeId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{2,39}$"
+    },
+    "publicOrigin": {
+      "type": "string",
+      "pattern": "^https://[a-z0-9.-]+$"
+    },
+    "localDevice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "targetOS",
+        "upstreamHost",
+        "upstreamPort",
+        "credentialRef"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{2,39}$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "targetOS": {
+          "const": "macOS"
+        },
+        "upstreamHost": {
+          "enum": [
+            "host.docker.internal",
+            "127.0.0.1"
+          ]
+        },
+        "upstreamPort": {
+          "const": 5900
+        },
+        "credentialRef": {
+          "type": "string",
+          "pattern": "^/run/secrets/[a-z0-9_-]+$"
+        }
+      }
+    },
+    "bookmarks": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "url",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 3
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://[a-z0-9.-]+/$"
+          },
+          "status": {
+            "const": "UNVERIFIED"
+          }
+        }
+      }
+    }
+  }
+}

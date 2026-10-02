@@ -1,0 +1,11 @@
+flowchart LR
+    F[Focused viewer only] --> N[One normalization / IME strategy]
+    N --> P[Explicit client profile]
+    P --> O[Logical key source ownership]
+    K[Virtual key palette] --> O
+    O --> X[Calibrated Guacamole keysym adapter]
+    X --> T[Authorized control tunnel]
+    R[Blur / hidden / profile change / end] --> E[Release keys and buttons]
+    E --> O
+    Z[Transport lost] --> Q[Clear local state + close upstream]
+    Q --> S[Fresh reconnect, no replay]

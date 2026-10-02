@@ -1,0 +1,9 @@
+{
+  "name": "PWA Remote Desktop Gateway",
+  "version": "1.0.0-handoff",
+  "date": "2026-10-02",
+  "artifactType": "specification-prototype-reference-pack",
+  "productionImplementation": "NOT_BUILT",
+  "liveDeployment": "NOT_PERFORMED",
+  "remoteAcceptance": "NOT_RUN"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "pwa-remote-desktop-gateway-handoff",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Specification, offline prototype and pure reference tests; not a remote desktop server.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test reference/*.test.mjs",
+    "preview": "node scripts/preview.mjs",
+    "verify": "node scripts/verify-pack.mjs"
+  }
+}

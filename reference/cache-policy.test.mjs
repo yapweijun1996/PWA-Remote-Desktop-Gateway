@@ -1,0 +1,13 @@
+import test from 'node:test'; import assert from 'node:assert/strict'; import {mayCache} from './cache-policy.mjs';
+const base={method:'GET',url:'https://remote-mini.example.com/assets/shell.v1.js',origin:'https://remote-mini.example.com',status:200,redirected:false,contentType:'text/javascript; charset=utf-8'};
+test('Allowlisted generic JS can cache',()=>assert.equal(mayCache(base),true));
+test('Generic offline page can cache',()=>assert.equal(mayCache({...base,url:'https://remote-mini.example.com/offline.html',contentType:'text/html'}),true));
+for(const path of ['/api/devices','/api/session','/tunnel','/cdn-cgi/access/login','/','/assets/private.js','/constructor','/toString'])test(`Private or unknown path denied: ${path}`,()=>assert.equal(mayCache({...base,url:base.origin+path}),false));
+test('POST never cached',()=>assert.equal(mayCache({...base,method:'POST'}),false));
+test('Error status never cached',()=>assert.equal(mayCache({...base,status:403}),false));
+test('Redirected login never cached',()=>assert.equal(mayCache({...base,redirected:true}),false));
+test('HTML returned for JS never cached',()=>assert.equal(mayCache({...base,contentType:'text/html'}),false));
+test('Cross-origin never cached',()=>assert.equal(mayCache({...base,url:'https://cdn.example.com/assets/shell.v1.js'}),false));
+test('Query and URL credential variants never cached',()=>{assert.equal(mayCache({...base,url:base.url+'?token=example'}),false);assert.equal(mayCache({...base,url:'https://u:p@remote-mini.example.com/assets/shell.v1.js'}),false);});
+test('Private and no-store override safelist',()=>{for(const value of ['private, max-age=1','no-store'])assert.equal(mayCache({...base,cacheControl:value}),false);});
+test('Invalid URL and HTTP origin fail closed',()=>{assert.equal(mayCache({...base,url:'not-a-url'}),false);assert.equal(mayCache({...base,origin:'http://remote-mini.example.com'}),false);});

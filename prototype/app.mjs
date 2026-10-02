@@ -1,0 +1,24 @@
+import {KeyboardState} from '/reference/keyboard-state.mjs';
+const $=id=>document.getElementById(id); const lines=[]; let timer,helpReturn;
+function toast(message){$('notice').textContent=message;$('notice').hidden=false;clearTimeout(timer);timer=setTimeout(()=>$('notice').hidden=true,4000);}
+const state=new KeyboardState({profile:'mac-native',onTransition:({key,down})=>{lines.push(`${down?'DOWN':'UP  '}  ${key}`);if(lines.length>20)lines.shift();$('eventLog').textContent=lines.join('\n');}});
+const profiles={
+'mac-native':{text:'Keep the meaning of your Mac keyboard. Some local system shortcuts still stay local.',rows:[['Command','Command'],['Option','Option'],['Control','Control']]},
+'windows-native':{text:'Native semantic roles. Win/Meta reaches Command only when the browser receives the key.',rows:[['Win / Meta','Command'],['Alt','Option'],['Ctrl','Control']]},
+'windows-alt-command':{text:'Opt-in for left Alt only. Right Alt/AltGr and Control are not converted.',rows:[['Left Alt','Command'],['Right Alt / AltGr','Option / composition'],['Ctrl','Control']]}};
+function sync(){const held=new Set(state.snapshot().sources.map(e=>e.source));document.querySelectorAll('[data-latch]').forEach(b=>b.setAttribute('aria-pressed',String(held.has('latch:'+b.dataset.latch))));}
+function release(){state.releaseAll();sync();$('inputStatus').textContent='Input paused';}
+function clear(){lines.length=0;$('eventLog').textContent='No events yet.';}
+function profile(){state.setProfile($('profile').value);sync();const p=profiles[state.profile];$('profileDescription').textContent=p.text;$('mappingList').replaceChildren(...p.rows.map(([a,b])=>{const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=a;dd.textContent=b;row.append(dt,dd);return row;}));}
+function open(name){release();clear();$('deviceName').textContent=name;$('overview').hidden=true;$('workspace').hidden=false;$('helpPanel').hidden=true;window.scrollTo(0,0);}
+function end(){release();clear();$('workspace').hidden=true;$('overview').hidden=false;window.scrollTo(0,0);document.querySelector('.open-workspace').focus();}
+document.querySelectorAll('.open-workspace').forEach(b=>b.addEventListener('click',()=>open(b.dataset.device)));
+$('backBtn').addEventListener('click',end);$('endBtn').addEventListener('click',end);$('keyboardPreview').addEventListener('click',()=>{open('Mac mini');$('profile').focus();});$('profile').addEventListener('change',()=>{profile();toast('Profile changed. Held keys released.');});$('releaseBtn').addEventListener('click',()=>{release();toast('Local key state released. No remote transport is connected.');});$('clearBtn').addEventListener('click',clear);
+const surface=$('inputSurface'),roles={MetaLeft:'CommandLeft',MetaRight:'CommandRight',AltLeft:'OptionLeft',AltRight:'OptionRight',ControlLeft:'ControlLeft',ControlRight:'ControlRight',ShiftLeft:'ShiftLeft',ShiftRight:'ShiftRight'},simple=new Set(['Enter','Escape','Backspace','Delete','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown']);
+surface.addEventListener('focus',()=>$('inputStatus').textContent='Local tester focused — no remote connection');surface.addEventListener('blur',release);
+surface.addEventListener('keydown',e=>{if(e.key==='Tab'||/^F\d+$/.test(e.key))return;if(e.isComposing||e.getModifierState('AltGraph')||e.key==='Dead'||e.key==='Process'){release();$('inputStatus').textContent='Composition delegated — not implemented here';return;}if(!e.code||e.code==='Unidentified')return;const logical=roles[e.code]||(simple.has(e.key)?e.key:(Array.from(e.key).length===1?e.key:null));if(!logical)return;e.preventDefault();state.down('physical:'+e.code,logical,{code:e.code});sync();});
+surface.addEventListener('keyup',e=>{if(e.code)state.up('physical:'+e.code);sync();});
+document.querySelectorAll('[data-latch]').forEach(b=>b.addEventListener('click',()=>{const source='latch:'+b.dataset.latch;if(state.snapshot().sources.some(s=>s.source===source))state.up(source);else state.down(source,b.dataset.latch,{physical:false});sync();}));
+document.querySelectorAll('[data-chord]').forEach(b=>b.addEventListener('click',()=>{try{state.virtualChord(b.dataset.chord.split(','));release();toast('Logical chord previewed locally; nothing sent to a Mac.');}catch(e){toast(e.message);}sync();}));
+window.addEventListener('blur',()=>{release();clear();});window.addEventListener('pagehide',()=>{release();clear();});document.addEventListener('visibilitychange',()=>{if(document.hidden){release();clear();}});
+$('helpBtn').addEventListener('click',()=>{release();helpReturn=document.activeElement;$('helpPanel').hidden=false;$('helpPanel').scrollIntoView({behavior:'auto'});$('closeHelp').focus();});$('closeHelp').addEventListener('click',()=>{$('helpPanel').hidden=true;helpReturn?.focus();});profile();

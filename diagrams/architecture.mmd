@@ -1,0 +1,10 @@
+flowchart TD
+    B[Windows / macOS browser] -->|HTTPS / WSS| A[Cloudflare Access: exact email + OTP]
+    A --> T[Independent Cloudflare Tunnel route]
+    T --> C[Native cloudflared on target Mac]
+    C -->|host loopback 32120| G[Custom PWA + Java Gateway]
+    G --> V[Verify JWT + session + Origin + one-use intent]
+    V -->|private network| D[guacd:4822]
+    D -->|configured host route:5900| M[macOS Screen Sharing]
+    G --- S[Protected server-side VNC credential]
+    L[Optional launcher] -. top-level node links, no token sharing .-> B

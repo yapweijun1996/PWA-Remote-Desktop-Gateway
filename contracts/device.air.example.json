@@ -1,0 +1,20 @@
+{
+  "nodeId": "node-air",
+  "publicOrigin": "https://remote-air.example.com",
+  "localDevice": {
+    "id": "mac-air",
+    "label": "MacBook Air",
+    "targetOS": "macOS",
+    "upstreamHost": "host.docker.internal",
+    "upstreamPort": 5900,
+    "credentialRef": "/run/secrets/vnc_password"
+  },
+  "bookmarks": [
+    {
+      "id": "mac-mini",
+      "label": "Mac mini",
+      "url": "https://remote-mini.example.com/",
+      "status": "UNVERIFIED"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+openapi: 3.1.0
+info:
+  title: PWA Remote Desktop Gateway — proposed API
+  version: 1.0.0-design
+  description: >-
+    Project-specific contract to implement, not an existing Guacamole REST API.
+    Exact Origin/Host, verified edge identity and server-authorized target resolution
+    apply. All responses are no-store. Cookie/CSRF is required after bootstrap.
+servers:
+  - url: https://remote-mini.example.com
+security:
+  - accessAssertion: []
+    appCookie: []
+paths:
+  /api/session/bootstrap:
+    post:
+      operationId: bootstrapSession
+      description: Exact Origin plus signed owner assertion; rotate/create app cookie. No unauthenticated development bypass.
+      security:
+        - accessAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+      responses:
+        '200':
+          description: Session established; Set-Cookie is Secure HttpOnly SameSite=Lax Path=/ with __Host- prefix.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [csrfToken, expiresAt, nodeId]
+                properties:
+                  csrfToken: {type: string, minLength: 32}
+                  expiresAt: {type: string, format: date-time}
+                  nodeId: {type: string}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/session:
+    get:
+      operationId: getCurrentSession
+      responses:
+        '200':
+          description: Public current-session projection; never raw JWT/cookie or private target configuration.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [expiresAt, activeDesktop]
+                properties:
+                  expiresAt: {type: string, format: date-time}
+                  activeDesktop: {type: boolean}
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      operationId: logoutNode
+      description: Revoke current app session, close all its upstreams, expire cookie. Not a fleet-wide or Access-global logout.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': {description: Local session revoked and cookie cleared.}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/devices:
+    get:
+      operationId: listDeviceProjection
+      responses:
+        '200':
+          description: Safe projection; remote bookmarks cannot assert real liveness.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicDevice'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/connect-intents:
+    post:
+      operationId: createConnectIntent
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [deviceId, mode, keyboardProfile]
+              properties:
+                deviceId: {type: string, minLength: 3, maxLength: 40}
+                mode: {type: string, enum: [view, control]}
+                keyboardProfile:
+                  type: string
+                  enum: [mac-native, windows-native, windows-alt-command]
+      responses:
+        '201':
+          description: Owner-bound one-use 30-second intent; ID alone does not authorize a connection.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [intentId, expiresAt]
+                properties:
+                  intentId: {type: string, minLength: 32, maxLength: 128}
+                  expiresAt: {type: string, format: date-time}
+        '409':
+          $ref: '#/components/responses/Error'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/desktop-session:
+    delete:
+      operationId: endCurrentDesktop
+      description: End this app session's current desktop and release controller lease. Never closes another owner's tunnel.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': {description: Desktop ended or already absent; app session remains.}
+        default:
+          $ref: '#/components/responses/Error'
+  /ws/sessions/{intentId}:
+    get:
+      operationId: upgradeDesktopTunnel
+      description: >-
+        WebSocket upgrade, not a JSON API. Require exact Origin/Host, valid signed
+        Access assertion, same owner app cookie, unexpired intent and atomic consume.
+        Upgraded frames use the official Guacamole protocol. Do not parse or invent
+        JSON key messages. Active expiry and revocation continue after the upgrade.
+      parameters:
+        - name: intentId
+          in: path
+          required: true
+          schema: {type: string, minLength: 32, maxLength: 128}
+        - $ref: '#/components/parameters/Origin'
+      responses:
+        '101': {description: Switching protocols only after all authorization checks.}
+        default:
+          $ref: '#/components/responses/Error'
+components:
+  securitySchemes:
+    accessAssertion:
+      type: apiKey
+      in: header
+      name: Cf-Access-Jwt-Assertion
+      description: Injected by trusted Access edge; gateway verifies JWT. Browser must not supply its own trusted identity.
+    appCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-rdg
+      description: Opaque server-owned session, not the VNC password or JWT.
+  parameters:
+    Origin:
+      name: Origin
+      in: header
+      required: true
+      schema: {type: string}
+      description: Must exactly equal this node's configured HTTPS origin.
+    CSRF:
+      name: X-RDG-CSRF
+      in: header
+      required: true
+      schema: {type: string, minLength: 32}
+  responses:
+    Error:
+      description: Bounded error, no credential, token or stack trace.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    PublicDevice:
+      type: object
+      additionalProperties: false
+      required: [id, label, kind, status]
+      properties:
+        id: {type: string}
+        label: {type: string}
+        kind: {type: string, enum: [local, bookmark]}
+        status:
+          type: string
+          enum: [UNVERIFIED, CHECKING, GATEWAY_REACHABLE, DESKTOP_READY, OFFLINE, DENIED]
+        checkedAt: {type: [string, 'null'], format: date-time}
+        launchUrl: {type: string, format: uri}
+    Error:
+      type: object
+      additionalProperties: false
+      required: [code, message, auditId]
+      properties:
+        code: {type: string, maxLength: 64}
+        message: {type: string, maxLength: 240}
+        auditId: {type: string, maxLength: 80}

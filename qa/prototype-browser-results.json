@@ -1,0 +1,133 @@
+{
+  "scope": "LOCAL_UI: in-memory HTML/CSS/module render in Linux Chromium, plus separate Python HTTP boundary probes. Browser localhost navigation was blocked by environment policy; original policy unchanged. Not HTTP browser integration, Safari, Windows or live Mac acceptance",
+  "browser": "144.0.7559.96",
+  "tests": [
+    {
+      "test": "Honest prototype and unverified device labels",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Workspace navigation does not claim a live connection",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Synthetic LeftAlt profile emits paired logical Command events",
+      "status": "PASS",
+      "detail": "Not Windows-to-Mac interoperability"
+    },
+    {
+      "test": "Control is not remapped by the prototype",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Virtual modifier latch releases",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Virtual shortcut produces local paired transitions",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Tab can leave the keyboard tester",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "No horizontal overflow: workspace 390x844",
+      "status": "PASS",
+      "detail": "{'w': 390, 'scroll': 390}"
+    },
+    {
+      "test": "No horizontal overflow: overview 390x844",
+      "status": "PASS",
+      "detail": "{'w': 390, 'scroll': 390}"
+    },
+    {
+      "test": "No horizontal overflow: workspace 430x932",
+      "status": "PASS",
+      "detail": "{'w': 430, 'scroll': 430}"
+    },
+    {
+      "test": "No horizontal overflow: overview 430x932",
+      "status": "PASS",
+      "detail": "{'w': 430, 'scroll': 430}"
+    },
+    {
+      "test": "No horizontal overflow: workspace 768x1024",
+      "status": "PASS",
+      "detail": "{'w': 768, 'scroll': 768}"
+    },
+    {
+      "test": "No horizontal overflow: overview 768x1024",
+      "status": "PASS",
+      "detail": "{'w': 768, 'scroll': 768}"
+    },
+    {
+      "test": "No horizontal overflow: workspace 1440x1024",
+      "status": "PASS",
+      "detail": "{'w': 1440, 'scroll': 1440}"
+    },
+    {
+      "test": "No horizontal overflow: overview 1440x1024",
+      "status": "PASS",
+      "detail": "{'w': 1440, 'scroll': 1440}"
+    },
+    {
+      "test": "End preview clears local trace",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Help opens and closes",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "No JavaScript page errors",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "test": "Prototype source has no persistence or network calls",
+      "status": "PASS",
+      "detail": "Static source check, not an application-origin storage audit"
+    },
+    {
+      "test": "Preview refuses nonallowlisted path /AGENTS.md",
+      "status": "PASS",
+      "detail": "404"
+    },
+    {
+      "test": "Preview refuses nonallowlisted path /deployment/.env.example",
+      "status": "PASS",
+      "detail": "404"
+    },
+    {
+      "test": "Preview refuses nonallowlisted path /api/devices",
+      "status": "PASS",
+      "detail": "404"
+    },
+    {
+      "test": "Preview refuses nonallowlisted path /prototype/?token=example",
+      "status": "PASS",
+      "detail": "404"
+    },
+    {
+      "test": "Preview refuses POST",
+      "status": "PASS",
+      "detail": "405"
+    },
+    {
+      "test": "Preview rejects unexpected Host",
+      "status": "PASS",
+      "detail": "403"
+    }
+  ],
+  "pass": 25,
+  "fail": 0
+}
