@@ -1,0 +1,67 @@
+{
+  "status": "PASS",
+  "version": "153.0.8010.12",
+  "build": "37d1363d197142d5",
+  "fixture": true,
+  "realMac": false,
+  "results": [
+    {
+      "test": "Signed bootstrap, truthful readiness and clean first worker activation",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Workspace fits mobile portrait/landscape and desktop without page overflow",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Official Guacamole display and browser focus-loss input pause",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Second tab bootstrap preserves existing shared node session",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Waiting-worker update defers for another tab and authoritative server lease",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Disconnect clears display and clipboard state",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Explicit idle update activates, reloads accepting tab and preserves other tab",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Responsive launcher at 390/430/768/1024/1440 widths",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Dark theme, reduced motion and 200% text zoom",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Cache Storage contains only explicit generic static assets",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Offline navigation exposes no device, identity or desktop",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    }
+  ],
+  "errors": [],
+  "unexpectedConsoleErrors": 0,
+  "expectedOfflineErrors": 3
+}

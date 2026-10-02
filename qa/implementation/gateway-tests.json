@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "level": "LOCAL_PROTOCOL_FIXTURE",
+  "realMac": false,
+  "tests": 29,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "suites": [
+    {
+      "suite": "com.rdg.AccessVerifierTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.262,
+      "cases": [
+        "keyRotationCacheExpiryAndRefreshFailure",
+        "wrongIssuerAudienceEmailTypeAndSubject",
+        "validIdentity",
+        "expiredFutureNbfAndAlgorithmConfusion",
+        "duplicateKeysAndUntrustedUrlsFailClosed",
+        "missingForgedAndEmailHeaderCannotAuthorize"
+      ]
+    },
+    {
+      "suite": "com.rdg.AuditTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.63,
+      "cases": [
+        "retentionAndNodeRestoreBinding"
+      ]
+    },
+    {
+      "suite": "com.rdg.BoundedReaderTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.004,
+      "cases": [
+        "instructionBudgetRejectsOverflowAndResetsOnlyAfterConsumption"
+      ]
+    },
+    {
+      "suite": "com.rdg.ConfigTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.043,
+      "cases": [
+        "missingConfigPlaceholdersAndUnsafeSecretRefuseStartup",
+        "malformedJsonAndUnknownFieldsRefuseBeforeSideEffects"
+      ]
+    },
+    {
+      "suite": "com.rdg.GatewayIntegrationTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 5.64,
+      "cases": [
+        "pendingIntentBlocksUpdateBoundaryAndEndCancelsIt",
+        "liveAbsoluteExpiryClosesBothEvenWithRecentInput",
+        "websocketRejectsMissingIdentityHostileOriginAndReplay",
+        "oversizedFrameAndMalformedInstructionEndTransport",
+        "identityOriginCsrfAndTargetInjectionBeforeUpstream",
+        "liveIdleExpiryClosesBrowserAndUpstreamDespiteHeartbeat",
+        "rawViewInputClosesBothResources"
+      ]
+    },
+    {
+      "suite": "com.rdg.SessionsTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.356,
+      "cases": [
+        "maintenanceRejectsPendingAndActiveSessions",
+        "metadataContainsNoSessionOrPayload",
+        "expiredIntentsAndTargetInjection",
+        "connectingDeadlineAndLateResourceCleanup",
+        "failedUpstreamCleanupBlocksNewTunnelsAndUpdates",
+        "controllerRaceAndIdor",
+        "logoutReleasesLeaseAndEndsTransport",
+        "secondTabBootstrapPreservesLiveDesktopAndDeadline",
+        "secureBindingAndCsrf",
+        "viewOnlyRawInputAndClipboardLimits",
+        "atomicIntentRace",
+        "idleAndAbsoluteTimersIgnoreStatusTraffic"
+      ]
+    }
+  ]
+}
