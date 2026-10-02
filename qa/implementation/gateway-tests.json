@@ -2,7 +2,7 @@
   "status": "PASS",
   "level": "LOCAL_PROTOCOL_FIXTURE",
   "realMac": false,
-  "tests": 32,
+  "tests": 38,
   "failures": 0,
   "errors": 0,
   "skipped": 0,
@@ -13,7 +13,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 1.878,
+      "seconds": 0.477,
       "cases": [
         "keyRotationCacheExpiryAndRefreshFailure",
         "wrongIssuerAudienceEmailTypeAndSubject",
@@ -29,7 +29,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 1.547,
+      "seconds": 0.218,
       "cases": [
         "retentionAndNodeRestoreBinding"
       ]
@@ -40,7 +40,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.003,
+      "seconds": 0.001,
       "cases": [
         "instructionBudgetRejectsOverflowAndResetsOnlyAfterConsumption"
       ]
@@ -51,7 +51,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.045,
+      "seconds": 0.008,
       "cases": [
         "missingConfigPlaceholdersAndUnsafeSecretRefuseStartup",
         "malformedJsonAndUnknownFieldsRefuseBeforeSideEffects"
@@ -63,7 +63,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 5.197,
+      "seconds": 1.791,
       "cases": [
         "pendingIntentBlocksUpdateBoundaryAndEndCancelsIt",
         "liveAbsoluteExpiryClosesBothEvenWithRecentInput",
@@ -77,12 +77,28 @@
       ]
     },
     {
+      "suite": "com.rdg.LocalMacViewTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.487,
+      "cases": [
+        "viewPolicyRejectsInputWithoutNeedingCalibratedKeysyms",
+        "signedPilotTokenMatchesThePinnedTestOwnerSubject",
+        "controlIsRejectedBeforeAnyUpstreamOperation",
+        "clipboardConsentIsRejectedEvenWhenViewIntentSuppressesClipboard",
+        "configHasOnlyTheFixedLocalTargetAndNoInventedCalibration",
+        "onlyAViewWithNoClipboardDelegatesToTheOfficialConnector"
+      ]
+    },
+    {
       "suite": "com.rdg.SessionsTest",
       "tests": 13,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.817,
+      "seconds": 0.107,
       "cases": [
         "maintenanceRejectsPendingAndActiveSessions",
         "metadataContainsNoSessionOrPayload",

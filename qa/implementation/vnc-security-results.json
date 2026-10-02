@@ -1,0 +1,85 @@
+{
+  "scope": "SYNTHETIC_SECURITY_SELECTION",
+  "status": "PASS",
+  "realMac": false,
+  "authAttempted": false,
+  "before": {
+    "imageId": "sha256:9c9e8ccb80846b90fbcdde0113ea3310695a6a871f3ddd260b38c58b4c5a36eb",
+    "selectedSecurityType": 30,
+    "offeredSecurityTypes": [
+      30,
+      33,
+      36,
+      31,
+      32,
+      2,
+      35
+    ]
+  },
+  "afterImageId": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+  "results": [
+    {
+      "case": "MAC_ARD_FIRST_WITH_VNC",
+      "status": "PASS",
+      "expectedSecurityType": 2,
+      "selectedSecurityType": 2,
+      "clientRfbVersion": "RFB 003.008",
+      "passwordChallengeSent": false,
+      "serverInitSent": false,
+      "clientClosureObserved": false,
+      "upstreamError": true,
+      "displayReceived": false
+    },
+    {
+      "case": "NONE_FIRST_WITH_VNC",
+      "status": "PASS",
+      "expectedSecurityType": 2,
+      "selectedSecurityType": 2,
+      "clientRfbVersion": "RFB 003.008",
+      "passwordChallengeSent": false,
+      "serverInitSent": false,
+      "clientClosureObserved": false,
+      "upstreamError": true,
+      "displayReceived": false
+    },
+    {
+      "case": "ARD_ONLY_REFUSED",
+      "status": "PASS",
+      "expectedSecurityType": null,
+      "selectedSecurityType": null,
+      "clientRfbVersion": "RFB 003.008",
+      "passwordChallengeSent": false,
+      "serverInitSent": false,
+      "clientClosureObserved": true,
+      "upstreamError": true,
+      "displayReceived": false
+    },
+    {
+      "case": "NONE_ONLY_REFUSED",
+      "status": "PASS",
+      "expectedSecurityType": null,
+      "selectedSecurityType": null,
+      "clientRfbVersion": "RFB 003.008",
+      "passwordChallengeSent": false,
+      "serverInitSent": false,
+      "clientClosureObserved": true,
+      "upstreamError": true,
+      "displayReceived": false
+    },
+    {
+      "case": "LEGACY_NONE_POST_INIT_REFUSED",
+      "status": "PASS",
+      "expectedSecurityType": 1,
+      "selectedSecurityType": 1,
+      "clientRfbVersion": "RFB 003.003",
+      "passwordChallengeSent": false,
+      "serverInitSent": true,
+      "clientClosureObserved": true,
+      "upstreamError": true,
+      "displayReceived": false
+    }
+  ],
+  "legacyARDCallback": "STATIC_REVIEW_ONLY; no DH exchange or account credentials tested",
+  "recheckedAt": "2026-10-02T23:11:46.943734+00:00",
+  "legacyPassRequiresObservedServerInit": true
+}

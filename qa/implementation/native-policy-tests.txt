@@ -1,0 +1,5 @@
+PASS: exact signed-source input yields the recorded modified C source SHA256.
+PASS: tampered source refuses before mutation.
+Policy uses maintained LibVNCClient authentication/codec implementation; no RFB proxy or custom authentication.
+Policy script SHA256: a00d0ea1a1f3ac9fe80a99d40809840e256b6a214df16aea5ca19bbb640299db
+Modified official C source SHA256: 390bd0b076b2eb9f7b0586c0c31c73f42864b1966f5857e7eb523afd715a49eb
