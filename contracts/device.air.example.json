@@ -16,5 +16,13 @@
       "url": "https://remote-mini.example.com/",
       "status": "UNVERIFIED"
     }
-  ]
+  ],
+  "keysyms": {
+    "CommandLeft": null,
+    "CommandRight": null,
+    "OptionLeft": null,
+    "OptionRight": null,
+    "ControlLeft": null,
+    "ControlRight": null
+  }
 }

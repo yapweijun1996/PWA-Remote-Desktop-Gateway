@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: PWA Remote Desktop Gateway — proposed API
-  version: 1.0.0-design
+  title: PWA Remote Desktop Gateway — local pilot API
+  version: 1.0.0
   description: >-
-    Project-specific contract to implement, not an existing Guacamole REST API.
+    Implemented project-specific contract, not an existing Guacamole REST API.
     Exact Origin/Host, verified edge identity and server-authorized target resolution
     apply. All responses are no-store. Cookie/CSRF is required after bootstrap.
 servers:
@@ -15,7 +15,7 @@ paths:
   /api/session/bootstrap:
     post:
       operationId: bootstrapSession
-      description: Exact Origin plus signed owner assertion; rotate/create app cookie. No unauthenticated development bypass.
+      description: Exact Origin plus signed owner assertion; create or reuse the same valid owner-bound cookie without extending its deadline. No unauthenticated development bypass.
       security:
         - accessAssertion: []
       parameters:
@@ -120,6 +120,59 @@ paths:
         - $ref: '#/components/parameters/CSRF'
       responses:
         '204': {description: Desktop ended or already absent; app session remains.}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/clipboard-consent:
+    post:
+      operationId: setClipboardConsent
+      description: Explicit consent applies to the next control tunnel; reject while an intent/desktop is pending. Read-only tunnels always deny writes.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [enabled]
+              properties:
+                enabled: {type: boolean}
+      responses:
+        '200': {description: Consent saved in the transient app session.}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/update-boundary:
+    post:
+      operationId: reserveUpdateBoundary
+      description: Atomically reserve a 20-second node maintenance boundary only with no desktops/pending intents/uncertain cleanup; prevents new intents/upgrades.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false}
+      responses:
+        '200': {description: Server reservation granted; safe=true and reservedUntil returned.}
+        '409':
+          $ref: '#/components/responses/Error'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/diagnostics:
+    get:
+      operationId: getSanitizedDiagnostics
+      responses:
+        '200': {description: Build/library versions, node alias, configured keysyms and capability limits; no upstream address or credentials.}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/history:
+    get:
+      operationId: getSessionMetadataHistory
+      responses:
+        '200': {description: Up to 50 metadata-only audit events for the bound identity; no input, clipboard, frames or tokens.}
         default:
           $ref: '#/components/responses/Error'
   /ws/sessions/{intentId}:
