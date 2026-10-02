@@ -1,0 +1,89 @@
+import {KeyboardState} from '../../reference/keyboard-state.mjs';
+
+export function logicalKey(keysym) {
+  return ({65507:'ControlLeft',65508:'ControlRight',65513:'OptionLeft',65514:'OptionRight',
+    65511:'CommandLeft',65512:'CommandRight',65515:'CommandLeft',65516:'CommandRight',
+    65505:'ShiftLeft',65506:'ShiftRight'})[keysym] ?? `keysym:${keysym}`;
+}
+export function encodeKey(key, calibrated) {
+  if(Object.hasOwn(calibrated,key))return calibrated[key];
+  if(key==='ShiftLeft')return 0xffe1;if(key==='ShiftRight')return 0xffe2;
+  if(key.startsWith('keysym:'))return Number(key.slice(7));
+  throw new Error('Key mapping unavailable');
+}
+export const CHORDS=Object.freeze({copy:['CommandLeft','keysym:99'],paste:['CommandLeft','keysym:118'],
+  cut:['CommandLeft','keysym:120'],undo:['CommandLeft','keysym:122'],select:['CommandLeft','keysym:97'],
+  save:['CommandLeft','keysym:115'],switch:['CommandLeft','keysym:65289'],search:['CommandLeft','keysym:32']});
+
+/** One normalized engine stream attached only to the focused remote surface. */
+export class RemoteInput {
+  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure}) {
+    this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
+    this.enabled=false;this.mode='view';this.altGraph=false;this.leftAltPhysical=false;this.latches=new Set();this.disposers=[];
+    this.pointer=new Guacamole.Mouse.State(0,0,false,false,false,false,false);this.protocolCounts=new Map();
+    this.keys=new KeyboardState({profile,onTransition:({key,down})=>{
+      if(this.mode!=='control')return;
+      const keysym=encodeKey(key,keysyms),count=this.protocolCounts.get(keysym)??0;
+      if(down){this.protocolCounts.set(keysym,count+1);if(count===0)client.sendKeyEvent(1,keysym);}
+      else if(count===1){this.protocolCounts.delete(keysym);client.sendKeyEvent(0,keysym);}
+      else if(count>1)this.protocolCounts.set(keysym,count-1);
+    }});
+    const listen=(node,event,fn,capture=false)=>{node.addEventListener(event,fn,capture);this.disposers.push(()=>node.removeEventListener(event,fn,capture));};
+    listen(surface,'keydown',e=>{
+      this.altGraph=e.getModifierState('AltGraph');
+      if(e.code==='AltLeft')this.leftAltPhysical=true;
+      // Keep a usable browser keyboard escape, without forwarding a half-owned chord.
+      if(e.code==='Escape' && e.shiftKey){e.stopImmediatePropagation();e.preventDefault();this.pause();surface.blur();}
+    },true);
+    listen(surface,'keyup',e=>{if(e.code==='AltLeft')this.leftAltPhysical=false;},true);
+    this.keyboard=new Guacamole.Keyboard(surface);
+    this.keyboard.onkeydown=keysym=>{
+      if(!this.active())return true;
+      if(this.altGraph && [0xffe3,0xffe4,0xffe9,0xffea,0xfe03].includes(keysym))return false;
+      // Classic VNC Unicode/local composition is unverified. Text panel is the explicit fallback.
+      if(keysym>=0x01000000){onPause('Use the Text / Clipboard panel for composed text.');return false;}
+      this.run(()=>this.keys.down(`physical:${keysym}`,logicalKey(keysym),
+        {code:keysym===0xffe9&&this.leftAltPhysical?'AltLeft':'',physical:true}));
+      return false;
+    };
+    this.keyboard.onkeyup=keysym=>{this.run(()=>{this.keys.up(`physical:${keysym}`);if(logicalKey(keysym).startsWith('keysym:')){for(const key of this.latches)this.keys.up(`latch:${key}`);this.latches.clear();}});return !this.active();};
+    this.mouse=new Guacamole.Mouse(pointerSurface);
+    this.mouse.onEach(['mousedown','mouseup','mousemove'],event=>{
+      if(!this.active())return;
+      this.sendPointer(event.state);
+    });
+    this.touch=new Guacamole.Mouse.Touchpad(pointerSurface);
+    this.touch.onEach(['mousedown','mouseup','mousemove'],event=>{
+      if(!this.active())return;this.sendPointer(event.state);
+    });
+    listen(surface,'pointerdown',()=>{if(this.mode==='control'){surface.focus({preventScroll:true});this.enabled=true;onPause('Input active · Shift+Esc pauses');}});
+    listen(surface,'focus',()=>{if(this.mode==='control'){this.enabled=true;onPause('Input active · Shift+Esc pauses');}});
+    listen(surface,'blur',()=>this.pause());
+    listen(surface,'compositionstart',()=>this.pause('Local IME: use the Text / Clipboard panel.'),true);
+    listen(window,'blur',()=>this.pause());
+    listen(document,'visibilitychange',()=>{if(document.hidden)this.pause();});
+    listen(window,'pagehide',()=>this.pause());
+  }
+  active(){return this.enabled&&this.mode==='control'&&document.activeElement===this.surface&&!document.hidden;}
+  run(fn){if(this.failed)return;try{fn();}catch{this.failed=true;this.protocolCounts.clear();this.enabled=false;this.onFailure('INPUT_FAILURE');}}
+  sendPointer(state){const display=this.client.getDisplay(),scale=display.getScale();const x=Math.max(0,Math.min(state.x,Math.max(0,display.getWidth()*scale-1))),y=Math.max(0,Math.min(state.y,Math.max(0,display.getHeight()*scale-1)));this.pointer=new this.Guacamole.Mouse.State(x,y,state.left,state.middle,state.right,state.up,state.down);this.run(()=>this.client.sendMouseState(this.pointer,true));}
+  start(mode){this.mode=mode;this.enabled=false;this.onPause(mode==='view'?'View only':'Click desktop to control');}
+  release(){
+    this.run(()=>this.keys.releaseAll());this.latches.clear();this.leftAltPhysical=false;this.altGraph=false;this.keyboard.reset();
+    if(this.mode==='control')this.run(()=>{
+      const s=this.pointer;this.client.sendMouseState(new this.Guacamole.Mouse.State(s.x,s.y,false,false,false,false,false),true);
+    });
+    this.pointer=new this.Guacamole.Mouse.State(0,0,false,false,false,false,false);
+  }
+  pause(message='Input paused · click desktop to resume'){this.release();this.enabled=false;this.onPause(message);}
+  setProfile(profile){this.pause();this.run(()=>this.keys.setProfile(profile));}
+  toggle(key){
+    if(this.mode!=='control')return;
+    this.run(()=>{const source=`latch:${key}`;if(this.latches.has(key)){this.keys.up(source);this.latches.delete(key);}else{this.keys.down(source,key,{physical:false});this.latches.add(key);}});
+  }
+  chord(name){if(this.mode!=='control'||!Object.hasOwn(CHORDS,name))return;
+    if(this.keys.snapshot().sources.some(e=>e.physical)){this.onPause('Release physical keys before a virtual chord.');return;}
+    this.run(()=>this.keys.virtualChord(CHORDS[name]));this.release();}
+  virtual(key){if(this.mode!=='control')return;this.run(()=>this.keys.virtualChord([key]));this.release();}
+  dispose(){this.pause();this.keyboard.onkeydown=null;this.keyboard.onkeyup=null;for(const fn of this.disposers)fn();}
+}

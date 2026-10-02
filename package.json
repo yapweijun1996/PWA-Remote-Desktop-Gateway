@@ -1,15 +1,24 @@
 {
-  "name": "pwa-remote-desktop-gateway-handoff",
+  "name": "pwa-remote-desktop-gateway",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Specification, offline prototype and pure reference tests; not a remote desktop server.",
+  "description": "Authenticated per-Mac Java/Guacamole gateway and private vanilla JavaScript PWA; real-device pilot acceptance required.",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test reference/*.test.mjs",
+    "test": "node --test reference/*.test.mjs web/src/*.test.mjs scripts/*.test.mjs",
+    "test:reference": "node --test reference/*.test.mjs",
+    "test:gateway": "./scripts/maven.sh -B -f gateway/pom.xml test",
+    "build:web": "node scripts/build-web.mjs",
+    "build": "npm run build:web && ./scripts/maven.sh -B -f gateway/pom.xml package dependency:list -DoutputAbsoluteArtifactFilename=true -DoutputFile=target/dependencies.txt -DincludeScope=runtime && node scripts/verify-dependencies.mjs",
     "preview": "node scripts/preview.mjs",
-    "verify": "node scripts/verify-pack.mjs"
+    "verify:handoff": "node scripts/verify-pack.mjs",
+    "test:browser": "./scripts/test-browser.sh",
+    "test:backup": "python3 qa/test-metadata-backup.py",
+    "verify:dependencies": "node scripts/verify-dependencies.mjs",
+    "test:container": "./qa/test-container.sh",
+    "verify:artifacts": "node scripts/verify-artifacts.mjs"
   }
 }
