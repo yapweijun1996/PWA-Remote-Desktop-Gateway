@@ -1,50 +1,49 @@
 # PWA Remote Desktop Gateway
 
-**Agent implementation handoff, v1.0 — 2026-10-02.**
+An implemented local pilot: vanilla JavaScript PWA, authenticated Java gateway and the official Apache Guacamole transport. Each approved personal Mac gets its own independent node and hostname. Cloudflare Access supplies email OTP; the gateway verifies the signed assertion, exact owner, app session and one-use WebSocket intent.
 
-Browser-only access to the owner's Mac mini and MacBook Air through an owned domain, Cloudflare Access email OTP, and Cloudflare Tunnel. Own the PWA experience; reuse a maintained remote-desktop engine.
+**Public/real-device readiness is BLOCKED.** No actual Mac Screen Sharing, modifier calibration, Windows/Safari/iOS controller, external-network route or sleep/reboot acceptance has passed. The test protocol peer and HTTPS test edge are explicitly disposable fixtures. They are excluded from the production JAR/image and cannot prove Mac compatibility.
 
-## Status
+## Build and verify
 
-This archive contains specifications, local reference code, configuration blueprints and a non-networked UI prototype. **It is not a working remote-desktop server.** No real Mac, Windows client, Cloudflare account, Guacamole tunnel or deployment has been tested by this handoff. Read `qa/PACK_VALIDATION.md` for checks actually performed.
+Use Java 17 and Node 22 or newer. No frontend npm runtime dependencies or CDN assets are required.
 
-## Baseline
-
-```text
-Windows/macOS browser
-  → HTTPS + Cloudflare Access (exact owner email / OTP)
-  → Cloudflare Tunnel on the target Mac
-  → own Gateway (JWT verification, sessions, policy, audit)
-  → official Guacamole Java API → guacd
-  → macOS Screen Sharing (VNC)
+```sh
+npm ci --ignore-scripts
+npm test
+npm run build
+npm run test:backup
 ```
 
-Frontend: modular JavaScript/HTML/CSS, built into the Gateway's same-origin static resources. Backend: a thin Java service using official Guacamole libraries, not a newly written VNC encoder or a guessed Node wrapper. Proposed persistence: SQLite for bounded audit/settings, configuration for device enrollment, server-side secret files for the pilot. The full upstream Guacamole webapp and its internal REST API are NOT the baseline.
+`npm test`: 74 unchanged reference tests plus production input tests. The Maven build runs actual gateway unit/integration tests: signed JWTs, HTTP/API policy, real javax WebSocket upgrades to an official-protocol fixture, replay/ownership, view-only abuse, live deadline/logout teardown and maintenance locking. `gateway/dependencies.lock.json` verifies the resolved runtime coordinates and JAR digests.
 
-Each Mac has its own gateway node and hostname. A small authenticated launchpad can link nodes, but no inter-Mac relay is needed. The nodes can be on different networks. V1 has one owner and one controlling session per target. See ADRs and portability gates before choosing Java/container versions.
+Build outputs: `gateway/target/rdg-gateway.jar` and `web/dist/`. Output identities are recorded in `qa/implementation/artifacts.json` after verification.
 
-## Start
+Browser regression uses a separately installed Playwright library and Chromium, with no `@playwright/test` dependency:
 
-1. Read `START_HERE_先读这里.md` and `AGENTS.md`.
-2. Give `AI_AGENT_TASK_PROMPT.md` to the implementation agent.
-3. Run `npm test` to verify the pure reference modules.
-4. Run `npm run preview` to inspect the design prototype locally.
-5. Implement into a new repository/worktree. Never present the prototype as a live connection.
+```sh
+npm run test:browser
+```
 
-No npm installation is required for the reference tests or preview. Production dependencies, lockfiles, image digests and build artifacts must be created and verified by the implementation agent.
+Optional paths: `RDG_PLAYWRIGHT_MODULE` points to an existing Playwright module, and `RDG_TEST_CHROMIUM` to an existing Chromium executable. The launcher generates temporary test credentials/certificate, starts loopback-only fixtures, checks the production UI and two-tab worker update, then removes its temporary resources. Sanitized results are in `qa/implementation/`; fixture screenshots are in `output/playwright/`.
 
-## Key requirements
+## Configure and operate
 
-Cross-platform keyboard profiles; on-screen remote shortcuts; no automatic Ctrl-to-Command remapping; preserved AltGr/IME; matched keydown/keyup; release-on-blur; no input replay after disconnect; server-enforced authorization and expiries; exact WebSocket Origin validation; no cached credentials, clipboard contents, screen images or personalized offline pages.
+See [deployment/README.md](deployment/README.md). Startup refuses missing/placeholder Access settings, unknown target configuration, permissive/symlinked secrets or absent explicit modifier calibration. Browser requests cannot select an upstream host, protocol, port or password. The app provides no local OTP/authentication bypass.
 
-## Acceptance
+```sh
+docker build --platform linux/arm64 -t rdg-gateway:reviewed .
+RDG_TEST_IMAGE=rdg-gateway:reviewed npm run test:container
+```
 
-A screenshot of the UI, an HTTP 200 or a passing local unit test is not remote-control acceptance. Real external-network login, desktop display, harmless input, Windows and macOS keyboard checks, negative security tests, reconnection, log redaction and update lifecycle tests are required. Every unexecuted test stays NOT_RUN/BLOCKED.
+The pinned JRE and official guacd index support ARM64. No deployment, Tunnel/Access policy, Screen Sharing, firewall or existing host service was changed by implementation. `deployment/compose.blueprint.yaml` remains an operator-filled, approval-gated template; it publishes only gateway port 32120 on loopback and never guacd/VNC.
 
-## Sources and ownership
+## Evidence and limits
 
-`docs/14_SOURCE_REGISTER.md` lists official public sources checked for this design. Specifications and reference code were prepared for the owner. Upstream software is not bundled; preserve upstream licenses/notices when adding it. The owner must choose the public repository license before publication. The archive does not grant rights to unrelated upstream assets.
+- [PROGRESS.md](PROGRESS.md): backlog IDs, worktree/authority record and remaining gates.
+- [qa/implementation/REPORT.md](qa/implementation/REPORT.md): exact local validation and limitations.
+- [qa/acceptance-matrix.csv](qa/acceptance-matrix.csv): production release gates; fixture checks are not promoted to real-device passes.
+- [docs/17_IMPLEMENTATION_AND_OPERATIONS.md](docs/17_IMPLEMENTATION_AND_OPERATIONS.md): implementation decisions, configuration, lifecycle, deployment/recovery and acceptance procedure.
+- [web/vendor/provenance.json](web/vendor/provenance.json): Guacamole artifact source, SHA256 and verified Apache signing key.
 
-## Verification summary
-
-74 reference tests passed. Four prototype screenshots are in `qa/screenshots/`. 25 local UI/HTTP boundary checks passed, using an offline DOM render because browser localhost navigation was policy-blocked. This is not real-browser HTTP integration or Mac acceptance. See `qa/pack-validation.txt` for exact scope; all 64 real-system acceptance cases remain NOT_RUN. Verify the untouched archive with `npm run verify`.
+The original `.md` specification, prototype and reference modules remain design inputs. `npm run preview` opens the explicitly labelled design prototype. `MANIFEST.sha256` describes the untouched handoff; `npm run verify:handoff` is only for that original archive, not this intentionally modified implementation branch.

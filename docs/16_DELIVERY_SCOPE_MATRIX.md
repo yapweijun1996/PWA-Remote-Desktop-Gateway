@@ -1,4 +1,6 @@
-# 16 · What is delivered versus what must be built
+# 16 · Original handoff delivery scope
+
+Historical ZIP scope below. Current implementation, test evidence and unresolved gates are in `README.md`, `PROGRESS.md`, `docs/17_IMPLEMENTATION_AND_OPERATIONS.md` and `qa/implementation/REPORT.md`.
 
 | Area | In this ZIP | Required implementation work |
 |---|---|---|

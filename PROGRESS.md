@@ -1,28 +1,42 @@
 # Implementation progress
 
-Branch: `codex/production-gateway`. The original main checkout is unchanged.
+Branch: `codex/production-gateway`, isolated managed worktree. Original `main` remains at `d0ce352` with no changes. The current local implementation is complete for review; real-device/public acceptance is BLOCKED. Source revision and exact output identities are in `qa/implementation/artifacts.json`.
 
-## Acceptance and authority
+## Authority and environment
 
-Local software preparation and disposable test fixtures are authorized. No target Mac, Access account, Tunnel policy, firewall, Screen Sharing settings or public route is authorized/configured. Real Mac, Windows/Safari/iOS and external-network gates remain BLOCKED until operator-provided evidence exists. Automated fixture tests cannot satisfy those gates.
+Local software preparation and disposable fixtures are authorized. No personal target, Cloudflare account/policy, Tunnel, host permission, Screen Sharing, firewall, company device or existing MCP service was changed. No target Mac was inferred from this development computer.
 
-## Plan
+Development-only inventory: macOS 26.6.2 (25G83), Darwin ARM64; Node 23.10.0, npm 10.9.2, Java 17.0.17, repository-local Maven 3.9.16 and Docker daemon 28.3.0. Container JRE: Temurin 17.0.20.1+1, Linux ARM64. Browser: Chromium 153.0.8010.12, Playwright 1.62.1 on macOS; synthetic/viewport tests do not prove physical keyboard or Safari/Windows/iOS behavior.
 
-1. RDG-001/002: workspace preflight, maintained javax-compatible Java runtime, verified official artifacts and provenance.
-2. RDG-005/006/007: JWT verifier, session/CSRF/intent/lease state, official Guacamole transport, bounded input, server expiry/revocation and hostile-request tests.
-3. RDG-008/009/010/011: vanilla JavaScript viewer, normalized input, virtual keys, explicit clipboard, truthful UI, private offline shell and server-guarded multi-tab updates.
-4. RDG-012/015: audit, deployment/rollback/backup instructions, exact build/test artifacts and acceptance matrix.
+The routed investigation/architecture/verification module files were absent; core/project rules were used. Bounded KB retrieval found no applicable exact-project implementation; only relevant PWA privacy/update warnings were reused.
 
-## Preflight
+## Backlog status
 
-- Clean original `main` at intake; dedicated managed worktree and branch created.
-- Development environment only: macOS 26.6.2 (25G83), Darwin ARM64; Node 23.10.0, npm 10.9.2, Java 17.0.17; Docker daemon 28.3.0 available. This does not identify either deployment target.
-- Maven 3.9.16 downloaded into ignored local tools; upstream SHA512 verified.
-- Reference tests: 74 PASS. Production tests not yet run.
-- Guacamole official release/security/API pages rechecked. Current release 1.6.0; javax.websocket API verified. Tomcat 9.0.122 chosen to retain binary compatibility; dependency/security/runtime validation pending.
-- Routed investigation/architecture/verification module files absent. Core/project rules apply.
-- Bounded KB retrieval had no applicable exact-project implementation. Reuse PWA privacy/update warnings only; unrelated project decisions are excluded.
+| Tickets | Current result | Acceptance limit |
+|---|---|---|
+| RDG-001 | PASS for repo isolation, source inspection and development preflight | Actual targets/tunnel inventory BLOCKED |
+| RDG-002 | PASS for official provenance, pinned Java dependencies, javax build/WS and isolated ARM64 images | Image OS vulnerability scan and actual-host runtime acceptance remain open |
+| RDG-003/004 | BLOCKED: no approved real Mac, VNC credential or modifier calibration | Protocol fixture is not a real desktop |
+| RDG-005/006/007 | Implemented and locally tested: signed JWT, owner/session/CSRF/intents, leases, read-only enforcement and expiry/logout teardown | Real Access/guacd/Mac path remains BLOCKED by 003/004 |
+| RDG-008/009/010 | Implemented and locally tested: focused input, virtual keys, explicit clipboard and truthful responsive UI | Physical key/AltGr/IME/retina and actual platform acceptance BLOCKED |
+| RDG-011 | Implemented; Chromium two-tab update/privacy checks PASS | Actual installed/suspended Safari/iOS/Windows PWA acceptance BLOCKED |
+| RDG-012 | Metadata-only audit and protected backup/restore implemented; local tests PASS | Actual host backup/recovery custody BLOCKED |
+| RDG-013/014/015 | BLOCKED: no approved ingress, second independent target, real controller/recovery matrix or owner handoff acceptance | No deployment or public exposure performed |
+| RDG-016 | N/A: optional post-V1 work | No speculative native agent or extra features introduced |
 
-## External gates
+## Verification
 
-RDG-003/004 and RDG-013/014/015 require actual approved targets, separate server-held VNC credential, calibrated modifiers, exact Access issuer/audience/owner and domain, approved additive Tunnel routes, and real controller/recovery acceptance. No credentials should be pasted in chat.
+- Node: 84 PASS, including the original unchanged 74 reference tests, 9 input tests and 1 atomic-artifact test.
+- Java: 29 PASS, no failures/errors/skips; production classes with signed identity and disposable protocol fixtures, including actual HTTP/WebSocket upgrades and live two-end teardown.
+- Browser: 11 PASS, 0 JavaScript errors and 0 unexpected console errors; expected offline fetch errors are recorded separately.
+- Backup/restore: 3 PASS, including wrong-node/symlink/permission rejection.
+- ARM64 container: pinned build PASS; read-only/non-root/noexec runtime initializes SQLite, responds to health, rejects missing JWT with HTTP 401 and refuses missing configuration. No published port or target connection.
+- Runtime lock: 11 Maven JARs, extracted SQLite libraries and official Guacamole browser asset digests verified. Public-coordinate OSV query returned no advisories; this is not an OS image scan or blanket safety guarantee.
+- Compose template parses with fictional operator settings. It has not been deployed.
+- Historical handoff integrity: FAIL on untouched main because `MANIFEST.sha256` refers to a missing `.gitignore`; preserved and disclosed rather than concealed.
+
+See `qa/implementation/REPORT.md` and the real-system `qa/acceptance-matrix.csv` for evidence and remaining gates. Task-created temporary servers, browser session, credentials/certificate and debug classes were removed; useful ignored build outputs and Maven cache remain.
+
+## Required next acceptance
+
+The owner must identify and approve one personal Mac and access method for a local pilot. Provide/provision its protected VNC credential locally (never in chat), actual node/domain/Access settings and a six-modifier calibration record. Local pilot approval does not authorize public routing, firewall/Screen Sharing permission changes or reboot. Those changes require their own explicit scope. Then test the second Mac, required controllers, approved external path and recovery scenarios before release.

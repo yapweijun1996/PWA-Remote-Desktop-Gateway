@@ -2,6 +2,8 @@
 
 版本：1.0 · 编制日期：2026-10-02 · Owner：Wei Jun
 
+当前实现状态：独立分支已加入 Java Gateway 和生产 PWA；请先读 `README.md`、`PROGRESS.md` 与 `qa/implementation/REPORT.md`。以下内容描述原始交接包；真实 Mac / 外网部署验收仍 BLOCKED。
+
 **这是完整开发规格、配置蓝图、界面原型和可运行的参考测试，不是已经完成或部署的远程控制软件。**
 不包含真实账号、OTP、Tunnel token、VNC password 或电脑截图。没有更改你的 Mac、Cloudflare、GitHub 或现有 MCP。
 
