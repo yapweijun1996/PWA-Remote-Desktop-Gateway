@@ -14,6 +14,8 @@ if (process.env.RDG_LOCAL_VIEW_GUACD_IMAGE_ID !== expectedImage)
   throw new Error('Reviewed guacd image identity required');
 const evidence = {
   scope: 'LOCAL_REAL_VNC_VIEW_ONLY',
+  runId: process.env.RDG_LOCAL_VIEW_RUN_ID,
+  nativeDiagnosticLogger: process.env.RDG_LOCAL_VIEW_NATIVE_DIAGNOSTICS === 'true',
   status: 'FAIL',
   testIdentity: true,
   localDockerEndpointPinned: process.env.RDG_LOCAL_DOCKER_ENDPOINT_PINNED === 'true',

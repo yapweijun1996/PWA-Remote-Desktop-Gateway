@@ -40,6 +40,27 @@ expected_image=$(node -p "JSON.parse(require('node:fs').readFileSync('qa/impleme
 actual_image=$(docker_local image inspect "$expected_image" --format '{{.Id}}')
 [ "$actual_image" = "$expected_image" ] || { printf '%s\n' 'LOCAL_VIEW_IMAGE_ID_MISMATCH: no service started.' >&2; exit 2; }
 printf '%s\n' '{"localDockerEndpointPinned":true}'
+native_diagnostics=${RDG_LOCAL_VIEW_NATIVE_DIAGNOSTICS:-false}
+case "$native_diagnostics" in true|false) ;; *) printf '%s\n' 'LOCAL_VIEW_DIAGNOSTIC_FLAG_REFUSED' >&2; exit 2 ;; esac
+native_library_sha=
+if [ "$native_diagnostics" = true ]; then
+  native_library_sha=$(node --input-type=module <<'JS'
+import {lstatSync, readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {validateBuild} from './qa/native-vnc-diagnostics.mjs';
+try {
+  const hash = path => createHash('sha256').update(readFileSync(path)).digest('hex');
+  const base = '.tools/native-vnc-diagnostics/';
+  const manifest = JSON.parse(readFileSync(base + 'manifest.json', 'utf8'));
+  const library = lstatSync(base + 'native-vnc-diagnostics.so');
+  if (!library.isFile() || library.isSymbolicLink()) throw new Error();
+  const expected = JSON.parse(readFileSync('qa/native-vnc-diagnostics-builder.json', 'utf8')).builderImageId;
+  console.log(validateBuild(manifest, expected, hash('qa/native-vnc-diagnostics.c'),
+    hash(base + 'native-vnc-diagnostics.so')));
+} catch { console.error('LOCAL_VIEW_NATIVE_DIAGNOSTIC_BUILD_REQUIRED'); process.exit(2); }
+JS
+  )
+fi
 node scripts/build-web.mjs
 ./scripts/maven.sh -B -q -f gateway/pom.xml test-compile dependency:build-classpath -Dmdep.outputFile=target/test-classpath.txt -Dmdep.includeScope=test
 mkdir -p .tools
@@ -67,7 +88,14 @@ openssl req -x509 -newkey rsa:2048 -nodes -keyout "$pilot_dir/key.pem" -out "$pi
 # One Node timer owns the 60-second runtime bound; no orphaned sleep subprocess.
 node -e 'setTimeout(() => process.kill(Number(process.argv[1]), "SIGTERM"), 60000)' "$$" &
 deadline_pid=$!
-docker_local run -d --name "$container_name" --pull never --log-driver none --read-only --cap-drop ALL --security-opt no-new-privileges:true --pids-limit 64 --memory 256m --tmpfs /tmp:uid=10001,gid=10001,mode=0700,noexec,nosuid,size=32m -p 127.0.0.1::4822 "$actual_image" -f -b 0.0.0.0 -l 4822 -p /tmp/guacd.pid -L error >/dev/null
+set -- --name "$container_name" --pull never --log-driver none --read-only --cap-drop ALL --security-opt no-new-privileges:true --pids-limit 64 --memory 256m --tmpfs /tmp:uid=10001,gid=10001,mode=0700,noexec,nosuid,size=32m -p 127.0.0.1::4822
+if [ "$native_diagnostics" = true ]; then
+  set -- "$@" --mount "type=bind,src=$root/.tools/native-vnc-diagnostics/native-vnc-diagnostics.so,dst=/rdg-native-vnc-diagnostics.so,readonly" --env LD_PRELOAD=/rdg-native-vnc-diagnostics.so --env RDG_NATIVE_VNC_DIAGNOSTICS_TO_FILE=true
+fi
+pilot_run_id=$(basename "$pilot_dir")
+export RDG_LOCAL_VIEW_RUN_ID="$pilot_run_id"
+export RDG_LOCAL_VIEW_NATIVE_DIAGNOSTICS="$native_diagnostics"
+docker_local run -d "$@" "$actual_image" -f -b 0.0.0.0 -l 4822 -p /tmp/guacd.pid -L error >/dev/null
 bind_ip=$(docker_local inspect "$container_name" --format '{{(index (index .NetworkSettings.Ports "4822/tcp") 0).HostIp}}')
 guacd_port=$(docker_local inspect "$container_name" --format '{{(index (index .NetworkSettings.Ports "4822/tcp") 0).HostPort}}')
 [ "$bind_ip" = 127.0.0.1 ] || { printf '%s\n' 'LOCAL_VIEW_BIND_REFUSED' >&2; exit 2; }
@@ -113,5 +141,11 @@ export RDG_LOCAL_VIEW_URL=https://127.0.0.1:32122
 export RDG_LOCAL_VIEW_GUACD_IMAGE_ID="$actual_image"
 node qa/local-mac-view.mjs &
 browser_pid=$!
-wait "$browser_pid"
+if wait "$browser_pid"; then browser_status=0; else browser_status=$?; fi
 browser_pid=
+if [ "$native_diagnostics" = true ]; then
+  # Read only the fixed-label tmpfs file while this daemon still exists; never attach raw logs.
+  node qa/native-vnc-diagnostics.mjs capture "$pilot_dir/native-diagnostics.json" - "$pilot_run_id" "$native_library_sha" "$local_docker_host" "$container_name"
+  node qa/native-vnc-diagnostics.mjs merge "$pilot_dir/native-diagnostics.json" "${RDG_LOCAL_VIEW_OUTPUT:-qa/implementation/local-mac-view-results.json}" "$pilot_run_id" "$native_library_sha"
+fi
+exit "$browser_status"
