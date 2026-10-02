@@ -1,0 +1,10 @@
+.tools/
+node_modules/
+gateway/target/
+web/dist/
+.env
+.env.*
+!.env.example
+*.sqlite*
+*.log
+qa/implementation/runtime/
