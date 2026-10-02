@@ -34,6 +34,7 @@ See [deployment/README.md](deployment/README.md). Startup refuses missing/placeh
 ```sh
 docker build --platform linux/arm64 -t rdg-gateway:reviewed .
 RDG_TEST_IMAGE=rdg-gateway:reviewed npm run test:container
+RDG_TEST_IMAGE=rdg-gateway:reviewed npm run test:official-guacd
 ```
 
 The pinned JRE and official guacd index support ARM64. No deployment, Tunnel/Access policy, Screen Sharing, firewall or existing host service was changed by implementation. `deployment/compose.blueprint.yaml` remains an operator-filled, approval-gated template; it publishes only gateway port 32120 on loopback and never guacd/VNC.

@@ -45,6 +45,15 @@ class SessionsTest {
     @Test void connectingDeadlineAndLateResourceCleanup() throws Exception {
         var d=s.begin(app,intent("control").id);time.advance(10);s.tick();assertTrue(d.ended.get());var closed=new java.util.concurrent.atomic.AtomicBoolean();assertThrows(Failure.class,()->d.pending(()->closed.set(true)));assertTrue(closed.get());
     }
+    @Test void browserIsOwnedAndClosedDuringUpstreamHandshakeDeadline() throws Exception {
+        var desktop=s.begin(app,intent("control").id);var closed=new java.util.concurrent.atomic.AtomicBoolean();
+        var browser=(javax.websocket.Session)java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{javax.websocket.Session.class},(proxy,method,args)->{
+            if(method.getName().equals("isOpen"))return !closed.get();
+            if(method.getName().equals("close")){closed.set(true);return null;}
+            throw new UnsupportedOperationException();
+        });
+        desktop.attachBrowser(browser);time.advance(10);s.tick();assertTrue(closed.get());assertTrue(desktop.ended.get());
+    }
     @Test void viewOnlyRawInputAndClipboardLimits() {
         var view=s.begin(app,intent("view").id);var policy=new InputPolicy(view);
         for(String op:List.of("key","mouse","clipboard","blob","end","select","connect","file"))assertThrows(Failure.class,()->policy.validate(new org.apache.guacamole.protocol.GuacamoleInstruction(op,"0","1")));

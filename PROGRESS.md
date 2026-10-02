@@ -27,10 +27,11 @@ The routed investigation/architecture/verification module files were absent; cor
 ## Verification
 
 - Node: 84 PASS, including the original unchanged 74 reference tests, 9 input tests and 1 atomic-artifact test.
-- Java: 29 PASS, no failures/errors/skips; production classes with signed identity and disposable protocol fixtures, including actual HTTP/WebSocket upgrades and live two-end teardown.
+- Java: 32 PASS, no failures/errors/skips; production classes with signed identity and disposable protocol fixtures, including actual HTTP/WebSocket upgrades and live two-end teardown.
 - Browser: 11 PASS, 0 JavaScript errors and 0 unexpected console errors; expected offline fetch errors are recorded separately.
 - Backup/restore: 3 PASS, including wrong-node/symlink/permission rejection.
 - ARM64 container: pinned build PASS; read-only/non-root/noexec runtime initializes SQLite, responds to health, rejects missing JWT with HTTP 401 and refuses missing configuration. No published port or target connection.
+- Official guacd 1.6.0: native VNC argument contract and unreachable-target control/view cleanup PASS in a network-none container namespace. No real VNC desktop or Mac. The test exposed and fixed pre-handshake browser ownership and terminal error/disconnect cleanup.
 - Runtime lock: 11 Maven JARs, extracted SQLite libraries and official Guacamole browser asset digests verified. Public-coordinate OSV query returned no advisories; this is not an OS image scan or blanket safety guarantee.
 - Compose template parses with fictional operator settings. It has not been deployed.
 - Historical handoff integrity: FAIL on untouched main because `MANIFEST.sha256` refers to a missing `.gitignore`; preserved and disclosed rather than concealed.

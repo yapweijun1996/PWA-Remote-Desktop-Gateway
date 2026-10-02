@@ -22,7 +22,8 @@ public final class DesktopEndpoint extends Endpoint {
             ws.setMaxTextMessageBufferSize(49152);
             ws.getUserProperties().put("org.apache.tomcat.websocket.BLOCKING_SEND_TIMEOUT",5000L);
             desktop=sessions.upgrade(ws.getPathParameters().get("intentId"));policy=new InputPolicy(desktop);
-            desktop.checkActive();tunnel=connector.open(desktop);
+            // The session must own the browser even if upstream negotiation fails or times out.
+            desktop.attachBrowser(ws);desktop.checkActive();tunnel=connector.open(desktop);
             try{desktop.checkActive();desktop.attach(tunnel,ws);}catch(Exception e){tunnel.close();throw e;}
             sessions.audit.record(desktop.app.ref,"CONNECT","AUTHORIZED");
             ws.addMessageHandler(String.class,this::onMessage);
@@ -34,10 +35,13 @@ public final class DesktopEndpoint extends Endpoint {
         var reader=tunnel.acquireReader();
         try {
             send(new GuacamoleInstruction("",tunnel.getUUID().toString()).toString());
-            StringBuilder buffer=new StringBuilder(8192);char[] next;
-            while(!desktop.ended.get() && (next=reader.read())!=null) {
-                buffer.append(next);
-                if(!reader.available() || buffer.length()>=8192){send(buffer.toString());buffer.setLength(0);}
+            StringBuilder buffer=new StringBuilder(8192);GuacamoleInstruction next;
+            while(!desktop.ended.get() && (next=reader.readInstruction())!=null) {
+                buffer.append(next.toString());
+                boolean terminal=next.getOpcode().equals("error")||next.getOpcode().equals("disconnect");
+                if(terminal || !reader.available() || buffer.length()>=8192){send(buffer.toString());buffer.setLength(0);}
+                // guacd may keep the socket open waiting for a non-responsive client after failure.
+                if(terminal){finish(next.getOpcode().equals("error")?"TARGET_UNAVAILABLE":"DISCONNECTED");return;}
             }
         }catch(Exception e){/* Close races and upstream errors share a bounded, payload-free reason. */}
         finally{tunnel.releaseReader();finish("DISCONNECTED");}
@@ -68,7 +72,7 @@ public final class DesktopEndpoint extends Endpoint {
     }
     private void finish(String reason) {
         if(desktop!=null)desktop.end(reason);
-        else if(browser!=null)try{browser.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY,reason));}catch(Exception ignored){}
+        if(browser!=null&&browser.isOpen())try{browser.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY,reason));}catch(Exception ignored){}
     }
     @Override public void onClose(Session ws,CloseReason reason){finish("DISCONNECTED");}
     @Override public void onError(Session ws,Throwable error){finish("TRANSPORT_ERROR");}

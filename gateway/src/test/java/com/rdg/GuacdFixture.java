@@ -16,6 +16,7 @@ final class GuacdFixture implements AutoCloseable {
     final List<Socket> sockets=new CopyOnWriteArrayList<>();
     final AtomicInteger connections=new AtomicInteger(),closed=new AtomicInteger(),keys=new AtomicInteger();
     volatile Map<String,String> parameters=Map.of();
+    volatile boolean terminalError;
     GuacdFixture() throws Exception {workers.submit(()->{while(!server.isClosed())try{Socket socket=server.accept();sockets.add(socket);connections.incrementAndGet();workers.submit(()->serve(socket));}catch(IOException ignored){}});}
     void serve(Socket socket) {
         try(socket){
@@ -26,7 +27,8 @@ final class GuacdFixture implements AutoCloseable {
             GuacamoleInstruction i;while(!(i=reader.readInstruction()).getOpcode().equals("connect")){}
             Map<String,String> map=new HashMap<>();for(int n=0;n<names.length;n++)map.put(names[n],i.getArgs().get(n));parameters=Map.copyOf(map);
             writer.writeInstruction(new GuacamoleInstruction("ready","fixture-upstream"));
-            writer.writeInstruction(new GuacamoleInstruction("size","0","640","480"));writer.writeInstruction(new GuacamoleInstruction("sync","0"));
+            if(terminalError){writer.writeInstruction(new GuacamoleInstruction("error","Disposable target unavailable","512"));writer.writeInstruction(new GuacamoleInstruction("disconnect"));}
+            else{writer.writeInstruction(new GuacamoleInstruction("size","0","640","480"));writer.writeInstruction(new GuacamoleInstruction("sync","0"));}
             workers.submit(()->{while(!socket.isClosed())try{Thread.sleep(1000);writer.writeInstruction(new GuacamoleInstruction("sync",Long.toString(System.currentTimeMillis())));}catch(Exception e){break;}});
             while((i=reader.readInstruction())!=null){if(i.getOpcode().equals("key"))keys.incrementAndGet();}
         }catch(Exception ignored){}finally{closed.incrementAndGet();}

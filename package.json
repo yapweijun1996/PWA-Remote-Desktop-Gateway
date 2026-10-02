@@ -19,6 +19,7 @@
     "test:backup": "python3 qa/test-metadata-backup.py",
     "verify:dependencies": "node scripts/verify-dependencies.mjs",
     "test:container": "./qa/test-container.sh",
-    "verify:artifacts": "node scripts/verify-artifacts.mjs"
+    "verify:artifacts": "node scripts/verify-artifacts.mjs",
+    "test:official-guacd": "./qa/test-official-guacd.sh"
   }
 }

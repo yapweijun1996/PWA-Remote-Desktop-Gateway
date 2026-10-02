@@ -50,6 +50,10 @@ final class Sessions implements AutoCloseable {
         synchronized void pending(AutoCloseable resource) throws Exception {
             if(ended.get()) {resource.close();throw new Failure(401,"SESSION_EXPIRED");}pending=resource;
         }
+        synchronized void attachBrowser(Session ws) throws Exception {
+            if(ended.get()){ws.close();throw new Failure(401,"SESSION_EXPIRED");}
+            socket=ws;
+        }
         synchronized void attach(GuacamoleTunnel t,Session ws) throws Exception {
             if(ended.get()){t.close();ws.close();throw new Failure(401,"SESSION_EXPIRED");}
             tunnel=t;socket=ws;pending=null;

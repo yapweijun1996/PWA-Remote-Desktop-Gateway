@@ -21,9 +21,12 @@ final class Fixtures {
         void advance(long seconds){now=now.plusSeconds(seconds);nano.addAndGet(seconds*1_000_000_000L);}
     }
     static Config config(Path dir,int guacdPort,String origin) throws Exception {
+        return config(dir,guacdPort,origin,Files.isDirectory(Path.of("web/dist"))?Path.of("web/dist"):Path.of("../web/dist"));
+    }
+    static Config config(Path dir,int guacdPort,String origin,Path web) throws Exception {
         Files.createDirectories(dir);Path secret=dir.resolve("fixture-secret");Files.writeString(secret,"fixture-only-password");Files.setPosixFilePermissions(secret,PosixFilePermissions.fromString("rw-------"));
         return new Config("fixture-node",origin,"https://fixture-team.cloudflareaccess.com","a".repeat(64),"owner@fixture.test","",
-            "fixture-mac","Disposable protocol fixture","127.0.0.1",5900,secret,"127.0.0.1",guacdPort,"127.0.0.1",0,dir.resolve("state"),(Files.isDirectory(Path.of("web/dist"))?Path.of("web/dist"):Path.of("../web/dist")),
+            "fixture-mac","Disposable protocol fixture","127.0.0.1",5900,secret,"127.0.0.1",guacdPort,"127.0.0.1",0,dir.resolve("state"),web,
             Config.JSON.createArrayNode(),Map.of("CommandLeft",0xffe7,"CommandRight",0xffe8,"OptionLeft",0xffe9,"OptionRight",0xffea,"ControlLeft",0xffe3,"ControlRight",0xffe4));
     }
     static RSAKey key(String kid) throws Exception{return new RSAKeyGenerator(2048).keyID(kid).generate();}

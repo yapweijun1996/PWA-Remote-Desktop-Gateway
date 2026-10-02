@@ -63,6 +63,23 @@ class GatewayIntegrationTest {
         assertEquals("true",upstream.parameters.get("read-only"));assertEquals("true",upstream.parameters.get("disable-paste"));
         live.sendText("3.key,2.99,1.1;",true).get(4,TimeUnit.SECONDS);until(()->upstream.closed.get()==1);assertEquals(0,upstream.keys.get());
     }
+    @Test void unavailableUpstreamClosesBrowserBeforeHandshakeAndReleasesLease() throws Exception {
+        upstream.close();
+        var live=ws(intent("control"),token,cookie,c.origin()).get(4,TimeUnit.SECONDS);
+        until(live::isInputClosed);
+        var status=request("GET","/api/session",null,token,cookie,null,null);
+        assertEquals(200,status.statusCode());var body=Config.JSON.readTree(status.body());
+        assertFalse(body.path("activeDesktop").booleanValue());assertEquals(0,body.path("nodeActiveDesktops").intValue());
+        assertNotNull(intent("control"));assertEquals(0,upstream.connections.get());
+    }
+    @Test void terminalUpstreamErrorClosesNonResponsiveBrowserAndUpstream() throws Exception {
+        upstream.terminalError=true;
+        var live=ws(intent("control"),token,cookie,c.origin()).get(4,TimeUnit.SECONDS);
+        until(()->live.isInputClosed()&&upstream.closed.get()==1);
+        var body=Config.JSON.readTree(request("GET","/api/session",null,token,cookie,null,null).body());
+        assertFalse(body.path("activeDesktop").booleanValue());assertEquals(0,body.path("nodeActiveDesktops").intValue());
+        assertEquals(0,upstream.keys.get());assertNotNull(intent("control"));
+    }
     @Test void liveIdleExpiryClosesBrowserAndUpstreamDespiteHeartbeat() throws Exception {
         var live=ws(intent("control"),token,cookie,c.origin()).get(4,TimeUnit.SECONDS);until(()->upstream.parameters.containsKey("read-only"));
         live.sendText("0.,4.ping,1.1;",true).get(4,TimeUnit.SECONDS);time.advance(901);
