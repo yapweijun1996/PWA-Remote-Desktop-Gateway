@@ -1,0 +1,31 @@
+{
+  "version": "0.75.0",
+  "archive": "trivy_0.75.0_macOS-ARM64.tar.gz",
+  "archiveSha256": "4a77108cccf8e55c8d6823e1e759939a622277e66cd0daa3c1fc621ed69e4568",
+  "release": "https://github.com/aquasecurity/trivy/releases/tag/v0.75.0",
+  "attestationVerification": {
+    "command": "gh attestation verify <archive> --repo aquasecurity/trivy --source-ref refs/tags/v0.75.0 --deny-self-hosted-runners --format json",
+    "result": "PASS",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "sourceRepository": "https://github.com/aquasecurity/trivy",
+    "sourceRef": "refs/tags/v0.75.0",
+    "sourceCommit": "591e9799316a602e703f0b484f6c6d7b234ec8f3",
+    "workflow": "https://github.com/aquasecurity/trivy/.github/workflows/reusable-release.yaml@refs/tags/v0.75.0",
+    "runnerEnvironment": "github-hosted",
+    "invocation": "https://github.com/aquasecurity/trivy/actions/runs/36864475133/attempts/1",
+    "verifiedTimestamps": [
+      {
+        "type": "Tlog",
+        "uri": "https://rekor.sigstore.dev",
+        "timestamp": "2026-10-01T21:34:16+08:00"
+      }
+    ],
+    "subject": {
+      "name": "trivy_0.75.0_macOS-ARM64.tar.gz",
+      "digest": {
+        "sha256": "4a77108cccf8e55c8d6823e1e759939a622277e66cd0daa3c1fc621ed69e4568"
+      }
+    }
+  },
+  "isolation": "Repository-local scanner, private HOME/cache and minimal environment; local Docker image source only, vuln scanner only, no registry fallback or image upload."
+}

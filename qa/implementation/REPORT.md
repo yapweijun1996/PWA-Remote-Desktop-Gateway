@@ -1,6 +1,6 @@
 # Local implementation acceptance report
 
-Recorded: 2026-10-03, Asia/Singapore (UTC+08:00). Source revision: `e366e91dffb981f2b522985cf371aed5eacf4199` on `codex/production-gateway`. Evidence is committed separately. Original `main` remains unchanged at `d0ce352b7ad76e6b427f68488c40346d0601d491`.
+Recorded: 2026-10-03, Asia/Singapore (UTC+08:00). Source revision: `eefe203ec075dbf4581c6751448065c4fed5c052` on `codex/production-gateway`. Evidence is committed separately. Original `main` remains unchanged at `d0ce352b7ad76e6b427f68488c40346d0601d491`.
 
 **Result: the local implementation is built and tested; real-Mac/public release is BLOCKED.** The delivered code includes the Java gateway, vanilla JavaScript PWA, official Guacamole integration, security tests, pinned runtime artifacts, ARM64 image, protected metadata backup and deployment/recovery instructions. No actual target Mac, Cloudflare account/policy, Tunnel, host permission, firewall, Screen Sharing, reboot or existing service was changed. Nothing was pushed or publicly published. This report contains implementer verification; no independent reviewer sign-off is claimed.
 
@@ -13,8 +13,10 @@ Recorded: 2026-10-03, Asia/Singapore (UTC+08:00). Source revision: `e366e91dffb9
 | Production UI in Chromium | PASS: 11 scenarios | [browser-results.json](browser-results.json); Chromium 153.0.8010.12 / Playwright 1.62.1 on macOS; 0 JavaScript errors, 0 unexpected console errors, 3 expected offline fetch errors |
 | Metadata backup/restore | PASS: 3 tests | [backup-tests.txt](backup-tests.txt); disposable SQLite data, node binding, owner-only files, symlink and unsafe-directory rejection |
 | Linux ARM64 image | PASS | [container-tests.txt](container-tests.txt); non-root, read-only root, noexec tmpfs, dropped capabilities, SQLite initialization, health, missing-JWT HTTP 401 and missing-config startup refusal; no network/ports or real VNC connection |
-| Actual official guacd failure path | PASS: 3 checks | [official-guacd-tests.txt](official-guacd-tests.txt); native VNC argument contract, control and view requests close after unreachable-target failure; no real VNC desktop or Mac |
-| Dependency/build identity | PASS | [artifacts.json](artifacts.json), runtime lock and vendor provenance; 142 source/output digests verified; 11 runtime JARs, extracted SQLite natives and official browser artifact verified |
+| Actual official-source guacd failure path | PASS: 4 checks | [official-guacd-tests.txt](official-guacd-tests.txt); native VNC argument contract, control/view requests close after unreachable-target failure and non-root/VNC-only Ubuntu 24.04 inventory; no real VNC desktop or Mac |
+| Dependency/build identity | PASS | [artifacts.json](artifacts.json), runtime lock and vendor provenance; 168 source/output/evidence digests verified; 11 runtime JARs, SQLite natives, official browser artifact and 393 Ubuntu package records in six locks verified |
+| OS package digest refusal | PASS: 1 negative check | [os-package-lock-tests.txt](os-package-lock-tests.txt); mutated package digest refuses installation before changing the original libssl3 |
+| Local ARM64 OS/JAR scan | COMPLETED; remaining findings retained | [image-scan.json](image-scan.json); gateway 13 Medium/16 Low, guacd 12 Medium/6 Low; no Ubuntu-priority High/Critical or fixed-version rows; some Medium priorities have High CVSS scores |
 | Historical handoff manifest | FAIL | Untouched-main `npm run verify` returns `Missing/unreadable: .gitignore`; original archive manifest is preserved |
 | Real Mac/official guacd VNC interoperability | BLOCKED | No approved actual target or separate protected VNC credential/calibration record |
 | Windows/macOS controller and Safari/iOS PWA acceptance | BLOCKED | Actual required controller/target combinations, physical layouts and installation/recovery tests unavailable |
@@ -41,14 +43,15 @@ Only harmless protocol fixtures appear in these screenshots:
 
 - Gateway JAR SHA256: `cbdb8badd531447d83bc38d8cca47445b6f30b95f0a63d0681875a986c2f2bfd`.
 - Web build: `37d1363d197142d5`. Per-file output/source hashes are in `artifacts.json`.
-- Local image/index ID: `sha256:e2e995ed4b377ad7fde8e2d84741bc83bf8e7816b6362ecec4ae1575bd2e7f15`; Linux ARM64. Local tag is a convenience only; it was not published.
-- Gateway image manifest: `sha256:51986e6e50d2305f3e0827d06ae27452f7c9d86045f571e8dbd2b60e054f56d4`.
+- Local image/index ID: `sha256:f1994501e0d375c16c7e6c3993b6c60de2cabcc5a6126ca8e8ca3218caa34ca1`; Linux ARM64. Local tag is a convenience only; it was not published.
+- Gateway image manifest: `sha256:33e9850d94ba9b6b0ceb38dc2b6ca4ab177e1cbfbced6ec3709a8665947aa42d`.
+- Official-source guacd local image/index ID: `sha256:9c9e8ccb80846b90fbcdde0113ea3310695a6a871f3ddd260b38c58b4c5a36eb`; manifest `sha256:a428fe766df1009d1069b21af58faa8fce7673f01cb513e993e9077441ae9a01`, Ubuntu 24.04 ARM64, VNC-only, unpublished.
 - Guacamole Java/JS/guacd 1.6.0; Tomcat 9.0.122; build JDK 17.0.17; container Temurin 17.0.20.1+1; Maven 3.9.16; Node 23.10.0 / npm 10.9.2; Docker daemon 28.3.0.
 - Development computer only: macOS 26.6.2 (25G83), Darwin ARM64. It was not designated as a deployment target.
 
 Production JAR inspection found no test/fixture/debug classes. The production image contains the production JAR/assets and the pinned SQLite native library; fixture edge/protocol code stays on the test classpath. The Compose blueprint parses with fictional operator settings but has not been deployed.
 
-Official Guacamole Java and JavaScript artifacts were signature-checked against the [Apache release signing keys](https://downloads.apache.org/guacamole/KEYS), fingerprint recorded in [vendor provenance](../../web/vendor/provenance.json); no independent Web-of-Trust certification is claimed. Runtime coordinates and SHA256 values are in [dependencies.lock.json](../../gateway/dependencies.lock.json). The public-coordinate OSV query returned no advisories for those 11 dependencies; [dependency-advisories.json](dependency-advisories.json) is not a container OS vulnerability scan or proof of absence of vulnerabilities. Recheck maintained vendor advisories and OS packages before a public pilot.
+Official Guacamole Java and JavaScript artifacts were signature-checked against the [Apache release signing keys](https://downloads.apache.org/guacamole/KEYS), fingerprint recorded in [vendor provenance](../../web/vendor/provenance.json); no independent Web-of-Trust certification is claimed. Runtime coordinates and SHA256 values are in [dependencies.lock.json](../../gateway/dependencies.lock.json). The public-coordinate OSV query returned no advisories for those 11 dependencies; [dependency-advisories.json](dependency-advisories.json) is not a container OS vulnerability scan or proof of absence of vulnerabilities. The image OS scan and remaining vendor issues are recorded below; recheck before a public pilot.
 
 ## Reproduce and inspect
 
@@ -62,6 +65,8 @@ npm run test:backup
 npm run verify:dependencies
 npm run test:browser
 docker build --platform linux/arm64 -t rdg-gateway:local-verified .
+docker build --platform linux/arm64 -f deployment/Guacd.Dockerfile -t rdg-guacd:local-verified .
+npm run test:os-lock
 npm run test:container
 npm run test:official-guacd
 npm run verify:artifacts
@@ -75,11 +80,15 @@ The browser check requires an existing Playwright library and Chromium executabl
 
 The read-only ARM64 image initially refused startup because SQLite JDBC tried loading a native library from noexec tmpfs. The fixed image selects a digest-checked native library from immutable `/app/lib`, preserving non-root/read-only/noexec restrictions. Container regression passed. [ADR-009](../../docs/17_IMPLEMENTATION_AND_OPERATIONS.md) records the decision; AMD64 execution remains unverified.
 
-An additional official-daemon regression exposed two transport cleanup gaps. The browser is now registered with the session before upstream negotiation, and upstream `error`/`disconnect` instructions cause server-owned teardown even when the browser ignores them. Three added Java regressions and the real pinned guacd failure-path check passed; no Mac compatibility is inferred.
+An additional official-daemon regression exposed two transport cleanup gaps. The browser is now registered with the session before upstream negotiation, and upstream `error`/`disconnect` instructions cause server-owned teardown even when the browser ignores them. Three added Java regressions and the real guacd failure-path check passed; the check was repeated successfully against the supported-OS official-source build. No Mac compatibility is inferred.
 
 Other local regressions fixed during implementation include the official sample endpoint's close/send race, Guacamole's empty `?` WebSocket query interoperability, same-cookie second-tab bootstrap revocation, first-worker prompt timing, modifier alias refcounts/composition release, and wrapped mobile headers overflowing the workspace. Final relevant checks passed; none establish real-target compatibility.
 
-P0 remaining: approved actual-Mac identity/runtime and protected credential custody; successful official guacd-to-Screen-Sharing authentication; six modifier calibrations; LAN/IPv6 isolation; exact real Access/owner policy; actual supported-browser/controller paths; and image OS advisory review. P1 remaining: Chinese/dead-key/emoji path, retina pointer/clipboard behavior, actual PWA installation/update/recovery, second-node independence, external-network harmless editor tasks, measured performance and owner-approved rollback/recovery. No FPS/latency claim is made.
+The OS audit additionally found six OpenSSL package findings in the pinned JRE base, including CVE-2026-84782. The digest-locked Ubuntu libssl3 3.0.2-0ubuntu1.30 patch resolved all six. The published guacd image uses unsupported Alpine 3.18.12; an unchanged signature-verified Apache 1.6.0 source build now supplies only VNC on pinned Ubuntu 24.04. The final daemon passed its native argument/failure cleanup and non-root/VNC-only inventory checks. [ADR-010](../../docs/17_IMPLEMENTATION_AND_OPERATIONS.md) records the packaging decision.
+
+[Trivy source/attestation receipt](scanner-provenance.json), [gateway raw scan](gateway-image-trivy.json), [guacd raw scan](guacd-image-trivy.json) and [summary](image-scan.json) retain exact image IDs, database dates and every finding. Scans used only local image access in a minimal environment; nothing was uploaded. Final Ubuntu-priority High/Critical and fixed-version counts are zero, with 29 gateway and 18 guacd Medium/Low package-CVE instances still present. Ubuntu lists some unresolved/deferred fixes, and some Medium priorities have High CVSS scores. This is a limited package inventory/advisory check, not exploitability certification or a public-release pass. No findings were suppressed. Docker Scout required account login and produced no report; the local Trivy fallback completed.
+
+P0 remaining: approved actual-Mac identity/runtime and protected credential custody; successful official guacd-to-Screen-Sharing authentication; six modifier calibrations; LAN/IPv6 isolation; exact real Access/owner policy; actual supported-browser/controller paths; and resolution/assessment of remaining vendor advisories before a public pilot. P1 remaining: Chinese/dead-key/emoji path, retina pointer/clipboard behavior, actual PWA installation/update/recovery, second-node independence, external-network harmless editor tasks, measured performance and owner-approved rollback/recovery. No FPS/latency claim is made.
 
 ## Next authorized boundary
 

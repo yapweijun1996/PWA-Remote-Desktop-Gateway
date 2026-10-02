@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-02T16:52:19.269Z",
+  "scope": "Local Linux ARM64 images and installed OS/JAR package inventory only. Native guacd version/source manually matched to Apache release/security records. No real Mac or public pilot acceptance.",
+  "scanner": "Trivy 0.75.0; source receipt in scanner-provenance.json",
+  "database": {
+    "vulnerability": {
+      "Version": 2,
+      "NextUpdate": "2026-10-03T12:48:00.080864987Z",
+      "UpdatedAt": "2026-10-02T12:48:00.080865328Z",
+      "DownloadedAt": "2026-10-02T16:33:00.599247Z"
+    },
+    "java": {
+      "Version": 1,
+      "NextUpdate": "2026-10-05T01:07:57.270062509Z",
+      "UpdatedAt": "2026-10-02T01:07:57.270062659Z",
+      "DownloadedAt": "2026-10-02T16:34:24.987145Z"
+    }
+  },
+  "remediation": {
+    "gateway": "Pinned Ubuntu libssl3 3.0.2-0ubuntu1.30 fixes six detected OpenSSL instances including CVE-2026-84782 (USN-8847-1). Exact arm64/amd64 DEB digests in deployment/deb-locks.",
+    "guacd": "Official published image used unsupported Alpine 3.18.12 and is excluded from deployment defaults. Same signed Apache 1.6.0 source is locally built VNC-only on pinned Ubuntu 24.04 with locked runtime packages; non-root/read-only failure-path checks pass."
+  },
+  "images": [
+    {
+      "report": "gateway-image-trivy.json",
+      "reportSha256": "2dbe8b3ebc7d6f20dfceefd526674fb28ee5298f590dd9d0a0d56e58d61e0c12",
+      "createdAt": "2026-10-03T00:46:39.756294+08:00",
+      "imageId": "sha256:f1994501e0d375c16c7e6c3993b6c60de2cabcc5a6126ca8e8ca3218caa34ca1",
+      "os": {
+        "Family": "ubuntu",
+        "Name": "22.04"
+      },
+      "packageInventory": [
+        {
+          "type": "ubuntu",
+          "packages": 143,
+          "findings": 29
+        },
+        {
+          "type": "jar",
+          "packages": 11,
+          "findings": 0
+        }
+      ],
+      "severities": {
+        "CRITICAL": 0,
+        "HIGH": 0,
+        "MEDIUM": 13,
+        "LOW": 16,
+        "UNKNOWN": 0
+      },
+      "fixable": 0,
+      "findings": [
+        {
+          "id": "CVE-2022-27943",
+          "package": "gcc-12-base",
+          "installed": "12.3.0-1ubuntu1~22.04.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-27943"
+        },
+        {
+          "id": "CVE-2026-18374",
+          "package": "libc-bin",
+          "installed": "2.35-0ubuntu3.15",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18374"
+        },
+        {
+          "id": "CVE-2026-89092",
+          "package": "libc-bin",
+          "installed": "2.35-0ubuntu3.15",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-89092"
+        },
+        {
+          "id": "CVE-2026-18374",
+          "package": "libc6",
+          "installed": "2.35-0ubuntu3.15",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18374"
+        },
+        {
+          "id": "CVE-2026-89092",
+          "package": "libc6",
+          "installed": "2.35-0ubuntu3.15",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-89092"
+        },
+        {
+          "id": "CVE-2025-66382",
+          "package": "libexpat1",
+          "installed": "2.4.7-1ubuntu0.9",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-66382"
+        },
+        {
+          "id": "CVE-2022-27943",
+          "package": "libgcc-s1",
+          "installed": "12.3.0-1ubuntu1~22.04.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-27943"
+        },
+        {
+          "id": "CVE-2023-50495",
+          "package": "libncurses6",
+          "installed": "6.3-2ubuntu0.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-50495"
+        },
+        {
+          "id": "CVE-2023-50495",
+          "package": "libncursesw6",
+          "installed": "6.3-2ubuntu0.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-50495"
+        },
+        {
+          "id": "CVE-2026-86145",
+          "package": "libpcre2-8-0",
+          "installed": "10.39-3ubuntu0.1",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-86145"
+        },
+        {
+          "id": "CVE-2026-89161",
+          "package": "libpcre2-8-0",
+          "installed": "10.39-3ubuntu0.1",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-89161"
+        },
+        {
+          "id": "CVE-2022-41409",
+          "package": "libpcre2-8-0",
+          "installed": "10.39-3ubuntu0.1",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-41409"
+        },
+        {
+          "id": "CVE-2022-27943",
+          "package": "libstdc++6",
+          "installed": "12.3.0-1ubuntu1~22.04.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-27943"
+        },
+        {
+          "id": "CVE-2026-40228",
+          "package": "libsystemd0",
+          "installed": "249.11-0ubuntu3.22",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-40228"
+        },
+        {
+          "id": "CVE-2023-50495",
+          "package": "libtinfo6",
+          "installed": "6.3-2ubuntu0.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-50495"
+        },
+        {
+          "id": "CVE-2026-40228",
+          "package": "libudev1",
+          "installed": "249.11-0ubuntu3.22",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-40228"
+        },
+        {
+          "id": "CVE-2022-4899",
+          "package": "libzstd1",
+          "installed": "1.4.8+dfsg-3build1",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-4899"
+        },
+        {
+          "id": "CVE-2026-18374",
+          "package": "locales",
+          "installed": "2.35-0ubuntu3.15",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18374"
+        },
+        {
+          "id": "CVE-2026-89092",
+          "package": "locales",
+          "installed": "2.35-0ubuntu3.15",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-89092"
+        },
+        {
+          "id": "CVE-2023-29383",
+          "package": "login",
+          "installed": "1:4.8.1-2ubuntu2.2",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-29383"
+        },
+        {
+          "id": "CVE-2024-56433",
+          "package": "login",
+          "installed": "1:4.8.1-2ubuntu2.2",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-56433"
+        },
+        {
+          "id": "CVE-2023-50495",
+          "package": "ncurses-base",
+          "installed": "6.3-2ubuntu0.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-50495"
+        },
+        {
+          "id": "CVE-2023-50495",
+          "package": "ncurses-bin",
+          "installed": "6.3-2ubuntu0.3",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-50495"
+        },
+        {
+          "id": "CVE-2023-29383",
+          "package": "passwd",
+          "installed": "1:4.8.1-2ubuntu2.2",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-29383"
+        },
+        {
+          "id": "CVE-2024-56433",
+          "package": "passwd",
+          "installed": "1:4.8.1-2ubuntu2.2",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-56433"
+        },
+        {
+          "id": "CVE-2026-18477",
+          "package": "tar",
+          "installed": "1.34+dfsg-1ubuntu0.1.22.04.6",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18477"
+        },
+        {
+          "id": "CVE-2026-18508",
+          "package": "tar",
+          "installed": "1.34+dfsg-1ubuntu0.1.22.04.6",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18508"
+        },
+        {
+          "id": "CVE-2021-31879",
+          "package": "wget",
+          "installed": "1.21.2-2ubuntu1.5",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2021-31879"
+        },
+        {
+          "id": "CVE-2026-85091",
+          "package": "zlib1g",
+          "installed": "1:1.2.11.dfsg-2ubuntu9.2",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-85091"
+        }
+      ]
+    },
+    {
+      "report": "guacd-image-trivy.json",
+      "reportSha256": "22583651b22e8da0af70076fecbdd5dce8bf66f2a84083bdf23b798e5055bc38",
+      "createdAt": "2026-10-03T00:47:21.535346+08:00",
+      "imageId": "sha256:9c9e8ccb80846b90fbcdde0113ea3310695a6a871f3ddd260b38c58b4c5a36eb",
+      "os": {
+        "Family": "ubuntu",
+        "Name": "24.04"
+      },
+      "packageInventory": [
+        {
+          "type": "ubuntu",
+          "packages": 123,
+          "findings": 18
+        }
+      ],
+      "severities": {
+        "CRITICAL": 0,
+        "HIGH": 0,
+        "MEDIUM": 12,
+        "LOW": 6,
+        "UNKNOWN": 0
+      },
+      "fixable": 0,
+      "findings": [
+        {
+          "id": "CVE-2026-18374",
+          "package": "libc-bin",
+          "installed": "2.39-0ubuntu8.9",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18374"
+        },
+        {
+          "id": "CVE-2026-89092",
+          "package": "libc-bin",
+          "installed": "2.39-0ubuntu8.9",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-89092"
+        },
+        {
+          "id": "CVE-2026-18374",
+          "package": "libc6",
+          "installed": "2.39-0ubuntu8.9",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18374"
+        },
+        {
+          "id": "CVE-2026-89092",
+          "package": "libc6",
+          "installed": "2.39-0ubuntu8.9",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-89092"
+        },
+        {
+          "id": "CVE-2017-7475",
+          "package": "libcairo2",
+          "installed": "1.18.0-3build1",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2017-7475"
+        },
+        {
+          "id": "CVE-2018-18064",
+          "package": "libcairo2",
+          "installed": "1.18.0-3build1",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2018-18064"
+        },
+        {
+          "id": "CVE-2025-66382",
+          "package": "libexpat1",
+          "installed": "2.6.1-2ubuntu0.6",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-66382"
+        },
+        {
+          "id": "CVE-2026-86145",
+          "package": "libpcre2-8-0",
+          "installed": "10.42-4ubuntu2.1",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-86145"
+        },
+        {
+          "id": "CVE-2026-89161",
+          "package": "libpcre2-8-0",
+          "installed": "10.42-4ubuntu2.1",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-89161"
+        },
+        {
+          "id": "CVE-2023-37769",
+          "package": "libpixman-1-0",
+          "installed": "0.42.2-1build1",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-37769"
+        },
+        {
+          "id": "CVE-2026-40228",
+          "package": "libsystemd0",
+          "installed": "255.4-1ubuntu8.17",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-40228"
+        },
+        {
+          "id": "CVE-2026-40228",
+          "package": "libudev1",
+          "installed": "255.4-1ubuntu8.17",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-40228"
+        },
+        {
+          "id": "CVE-2026-88807",
+          "package": "libxrender1",
+          "installed": "1:0.9.10-1.1build1",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-88807"
+        },
+        {
+          "id": "CVE-2024-56433",
+          "package": "login",
+          "installed": "1:4.13+dfsg1-4ubuntu3.2",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-56433"
+        },
+        {
+          "id": "CVE-2024-56433",
+          "package": "passwd",
+          "installed": "1:4.13+dfsg1-4ubuntu3.2",
+          "fixed": null,
+          "severity": "LOW",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-56433"
+        },
+        {
+          "id": "CVE-2026-18477",
+          "package": "tar",
+          "installed": "1.35+dfsg-3ubuntu0.4",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18477"
+        },
+        {
+          "id": "CVE-2026-18508",
+          "package": "tar",
+          "installed": "1.35+dfsg-3ubuntu0.4",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-18508"
+        },
+        {
+          "id": "CVE-2026-85091",
+          "package": "zlib1g",
+          "installed": "1:1.3.dfsg-3.1ubuntu2.2",
+          "fixed": null,
+          "severity": "MEDIUM",
+          "status": "affected",
+          "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-85091"
+        }
+      ]
+    }
+  ],
+  "release": "BLOCKED",
+  "limits": [
+    "No zero-vulnerability or exploitability certification. Ubuntu prioritization determines scanner severity; some Medium rows have High CVSS base scores.",
+    "29 gateway and 18 guacd remaining Medium/Low package-CVE instances are retained without suppression. No FixedVersion was supplied by this database; vendor risk/patch review remains required before a public pilot.",
+    "Linux AMD64 locks were resolved/download-verified in a disposable emulator, but final AMD64 runtime/build/controller acceptance remains unverified.",
+    "Docker Scout could not run without Docker account login; the credential-free Trivy fallback completed."
+  ],
+  "vendorReview": [
+    {
+      "id": "CVE-2026-18374",
+      "source": "https://ubuntu.com/security/CVE-2026-18374",
+      "result": "Ubuntu lists Jammy/Noble vulnerable; unusual attacker-controlled fopen mode pattern, application reachability not certified."
+    },
+    {
+      "id": "CVE-2026-86145",
+      "source": "https://ubuntu.com/security/CVE-2026-86145",
+      "result": "Ubuntu priority Medium, CVSS 8.2 High; Jammy/Noble vulnerable, no packaged fixed version reported."
+    },
+    {
+      "id": "CVE-2026-85091",
+      "source": "https://ubuntu.com/security/CVE-2026-85091",
+      "result": "Ubuntu priority Medium with High CVSS; Jammy/Noble fix deferred, affected-version/patch uncertainty described by vendor."
+    },
+    {
+      "id": "CVE-2026-88807",
+      "source": "https://ubuntu.com/security/CVE-2026-88807",
+      "result": "Retained as an unresolved guacd libXrender finding; no exploitability acceptance claimed."
+    }
+  ],
+  "references": [
+    "https://ubuntu.com/security/notices/USN-8847-1",
+    "https://alpinelinux.org/releases/",
+    "https://raw.githubusercontent.com/apache/guacamole-server/1.6.0/Dockerfile",
+    "https://guacamole.apache.org/security/"
+  ],
+  "beforeRemediation": [
+    {
+      "imageId": "sha256:e2e995ed4b377ad7fde8e2d84741bc83bf8e7816b6362ecec4ae1575bd2e7f15",
+      "report": "gateway-image-before-trivy.json",
+      "high": 1,
+      "medium": 13,
+      "low": 21,
+      "fixedVersionInstances": 6
+    },
+    {
+      "imageId": "sha256:8974eaa9ba32f713daf311e7cc8cd7e4cdfba1edea39eed75524e78ef4b08f4f",
+      "report": "published-guacd-image-trivy.json",
+      "os": "Alpine 3.18.12",
+      "unsupported": true,
+      "findings": 0,
+      "interpretation": "Zero detections on an unsupported OS cannot prove current advisory coverage or safety; no longer a deployment default."
+    }
+  ]
+}

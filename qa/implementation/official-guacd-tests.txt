@@ -1,5 +1,11 @@
+
+> pwa-remote-desktop-gateway@1.0.0 test:official-guacd
+> ./qa/test-official-guacd.sh
+
 PASS: official guacd VNC plugin exposes the expected maintained-library argument contract.
 PASS: control request through the production HTTP/WebSocket gateway closes after official guacd target failure and releases its lease.
 PASS: view request through the production HTTP/WebSocket gateway closes after official guacd target failure and releases its lease.
 SCOPE: official guacd failure path only; no real VNC desktop, Mac, Cloudflare account or public port.
-Official guacd: linux/arm64 sha256:8974eaa9ba32f713daf311e7cc8cd7e4cdfba1edea39eed75524e78ef4b08f4f
+Guacamole proxy daemon (guacd) version 1.6.0
+PASS: non-root Ubuntu 24.04 official-source image contains only the VNC protocol plugin.
+Official-source guacd: linux/arm64 sha256:9c9e8ccb80846b90fbcdde0113ea3310695a6a871f3ddd260b38c58b4c5a36eb
