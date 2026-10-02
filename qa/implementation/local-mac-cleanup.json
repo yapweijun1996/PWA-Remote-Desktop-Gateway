@@ -1,0 +1,15 @@
+{
+  "scope": "FINAL_CURRENT_MAC_LOCALHOST_RESOURCE_PRESERVATION",
+  "recordedAt": "2026-10-02T23:56:52.265867+00:00",
+  "temporaryPilotDirectories": 0,
+  "temporarySyntheticDirectories": 0,
+  "temporaryVncCredentials": 0,
+  "loopback32122Closed": true,
+  "existingContainersPreserved": true,
+  "runningContainerCount": 8,
+  "originalMainCommit": "d0ce352b7ad76e6b427f68488c40346d0601d491",
+  "originalMainClean": true,
+  "credentialValuesRecorded": false,
+  "hostSettingsChanged": false,
+  "publicExposure": false
+}

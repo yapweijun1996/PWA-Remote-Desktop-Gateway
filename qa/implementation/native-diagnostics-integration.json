@@ -1,0 +1,14 @@
+{
+  "scope": "SYNTHETIC_NATIVE_LOGGER_GUACD_FAILURE_PATH",
+  "status": "PASS",
+  "imageId": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+  "librarySha256": "602ee3ed0f95c8ebe3671173a7cdd6d50be010a0b520024874bc412ebda7f2d3",
+  "stages": {
+    "NETWORK_CONNECT_FAILURE": 4,
+    "NATIVE_CONNECTION_FAILURE_UNCLASSIFIED": 2
+  },
+  "rawLogsSaved": false,
+  "network": "NONE",
+  "authAttempted": false,
+  "realMac": false
+}

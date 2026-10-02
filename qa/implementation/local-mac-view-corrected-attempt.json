@@ -1,7 +1,5 @@
 {
   "scope": "LOCAL_REAL_VNC_VIEW_ONLY",
-  "runId": "local-mac-view.y6arKP",
-  "nativeDiagnosticLogger": true,
   "status": "FAIL",
   "testIdentity": true,
   "localDockerEndpointPinned": true,
@@ -24,16 +22,5 @@
   "browserVersion": "153.0.8010.12",
   "failedPhase": "VIEW_CONNECTION",
   "observedState": "TARGET_UNAVAILABLE",
-  "elapsedMs": 21193,
-  "nativeDiagnostics": {
-    "scope": "TEST_ONLY_NATIVE_LOGGER",
-    "status": "COMPLETE",
-    "runId": "local-mac-view.y6arKP",
-    "librarySha256": "602ee3ed0f95c8ebe3671173a7cdd6d50be010a0b520024874bc412ebda7f2d3",
-    "stages": {
-      "NATIVE_CONNECTION_FAILURE_UNCLASSIFIED": 1
-    },
-    "discardedLines": 0,
-    "rawLogsSaved": false
-  }
+  "elapsedMs": 17740
 }
