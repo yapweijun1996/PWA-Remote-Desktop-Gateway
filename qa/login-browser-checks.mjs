@@ -7,10 +7,11 @@ const {chromium}=require(process.env.RDG_PLAYWRIGHT_MODULE??'playwright');
 const tls={key:await readFile(directory+'/key.pem'),cert:await readFile(directory+'/cert.pem')};
 const fixture=JSON.parse(await readFile(directory+'/proxy.json','utf8'));
 if(!Number.isInteger(fixture.port)||typeof fixture.assertion!=='string')throw new Error('LOGIN_BROWSER_FIXTURE_CONFIG_REFUSED');
-const edgeOrigin='https://127.0.0.1:'+edgePort,results=[],observations=[];
+const edgeOrigin='https://127.0.0.1:'+edgePort,results=[],observations=[],manifestRequests=[];
+const artifactFile=process.env.RDG_LOGIN_BROWSER_MANIFEST_RESULTS==='true'?'qa/implementation/manifest-browser-results.json':'qa/implementation/login-browser-results.json';
 let priorNullFormFailureObserved=false;
 try{const prior=JSON.parse(await readFile('qa/implementation/login-browser-results.json','utf8'));priorNullFormFailureObserved=prior.scope==='LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE'&&prior.status==='FAIL'&&prior.loginObservations?.some(item=>item.method==='POST'&&item.origin==='NULL'&&item.status===403&&!item.deviceCookieIssued)===true;}catch{}
-let edgeAssertionEnabled=true,browser,providerOrigin,providerReturnPost,webSockets=0,pageErrors=0,unexpectedConsoleErrors=0,expectedConsoleErrors=0,intentionalDenial=false,observedBrowserPages=0;
+let edgeAssertionEnabled=true,browser,providerOrigin,providerReturnPost,webSockets=0,pageErrors=0,unexpectedConsoleErrors=0,expectedConsoleErrors=0,intentionalDenial=false,manifestBaselineActive=false,expectedManifestConsoleErrors=0,observedBrowserPages=0,gatewayCsp,manifestEvidence;
 const exceptionCategories=[];
 const observePage=(page,stage)=>{observedBrowserPages++;page.on('pageerror',error=>{
   pageErrors++;const names=['Error','TypeError','SecurityError','SyntaxError','ReferenceError','RangeError'];
@@ -21,15 +22,34 @@ const observePage=(page,stage)=>{observedBrowserPages++;page.on('pageerror',erro
   const utilitySource=/UtilityScript|InjectedScript|injectedScript/.test(error.stack??'');
   const opaquePostsAtError=observations.filter(item=>item.method==='POST'&&item.origin==='NULL').length;
   exceptionCategories.push({stage,name:names.includes(error.name)?error.name:'OTHER',sourceFilename:source?.[1]??'UNCLASSIFIED',line:source?Number(source[2]):null,category:missing?'UNDEFINED_IDENTIFIER':sandboxFlag?'SANDBOX_SAME_ORIGIN_FLAG_ABSENT':'UNCLASSIFIED',sandboxProperties,utilitySource,opaquePostsAtError,...(missing?{undefinedIdentifier:missing[1]}:{})});
-});page.on('console',message=>{if(message.type()==='error'){if(intentionalDenial)expectedConsoleErrors++;else unexpectedConsoleErrors++;}});};
+});page.on('console',message=>{
+  if(message.type()!=='error')return;
+  if(manifestBaselineActive){
+    const text=message.text();
+    const expectedManifestCsp=stage==='MANIFEST_WITHOUT_ATTRIBUTE_BASELINE'&&/^Loading a manifest from /.test(text)&&text.includes('violates the following Content Security Policy directive')&&/manifest-src|default-src/.test(text);
+    if(expectedManifestCsp)expectedManifestConsoleErrors++;else unexpectedConsoleErrors++;
+  }else if(intentionalDenial)expectedConsoleErrors++;else unexpectedConsoleErrors++;
+});};
 const originCategory=origin=>origin===undefined?'ABSENT':origin==='null'?'NULL':origin===edgeOrigin?'SAME_ORIGIN':'CROSS_ORIGIN';
 const edge=https.createServer(tls,(request,response)=>{
-  const path=new URL(request.url,edgeOrigin).pathname;
+  const url=new URL(request.url,edgeOrigin),path=url.pathname;
+  if(path==='/manifest-baseline'){
+    if(!gatewayCsp){response.writeHead(503);response.end('MANIFEST_BROWSER_FIXTURE_CSP_UNAVAILABLE');return;}
+    response.writeHead(200,{'Content-Type':'text/html; charset=UTF-8','Cache-Control':'no-store','Content-Security-Policy':gatewayCsp});
+    response.end('<!doctype html><html lang="en"><head><title>Local manifest credential baseline</title><link rel="manifest" href="/manifest.webmanifest?fixture=without-credentials"></head><body>Local manifest credential baseline</body></html>');return;
+  }
+  const manifestObservation=path==='/manifest.webmanifest'?{case:url.searchParams.get('fixture')==='without-credentials'?'WITHOUT_ATTRIBUTE':'WITH_USE_CREDENTIALS',nativeManifestDestination:request.headers['sec-fetch-dest']==='manifest',cookieIncluded:/(?:^|;\s*)__Host-rdg-device=/.test(request.headers.cookie??''),status:0}:null;
+  if(manifestObservation){
+    manifestRequests.push(manifestObservation);
+    if(!manifestObservation.cookieIncluded){manifestObservation.status=302;response.writeHead(302,{'Location':providerOrigin+'/manifest-auth-required','Cache-Control':'no-store'});response.end();return;}
+  }
   const observation=path==='/login'?{method:request.method,queryPresent:request.url.includes('?'),origin:originCategory(request.headers.origin),status:0,referrerPolicy:'UNCLASSIFIED',deviceCookieIssued:false}:null;
   if(observation)observations.push(observation);
   const headers={...request.headers,host:'127.0.0.1:'+edgePort};delete headers['cf-access-jwt-assertion'];
   if(path==='/login'&&edgeAssertionEnabled)headers['cf-access-jwt-assertion']=fixture.assertion;
   const upstream=http.request({host:'127.0.0.1',port:fixture.port,path:request.url,method:request.method,headers},reply=>{
+    if(path==='/'&&typeof reply.headers['content-security-policy']==='string')gatewayCsp=reply.headers['content-security-policy'];
+    if(manifestObservation)manifestObservation.status=reply.statusCode;
     if(observation){observation.status=reply.statusCode;observation.referrerPolicy=reply.headers['referrer-policy']==='same-origin'?'SAME_ORIGIN':reply.headers['referrer-policy']==='no-referrer'?'NO_REFERRER':'UNCLASSIFIED';observation.deviceCookieIssued=(reply.headers['set-cookie']??[]).some(header=>header.startsWith('__Host-rdg-device=')&&!header.includes('Max-Age=0'));}
     response.writeHead(reply.statusCode,reply.headers);reply.pipe(response);
   });
@@ -79,6 +99,30 @@ try{
   const devices=await page.evaluate(async()=>{const response=await fetch('/api/trusted-devices',{cache:'no-store'});if(response.status!==200)return -1;const body=await response.json();return Array.isArray(body.devices)?body.devices.length:-1;});
   check(devices===1&&await page.getByLabel('Screen Sharing VNC password',{exact:true}).isVisible(),'Real trusted store permits landing and application APIs without an edge assertion');
   pass('Explicit same-origin form enrollment sets a protected host-only cookie and the real trusted-store landing/API work without desktop authentication');
+  // CDP invokes Chromium's native manifest manager; this is not a JavaScript fetch.
+  check(await page.locator('link[rel="manifest"]').getAttribute('crossorigin')==='use-credentials','Production manifest explicitly includes credentials');
+  const manifestSession=await context.newCDPSession(page),nativeManifest=await manifestSession.send('Page.getAppManifest');
+  const parsedManifest=JSON.parse(nativeManifest.data??'null'),positiveRequests=manifestRequests.filter(item=>item.case==='WITH_USE_CREDENTIALS');
+  check(Array.isArray(nativeManifest.errors)&&nativeManifest.errors.length===0&&parsedManifest?.name==='Remote Desktop Gateway'&&parsedManifest.start_url==='/'&&parsedManifest.scope==='/'&&Array.isArray(parsedManifest.icons)&&parsedManifest.icons.length===2,'Chromium recognizes the actual production manifest');
+  check(positiveRequests.length>0&&positiveRequests.every(item=>item.nativeManifestDestination&&item.cookieIncluded&&item.status===200),'Native authenticated manifest requests include the fixture HttpOnly cookie and return 200');
+  check(pageErrors===0&&unexpectedConsoleErrors===0,'Positive manifest page has no unexpected browser errors');
+  await manifestSession.detach();
+  pass('Native Chromium manifest request with use-credentials includes the actual fixture HttpOnly cookie and recognizes the production manifest at 200');
+  manifestBaselineActive=true;
+  const baselinePage=await context.newPage();observePage(baselinePage,'MANIFEST_WITHOUT_ATTRIBUTE_BASELINE');
+  await baselinePage.addInitScript(()=>{globalThis.__rdgManifestPolicyViolations=0;document.addEventListener('securitypolicyviolation',event=>{if(event.effectiveDirective==='manifest-src'||event.effectiveDirective==='default-src')globalThis.__rdgManifestPolicyViolations++;});});
+  await baselinePage.goto(edgeOrigin+'/manifest-baseline');
+  const baselineSession=await context.newCDPSession(baselinePage);let baselineManifest,baselineProtocolRejected=false;
+  try{baselineManifest=await baselineSession.send('Page.getAppManifest');}catch{baselineProtocolRejected=true;}
+  await baselinePage.waitForFunction(()=>globalThis.__rdgManifestPolicyViolations>0);
+  const baselineRequests=manifestRequests.filter(item=>item.case==='WITHOUT_ATTRIBUTE'),cspViolationCount=await baselinePage.evaluate(()=>globalThis.__rdgManifestPolicyViolations);
+  const baselineNativeRejected=baselineProtocolRejected||!baselineManifest?.data||baselineManifest?.errors?.some(item=>item.critical===true)===true;
+  check(baselineRequests.length>0&&baselineRequests.every(item=>item.nativeManifestDestination&&!item.cookieIncluded&&item.status===302)&&baselineNativeRejected&&cspViolationCount>0,'Missing crossorigin omits the available HttpOnly cookie; redirected native manifest is blocked by the unchanged gateway CSP');
+  check(expectedManifestConsoleErrors===1&&pageErrors===0&&unexpectedConsoleErrors===0,'Only the baseline native manifest CSP denial is expected; all other browser errors remain failures');
+  check((await context.cookies(edgeOrigin)).some(cookie=>cookie.name==='__Host-rdg-device'&&cookie.httpOnly),'The baseline context still has its actual fixture HttpOnly cookie');
+  manifestEvidence={scope:'LOCAL_NATIVE_MANIFEST_COOKIE_FIXTURE',realAccess:false,nativeBrowserManager:true,manualManifestFetch:false,fixtureHttpOnlyCookie:true,productionCspReused:true,positive:{attribute:'use-credentials',nativeRequestCount:positiveRequests.length,cookieIncluded:true,status:200,recognized:true,manifestErrorCount:nativeManifest.errors.length},baseline:{attributeAbsent:true,nativeRequestCount:baselineRequests.length,cookieIncluded:false,status:302,nativeRejected:baselineNativeRejected,cspViolationCount,expectedConsoleErrors:expectedManifestConsoleErrors}};
+  await baselineSession.detach();await baselinePage.close();manifestBaselineActive=false;
+  pass('Native Chromium manifest without crossorigin omits the available fixture cookie and its cross-origin redirect is blocked by the original CSP');
   await context.close();
   const literalNull=await browser.newContext({ignoreHTTPSErrors:true,serviceWorkers:'block',extraHTTPHeaders:{Origin:'null'}}),literalNullPage=await literalNull.newPage();observePage(literalNullPage,'EXPLICIT_NULL_GET');
   const nullGet=await literalNullPage.goto(edgeOrigin+'/login');
@@ -107,9 +151,9 @@ try{
     await hostile.close();
   }
   check(pageErrors===0&&unexpectedConsoleErrors===0&&webSockets===0,'Observed fixture pages have no unexpected browser errors or desktop upgrade');
-  const evidence={status:'PASS',scope:'LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE',browser:browser.version(),signedFixtureIdentity:true,realAccess:false,realMac:false,realSafari:false,desktopAuthenticated:false,selfSignedLoopbackTLS:true,resolvedFixtureExpectation:{naturalReturnGetOrigin:returnGet.origin,priorNonlocalOriginAssumptionRemoved:true},preFixRegression:{priorMetadataObserved:priorNullFormFailureObserved,samePageFormOriginNull403Resolved:priorNullFormFailureObserved&&issued.origin==='SAME_ORIGIN'},fixtureAdjustment:{opaqueIframeRemoved:true,priorOpaqueSecurityErrorCause:'UNKNOWN_FIXTURE_ONLY',replacement:'NATIVE_TOP_LEVEL_FORM_NO_REFERRER'},results,providerReturnPost,loginObservations:observations,observedBrowserPages,pageErrors,exceptionCategories,unexpectedConsoleErrors,expectedConsoleErrors,webSockets};
-  await writeArtifact('qa/implementation/login-browser-results.json',JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify(evidence));
+  const evidence={status:'PASS',scope:'LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE',browser:browser.version(),signedFixtureIdentity:true,realAccess:false,realMac:false,realSafari:false,desktopAuthenticated:false,selfSignedLoopbackTLS:true,resolvedFixtureExpectation:{naturalReturnGetOrigin:returnGet.origin,priorNonlocalOriginAssumptionRemoved:true},preFixRegression:{priorMetadataObserved:priorNullFormFailureObserved,samePageFormOriginNull403Resolved:priorNullFormFailureObserved&&issued.origin==='SAME_ORIGIN'},fixtureAdjustment:{opaqueIframeRemoved:true,priorOpaqueSecurityErrorCause:'UNKNOWN_FIXTURE_ONLY',replacement:'NATIVE_TOP_LEVEL_FORM_NO_REFERRER'},results,providerReturnPost,loginObservations:observations,manifestEvidence,manifestRequests,expectedManifestConsoleErrors,observedBrowserPages,pageErrors,exceptionCategories,unexpectedConsoleErrors,expectedConsoleErrors,webSockets};
+  await writeArtifact(artifactFile,JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify(evidence));
 }catch{
-  const evidence={status:'FAIL',scope:'LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE',reason:'LOGIN_BROWSER_CHECK_FAILED',results,providerReturnPost,loginObservations:observations,observedBrowserPages,pageErrors,exceptionCategories,unexpectedConsoleErrors,expectedConsoleErrors,webSockets};
+  const evidence={status:'FAIL',scope:'LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE',reason:'LOGIN_BROWSER_CHECK_FAILED',results,providerReturnPost,loginObservations:observations,manifestEvidence,manifestRequests,expectedManifestConsoleErrors,observedBrowserPages,pageErrors,exceptionCategories,unexpectedConsoleErrors,expectedConsoleErrors,webSockets};
   console.error(JSON.stringify(evidence));process.exitCode=1;
 }finally{clearTimeout(deadline);await cleanup();}
