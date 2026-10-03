@@ -54,7 +54,8 @@ class TrustedGatewayIntegrationTest {
         assertEquals(401,request("GET","/login",null,null,null,null,null,"gateway.fixture.test","application/json").statusCode());
         assertEquals(401,request("GET","/login",null,"forged",null,null,null,"gateway.fixture.test","application/json").statusCode());
         assertEquals(403,request("GET","/login",null,access,null,null,null,"evil.fixture.test","application/json").statusCode());
-        var get=login("GET",null,null,null);String nonce=nonce(get),cookie=cookie(get,"__Host-rdg-enroll");
+        var get=login("GET",null,null,null);assertEquals("same-origin",get.headers().firstValue("Referrer-Policy").orElseThrow());
+        String nonce=nonce(get),cookie=cookie(get,"__Host-rdg-enroll");
         assertEquals(403,login("POST","nonce="+nonce,cookie,"https://evil.fixture.test").statusCode());
         assertEquals(403,login("POST","nonce="+nonce,null,c.origin()).statusCode());
         assertEquals(401,login("POST","nonce="+nonce,cookie+"; __Host-rdg=malformed",c.origin()).statusCode());
@@ -62,6 +63,60 @@ class TrustedGatewayIntegrationTest {
         assertEquals(403,login("POST","nonce="+nonce,cookie,c.origin()).statusCode());
         var expired=login("GET",null,null,null);time.advance(301);
         assertEquals(403,login("POST","nonce="+nonce(expired),cookie(expired,"__Host-rdg-enroll"),c.origin()).statusCode());
+    }
+    @Test void signedLoginNavigationAcceptsReturnOriginsWithoutIssuingTrust()throws Exception {
+        assertEquals(200,login("GET",null,null,null).statusCode());
+        for(String origin:List.of("null",c.issuer(),"https://navigation.fixture.test",c.origin())) {
+            var response=login("GET",null,null,origin);assertEquals(200,response.statusCode());
+            assertTrue(response.headers().firstValue("Content-Type").orElse("").startsWith("text/html"));
+            assertNotNull(nonce(response));
+            assertTrue(response.headers().allValues("Set-Cookie").stream().noneMatch(v->v.startsWith(TrustedDeviceCookies.NAME+"=")));
+        }
+        assertEquals(401,request("GET","/login",null,null,null,null,c.issuer(),"gateway.fixture.test","application/json").statusCode());
+        assertEquals(401,request("GET","/login",null,"forged",null,null,c.issuer(),"gateway.fixture.test","application/json").statusCode());
+        assertEquals(403,request("GET","/login",null,access,null,null,c.issuer(),"evil.fixture.test","application/json").statusCode());
+        assertTrue(trusted.list(new AccessVerifier.Identity("fixture-owner",time.instant().plusSeconds(3600)),null).isEmpty());
+    }
+    @Test void safeNavigationQueriesCanonicalizeWithoutReflectionAndProtectedQueriesRemainRejected()throws Exception {
+        String query="?navigation=fixture-only";
+        var canonical=request("GET","/login"+query,null,access,null,null,c.issuer(),"gateway.fixture.test","application/json");
+        assertEquals(303,canonical.statusCode());assertEquals("/login",canonical.headers().firstValue("Location").orElseThrow());
+        assertFalse(canonical.body().contains("navigation"));assertTrue(canonical.headers().allValues("Set-Cookie").isEmpty());
+        assertEquals(401,request("GET","/login"+query,null,null,null,null,null,"gateway.fixture.test","application/json").statusCode());
+        assertEquals(401,request("GET","/login"+query,null,"forged",null,null,null,"gateway.fixture.test","application/json").statusCode());
+        assertEquals(403,request("GET","/login"+query,null,access,null,null,null,"evil.fixture.test","application/json").statusCode());
+        enroll();
+        var root=api("GET","/"+query,null,cookies(),null,null);assertEquals(303,root.statusCode());assertEquals("/",root.headers().firstValue("Location").orElseThrow());
+        assertFalse(root.body().contains("navigation"));
+        assertEquals(403,api("GET","/api/devices"+query,null,cookies(),null,null).statusCode());
+        assertEquals(403,api("GET","/ws/sessions/"+"A".repeat(43)+query,null,cookies(),null,c.origin()).statusCode());
+        assertEquals(403,api("GET","/api/devices",null,cookies(),null,c.issuer()).statusCode());
+        assertEquals(0,upstream.connections.get());
+    }
+    @Test void enrollmentPostsKeepExactOriginAndQueryGuardBeforeTrustedShortcut()throws Exception {
+        var get=login("GET",null,null,null);String body="nonce="+nonce(get),nonceCookie=cookie(get,"__Host-rdg-enroll");
+        assertEquals(403,login("POST",body,nonceCookie,null).statusCode());
+        for(String origin:List.of("null",c.issuer(),"https://navigation.fixture.test"))assertEquals(403,login("POST",body,nonceCookie,origin).statusCode());
+        assertEquals(403,request("POST","/login?navigation=fixture-only",body,access,nonceCookie,null,c.origin(),"gateway.fixture.test","application/x-www-form-urlencoded").statusCode());
+        // Invalid navigation/mutation guards must not consume the valid challenge or issue a device.
+        assertTrue(trusted.list(new AccessVerifier.Identity("fixture-owner",time.instant().plusSeconds(3600)),null).isEmpty());
+        var valid=login("POST",body,nonceCookie,c.origin());assertEquals(303,valid.statusCode());deviceCookie=cookie(valid,TrustedDeviceCookies.NAME);bootstrap();
+        assertEquals(403,login("POST",body,cookies(),null).statusCode());
+        for(String origin:List.of("null",c.issuer(),"https://navigation.fixture.test"))assertEquals(403,login("POST",body,cookies(),origin).statusCode());
+        assertEquals(403,request("POST","/login?navigation=fixture-only",body,access,cookies(),null,c.origin(),"gateway.fixture.test","application/x-www-form-urlencoded").statusCode());
+        assertEquals(1,trusted.list(new AccessVerifier.Identity("fixture-owner",time.instant().plusSeconds(3600)),deviceCookie.substring(deviceCookie.indexOf('=')+1)).size());
+    }
+    @Test void loginGetFailuresAreFriendlyHtmlWhileApiFailuresKeepJson()throws Exception {
+        for(String assertion:new String[]{null,"forged"}) {
+            var response=request("GET","/login",null,assertion,null,null,null,"gateway.fixture.test","application/json");
+            assertEquals(401,response.statusCode());assertTrue(response.headers().firstValue("Content-Type").orElse("").startsWith("text/html"));
+            assertTrue(response.body().startsWith("<!doctype html>"));assertFalse(response.body().contains("name=\"nonce\""));
+        }
+        var host=request("GET","/login",null,access,null,null,null,"evil.fixture.test","application/json");
+        assertEquals(403,host.statusCode());assertTrue(host.headers().firstValue("Content-Type").orElse("").startsWith("text/html"));
+        var api=api("GET","/api/devices",null,null,null,null);assertEquals(401,api.statusCode());
+        assertEquals("no-referrer",api.headers().firstValue("Referrer-Policy").orElseThrow());
+        assertTrue(api.headers().firstValue("Content-Type").orElse("").startsWith("application/json"));
     }
     @Test void rememberedBrowserAccessDoesNotDependOnAnEdgeAssertion()throws Exception {
         assertEquals(303,api("GET","/",null,null,null,null).statusCode());

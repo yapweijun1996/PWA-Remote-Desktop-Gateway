@@ -19,7 +19,11 @@ final class GatewayFilter implements Filter {
             if(trusted!=null&&(path.equals("/")||path.equals("/index.html"))) {
                 response.setHeader("Cache-Control","no-store");
                 try {
-                    if(request.getQueryString()!=null||!URI.create(config.origin()).getAuthority().equals(single(request,"Host")))throw new Failure(403,"ORIGIN_DENIED");
+                    if(!URI.create(config.origin()).getAuthority().equals(single(request,"Host")))throw new Failure(403,"ORIGIN_DENIED");
+                    if(request.getQueryString()!=null) {
+                        if(!request.getMethod().equals("GET"))throw new Failure(403,"ORIGIN_DENIED");
+                        response.setStatus(303);response.setHeader("Location","/");return;
+                    }
                     trusted.verify(TrustedDeviceCookies.read(request,TrustedDeviceCookies.NAME));
                 }catch(Failure failure){
                     if(failure.status!=401){error(response,failure);return;}
