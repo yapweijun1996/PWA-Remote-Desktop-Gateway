@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T12:51:08Z",
+  "status": "PASS",
+  "scope": "BOUNDED_POST_DEPLOYMENT_CONNECTION_NEGATIVE_CHECKS",
+  "sourceCommit": "8e40a1ac56ef64a0211929200549de1502d4e2f0",
+  "image": "sha256:9b81c30a0fae9f77a8fe2a26612376935a627a2a91c15088070a9ba35d47b806",
+  "checks": [
+    {
+      "case": "ORIGIN_API_MISSING_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 401,
+      "expectedStatus": 401,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_API_FAKE_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 401,
+      "expectedStatus": 401,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_API_WRONG_HOST",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 403,
+      "expectedStatus": 403,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_API_WRONG_ORIGIN",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 403,
+      "expectedStatus": 403,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_WS_MISSING_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 401,
+      "expectedStatus": 401,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_BOOTSTRAP_MISSING_ORIGIN",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 403,
+      "expectedStatus": 403,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "SCOPED_CANCEL_MISSING_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 401,
+      "expectedStatus": 401,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "SCOPED_CANCEL_FAKE_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 401,
+      "expectedStatus": 401,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "SCOPED_CANCEL_WRONG_ORIGIN",
+      "scope": "LOCAL_ORIGIN_NEGATIVE_IDENTITY",
+      "status": 403,
+      "expectedStatus": 403,
+      "strictSelfScriptCsp": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_ROOT_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "status": 302,
+      "expectedStatus": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_API_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "status": 302,
+      "expectedStatus": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_WS_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "status": 302,
+      "expectedStatus": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_MANIFEST_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "status": 302,
+      "expectedStatus": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    }
+  ],
+  "checkCount": 13,
+  "originHealth": {
+    "status": 200,
+    "processLivenessOnly": true
+  },
+  "localManifest": {
+    "status": 200,
+    "jsonContentType": true,
+    "recognized": true
+  },
+  "limits": {
+    "publicPositiveOwnerSession": false,
+    "realMacDesktop": false,
+    "reported409ResponseCode": "NOT_PROVIDED",
+    "availabilityProvedByAccess302": false,
+    "rawResponsesStored": false,
+    "cookieTokenQueryValuesRecorded": false,
+    "accessPolicyChanged": false,
+    "tunnelReconfigured": false,
+    "otherServicesRestarted": false
+  }
+}

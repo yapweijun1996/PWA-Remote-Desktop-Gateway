@@ -1,0 +1,101 @@
+{
+  "status": "PASS",
+  "scope": "LOCAL_BROWSER_CONNECTION_LIFECYCLE_FIXTURE",
+  "browser": "153.0.8010.12",
+  "build": "b6f74fcc8435c7c8",
+  "fixture": true,
+  "simulatedAPI": true,
+  "simulatedGuacamole": true,
+  "recoveryDesign": "SCOPED_SESSION_STATUS_SNAPSHOT",
+  "priorGlobalRecoveryDesign": "ABANDONED_BEFORE_DEPLOYMENT",
+  "realAccess": false,
+  "realMac": false,
+  "realSafari": false,
+  "realBackendLeaseIsolationTested": false,
+  "inputOrClipboardPayloadTested": false,
+  "results": [
+    {
+      "test": "CLIPBOARD CONTROL_BUSY refusal preserves leases until explicit same-app snapshot recovery",
+      "status": "PASS",
+      "deletesBeforeClick": 0,
+      "recoveryShown": false
+    },
+    {
+      "test": "INTENT CONTROL_BUSY refusal preserves leases until explicit same-app snapshot recovery",
+      "status": "PASS",
+      "deletesBeforeClick": 0,
+      "recoveryShown": true,
+      "recoverySnapshotScoped": true,
+      "retryConnected": true,
+      "endScopedToOwnIntent": true
+    },
+    {
+      "test": "CLIPBOARD UPDATE_IN_PROGRESS refusal preserves leases until explicit same-app snapshot recovery",
+      "status": "PASS",
+      "deletesBeforeClick": 0,
+      "recoveryShown": false
+    },
+    {
+      "test": "INTENT UPDATE_IN_PROGRESS refusal preserves leases until explicit same-app snapshot recovery",
+      "status": "PASS",
+      "deletesBeforeClick": 0,
+      "recoveryShown": false
+    },
+    {
+      "test": "Target failure after an issued intent cleans up only its own intent",
+      "status": "PASS",
+      "scopedDeletes": 1,
+      "unscopedDeletes": 0
+    },
+    {
+      "test": "A 201 intent arriving after synthetic pagehide epoch invalidation is scoped-cancelled without opening an adapter",
+      "status": "PASS",
+      "scopedDeletes": 1,
+      "adapterConnections": 0,
+      "syntheticPagehide": true
+    },
+    {
+      "test": "Delayed old scoped cleanup and a stale tab callback preserve a replacement simulated lease",
+      "status": "PASS",
+      "oldCleanupScoped": true,
+      "staleCallbackDeletes": 0,
+      "replacementPreserved": true,
+      "realBackendLeaseIsolationTested": false
+    },
+    {
+      "test": "Late old visibility activeDesktop:false is ignored after a replacement adapter",
+      "status": "PASS",
+      "syntheticVisibilityEvent": true,
+      "lateStatus": 200,
+      "replacementPreserved": true,
+      "staleStatusDeletes": 0
+    },
+    {
+      "test": "Late old visibility status 401 is ignored after a replacement adapter",
+      "status": "PASS",
+      "syntheticVisibilityEvent": true,
+      "lateStatus": 401,
+      "replacementPreserved": true,
+      "staleStatusDeletes": 0
+    },
+    {
+      "test": "Delayed explicit recovery remains scoped to its status snapshot and preserves a replacement simulated lease",
+      "status": "PASS",
+      "recoverySnapshotScoped": true,
+      "replacementPreserved": true,
+      "unscopedDeletes": 0
+    }
+  ],
+  "totals": {
+    "clipboardRequests": 16,
+    "intentRequests": 13,
+    "scopedDeletes": 12,
+    "unscopedDeletes": 0,
+    "expected409ConsoleErrors": 6,
+    "expectedStale401ConsoleErrors": 1,
+    "pageErrors": 0,
+    "unexpectedConsoleErrors": 0,
+    "webSockets": 0,
+    "fixtureErrors": 0
+  }
+}

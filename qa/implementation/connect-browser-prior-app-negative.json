@@ -1,0 +1,22 @@
+{
+  "status": "EXPECTED_FAILURE",
+  "scope": "LOCAL_BROWSER_CONNECTION_LIFECYCLE_FIXTURE",
+  "reason": "PRIOR_APP_REFUSAL_SENT_DELETE",
+  "failedStep": "REFUSAL_SENT_DELETE",
+  "priorAppFixture": true,
+  "baselineSourceCommit": "4deb5fc3d7262ed6a8de813c4fc7a7c33d0b95ed",
+  "productionBuild": "b6f74fcc8435c7c8",
+  "results": [],
+  "totals": {
+    "clipboardRequests": 1,
+    "intentRequests": 0,
+    "scopedDeletes": 0,
+    "unscopedDeletes": 1,
+    "expected409ConsoleErrors": 1,
+    "expectedStale401ConsoleErrors": 0,
+    "pageErrors": 0,
+    "unexpectedConsoleErrors": 0,
+    "webSockets": 0,
+    "fixtureErrors": 0
+  }
+}
