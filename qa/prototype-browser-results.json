@@ -1,6 +1,6 @@
 {
-  "scope": "LOCAL_UI: in-memory HTML/CSS/module render in Linux Chromium, plus separate Python HTTP boundary probes. Browser localhost navigation was blocked by environment policy; original policy unchanged. Not HTTP browser integration, Safari, Windows or live Mac acceptance",
-  "browser": "144.0.7559.96",
+  "scope": "LOCAL_UI: in-memory HTML/CSS/module render in headless Chromium on Darwin, plus separate Python HTTP boundary probes. The page is rendered from an offline fixture and never navigates to localhost, so browser HTTP/CSP/module loading is not exercised. Not Safari, Windows or live Mac acceptance",
+  "browser": "153.0.8010.12",
   "tests": [
     {
       "test": "Honest prototype and unverified device labels",
@@ -34,6 +34,11 @@
     },
     {
       "test": "Tab can leave the keyboard tester",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Long input status does not overflow or push controls off-screen at 390px",
       "status": "PASS",
       "detail": ""
     },
@@ -128,6 +133,6 @@
       "detail": "403"
     }
   ],
-  "pass": 25,
+  "pass": 26,
   "fail": 0
 }

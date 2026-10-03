@@ -7,8 +7,10 @@ PASS: 96 Node.js tests, 0 failures (Node v23.10.0, re-run 2026-10-03; originally
   74 reference tests on v22.16.0). Keyboard logical mapping and source ownership;
   session/intent predicates; safe-list caching predicates; manifest, line-ending,
   .gitignore, contract and prototype-layout guards. See reference-tests.tap.
-STALE: the 25 prototype checks, the four screenshots and prototype-browser-results.json
-  describe the earlier prototype layout and were not regenerated (Playwright absent).
+PASS: 26 prototype / preview-boundary checks, 0 failures (re-run 2026-10-03: Playwright 1.63.0,
+  headless Chromium 153.0.8010.12 on macOS/Darwin; originally 25 checks on Linux Chromium 144).
+  Same offline-fixture method; covers the drawer layout, unified key bar and long-status
+  overflow at 390 px. The four screenshots were regenerated from the current prototype.
 PASS: 25 prototype / preview-boundary checks, 0 failures.
   Linux Chromium 144.0.7559.96 rendered authored HTML/CSS/modules as an
   offline in-memory DOM fixture. Widths 390, 430, 768 and 1440 had no

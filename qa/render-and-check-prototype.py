@@ -8,7 +8,7 @@ browser HTTP navigation. It changes QA results/screenshots, so verify original
 archive hashes first. No remote desktop or Cloudflare requests are made.
 """
 from pathlib import Path
-import json, urllib.request, urllib.error, os, shutil
+import json, urllib.request, urllib.error, os, shutil, platform
 from playwright.sync_api import sync_playwright
 root=Path(__file__).resolve().parents[1]
 shots=root/'qa/screenshots'; shots.mkdir(parents=True,exist_ok=True)
@@ -79,6 +79,7 @@ with sync_playwright() as pw:
   assert dims['scroll']<=dims['w'],(text,dims)
   assert page.locator('#panelToggle').bounding_box()['x']+page.locator('#panelToggle').bounding_box()['width']<=dims['w']
  passed('Long input status does not overflow or push controls off-screen at 390px')
+ page.locator('#inputStatus').evaluate("(el)=>el.textContent='Input paused'")
  for width,height in [(390,844),(430,932),(768,1024),(1440,1024)]:
   page.set_viewport_size({'width':width,'height':height})
   for view in ['workspace','overview']:
@@ -113,6 +114,6 @@ for method,status in [('POST',405)]:
 try:urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:4173/prototype/',headers={'Host':'evil.example'}));got=200
 except urllib.error.HTTPError as e:got=e.code
 assert got==403;passed('Preview rejects unexpected Host',str(got))
-report={'scope':'LOCAL_UI: in-memory HTML/CSS/module render in Linux Chromium, plus separate Python HTTP boundary probes. Browser localhost navigation was blocked by environment policy; original policy unchanged. Not HTTP browser integration, Safari, Windows or live Mac acceptance','browser':version,'tests':results,'pass':len(results),'fail':0}
+report={'scope':f'LOCAL_UI: in-memory HTML/CSS/module render in headless Chromium on {platform.system()}, plus separate Python HTTP boundary probes. The page is rendered from an offline fixture and never navigates to localhost, so browser HTTP/CSP/module loading is not exercised. Not Safari, Windows or live Mac acceptance','browser':version,'tests':results,'pass':len(results),'fail':0}
 (root/'qa/prototype-browser-results.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
 print(json.dumps({'browser':version,'pass':len(results),'screenshots':list(p.name for p in shots.iterdir())},indent=2))

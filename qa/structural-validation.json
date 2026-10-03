@@ -17,10 +17,10 @@
     "evidence": "qa/reference-tests.tap"
   },
   "prototype_checks": {
-    "pass": 25,
+    "pass": 26,
     "fail": 0,
-    "scope": "LOCAL_UI: in-memory HTML/CSS/module render in Linux Chromium, plus separate Python HTTP boundary probes. Browser localhost navigation was blocked by environment policy; original policy unchanged. Not HTTP browser integration, Safari, Windows or live Mac acceptance",
-    "browser": "144.0.7559.96"
+    "scope": "LOCAL_UI: in-memory HTML/CSS/module render in headless Chromium on Darwin, plus separate Python HTTP boundary probes. Offline fixture, no localhost navigation; browser HTTP/CSP/module loading not exercised. Not Safari, Windows or live Mac acceptance",
+    "browser": "153.0.8010.12"
   },
   "revalidation": {
     "date": "2026-10-03",
@@ -30,9 +30,10 @@
       "openapi_internal_refs_resolved (counted $ref occurrences)",
       "openapi_paths",
       "json_parse_files",
-      "macos_script_syntax (sh -n)"
+      "macos_script_syntax (sh -n)",
+      "prototype_checks and screenshots (qa/render-and-check-prototype.py, Playwright 1.63.0)"
     ],
-    "not_re_run": "yaml parsing, full JSON Schema validation of device examples, source reference IDs, entrypoint links, heuristic secret scan, prototype_checks (needs Playwright), screenshots: values above for these fields are from the original 2026-10-02 handoff",
+    "not_re_run": "yaml parsing, full JSON Schema validation of device examples, source reference IDs, entrypoint links, heuristic secret scan: values for these fields are from the original 2026-10-02 handoff",
     "note": "contracts changed after the original handoff (upstreamHost enum, bookmark id pattern, connect-intents 404); static consistency is covered by scripts/contracts.test.mjs"
   }
 }
