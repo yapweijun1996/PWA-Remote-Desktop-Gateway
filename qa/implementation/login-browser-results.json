@@ -1,0 +1,125 @@
+{
+  "status": "PASS",
+  "scope": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE",
+  "browser": "153.0.8010.12",
+  "signedFixtureIdentity": true,
+  "realAccess": false,
+  "realMac": false,
+  "realSafari": false,
+  "desktopAuthenticated": false,
+  "selfSignedLoopbackTLS": true,
+  "resolvedFixtureExpectation": {
+    "naturalReturnGetOrigin": "ABSENT",
+    "priorNonlocalOriginAssumptionRemoved": true
+  },
+  "preFixRegression": {
+    "priorMetadataObserved": true,
+    "samePageFormOriginNull403Resolved": true
+  },
+  "fixtureAdjustment": {
+    "opaqueIframeRemoved": true,
+    "priorOpaqueSecurityErrorCause": "UNKNOWN_FIXTURE_ONLY",
+    "replacement": "NATIVE_TOP_LEVEL_FORM_NO_REFERRER"
+  },
+  "results": [
+    {
+      "test": "Cross-origin provider POST and 302 GET canonicalize a benign login query and render the signed enrollment form without issuing trust",
+      "status": "PASS",
+      "level": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE"
+    },
+    {
+      "test": "Explicit same-origin form enrollment sets a protected host-only cookie and the real trusted-store landing/API work without desktop authentication",
+      "status": "PASS",
+      "level": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE"
+    },
+    {
+      "test": "A separately declared test Origin:null HTTPS GET renders enrollment without issuing trust; this header is not claimed as natural Chromium behavior",
+      "status": "PASS",
+      "level": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE"
+    },
+    {
+      "test": "A fresh browser without a signed edge assertion receives friendly 401 HTML without an enrollment form",
+      "status": "PASS",
+      "level": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE"
+    },
+    {
+      "test": "Cross-origin enrollment POST remains denied",
+      "status": "PASS",
+      "level": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE"
+    },
+    {
+      "test": "Native null-Origin POST under no-referrer remains denied",
+      "status": "PASS",
+      "level": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE"
+    }
+  ],
+  "providerReturnPost": {
+    "method": "POST",
+    "origin": "CROSS_ORIGIN",
+    "status": 302
+  },
+  "loginObservations": [
+    {
+      "method": "GET",
+      "queryPresent": true,
+      "origin": "ABSENT",
+      "status": 303,
+      "referrerPolicy": "SAME_ORIGIN",
+      "deviceCookieIssued": false
+    },
+    {
+      "method": "GET",
+      "queryPresent": false,
+      "origin": "ABSENT",
+      "status": 200,
+      "referrerPolicy": "SAME_ORIGIN",
+      "deviceCookieIssued": false
+    },
+    {
+      "method": "POST",
+      "queryPresent": false,
+      "origin": "SAME_ORIGIN",
+      "status": 303,
+      "referrerPolicy": "NO_REFERRER",
+      "deviceCookieIssued": true
+    },
+    {
+      "method": "GET",
+      "queryPresent": false,
+      "origin": "NULL",
+      "status": 200,
+      "referrerPolicy": "SAME_ORIGIN",
+      "deviceCookieIssued": false
+    },
+    {
+      "method": "GET",
+      "queryPresent": false,
+      "origin": "ABSENT",
+      "status": 401,
+      "referrerPolicy": "SAME_ORIGIN",
+      "deviceCookieIssued": false
+    },
+    {
+      "method": "POST",
+      "queryPresent": false,
+      "origin": "CROSS_ORIGIN",
+      "status": 403,
+      "referrerPolicy": "NO_REFERRER",
+      "deviceCookieIssued": false
+    },
+    {
+      "method": "POST",
+      "queryPresent": false,
+      "origin": "NULL",
+      "status": 403,
+      "referrerPolicy": "NO_REFERRER",
+      "deviceCookieIssued": false
+    }
+  ],
+  "observedBrowserPages": 5,
+  "pageErrors": 0,
+  "exceptionCategories": [],
+  "unexpectedConsoleErrors": 0,
+  "expectedConsoleErrors": 2,
+  "webSockets": 0
+}

@@ -1,0 +1,96 @@
+{
+  "recordedAt": "2026-10-03T04:06:28.602501+00:00",
+  "status": "PASS",
+  "scope": "REAL_DEPLOYED_LOGIN_FIX_RUNTIME_CONFIG",
+  "sourceCommit": "38b68354249cde5f79cc725cb8768fce227683b6",
+  "realMac": false,
+  "realAccessPositive": false,
+  "realSafari": false,
+  "actualMobileRequestTrigger": "UNOBSERVED",
+  "gatewayJarSha256": "959e9856cb1f580eeae9c9f55ca76337c29e913fd5e654eef3c1ad3c627321a7",
+  "runtime": [
+    {
+      "id": "adf2cedc7f6d148c5e55f1d692ddd24710f7c8c9c451feb064e62f3eb2634719",
+      "name": "/rdg-current-mac-pilot-gateway-1",
+      "image": "sha256:cbbfaadd12d4dce9dc8f15d3909d4b343ed91a01f546fc7c1afddba669e5bab3",
+      "user": "10001:10001",
+      "readonly": true,
+      "capDrop": [
+        "ALL"
+      ],
+      "state": "running",
+      "health": "healthy",
+      "ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32120"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "destination": "/var/lib/rdg-key",
+          "volumeName": "rdg-current-mac-pilot_rdg-vnc-key",
+          "readWrite": false
+        },
+        {
+          "destination": "/app/config/device.json",
+          "volumeName": null,
+          "readWrite": false
+        },
+        {
+          "destination": "/var/lib/rdg",
+          "volumeName": "rdg-current-mac-pilot_rdg-metadata",
+          "readWrite": true
+        }
+      ]
+    },
+    {
+      "id": "db8113e61f4fbf2684f6191d3ae640a6c23c001db2bfcdbb7038e04d36eb44d2",
+      "name": "/rdg-current-mac-pilot-guacd-1",
+      "image": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+      "user": "10001:10001",
+      "readonly": true,
+      "capDrop": [
+        "ALL"
+      ],
+      "state": "running",
+      "health": null,
+      "ports": {},
+      "mounts": []
+    }
+  ],
+  "unrelatedContainerIdsPreserved": [
+    "5cb680ca7304",
+    "964309bbb900",
+    "15a8a8cb5f89",
+    "242889a361f7",
+    "ae3375fb14be",
+    "8f886a7fbd96",
+    "fd2f5352ccfe",
+    "9e326b75bb83"
+  ],
+  "existingCloudflaredPidsPreserved": {
+    "19520": true,
+    "47030": true,
+    "47039": true,
+    "65515": true
+  },
+  "accessPolicyChanged": false,
+  "tunnelConfigChanged": false,
+  "yearlyAccessMigration": "PENDING_EXISTING_ACTION_TIME_CONFIRMATION",
+  "credentialKeyOrCookieContentsRead": false,
+  "safeProjectionRepairs": [
+    "bind mount has no Name; guard by volume type",
+    "guacd has no Health; guard optional map field"
+  ],
+  "runtimeChangedByProjectionRepairs": false,
+  "url": "https://remote.gmb01.xyz",
+  "browserObserved": {
+    "publicLoginHeading": "Log in to RDG current Mac authenticated pilot",
+    "ownerOtpAutomated": false,
+    "ownerDesktopPasswordAutomated": false
+  },
+  "productionJarContainsTestFixtures": false
+}

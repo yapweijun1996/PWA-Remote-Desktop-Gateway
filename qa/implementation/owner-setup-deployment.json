@@ -97,5 +97,8 @@
     "actualPublicLoginHeading": "Log in to RDG current Mac authenticated pilot",
     "otpInputAutomated": false,
     "ownerDesktopPasswordAutomated": false
-  }
+  },
+  "historical": true,
+  "supersededBy": "login-return-deployment.json",
+  "note": "Initial owner-setup image retained as historical evidence; current login fix keeps its Access/Tunnel migration pending."
 }

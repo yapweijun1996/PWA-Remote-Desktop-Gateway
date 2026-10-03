@@ -1,0 +1,169 @@
+{
+  "recordedAt": "2026-10-03T04:05:08.410192+00:00",
+  "status": "PASS",
+  "scope": "REAL_DEPLOYED_LOGIN_FIX_UNAUTHENTICATED_ORIGIN_AND_PUBLIC_CHECKS",
+  "realMac": false,
+  "realAccessPositive": false,
+  "realSafari": false,
+  "originChecks": [
+    {
+      "case": "health",
+      "status": 200,
+      "expected": 200,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=ISO-8859-1",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "root-untrusted",
+      "status": 303,
+      "expected": 303,
+      "pass": true,
+      "location": "/login",
+      "contentType": "",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "landing-query-cleanup",
+      "status": 303,
+      "expected": 303,
+      "pass": true,
+      "location": "/",
+      "contentType": "",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "login-no-access-html",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null,
+      "contentType": "text/html;charset=UTF-8",
+      "referrerPolicy": "same-origin"
+    },
+    {
+      "case": "login-null-origin-no-access",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null,
+      "contentType": "text/html;charset=UTF-8",
+      "referrerPolicy": "same-origin"
+    },
+    {
+      "case": "login-forged-assertion",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null,
+      "contentType": "text/html;charset=UTF-8",
+      "referrerPolicy": "same-origin"
+    },
+    {
+      "case": "login-post-null-origin",
+      "status": 403,
+      "expected": 403,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=UTF-8",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "api-untrusted",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=UTF-8",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "api-query-denied",
+      "status": 403,
+      "expected": 403,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=UTF-8",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "api-wrong-host",
+      "status": 403,
+      "expected": 403,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=UTF-8",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "bootstrap-forged-device",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=UTF-8",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "bootstrap-foreign-origin",
+      "status": 403,
+      "expected": 403,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=UTF-8",
+      "referrerPolicy": "no-referrer"
+    },
+    {
+      "case": "websocket-untrusted",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null,
+      "contentType": "application/json;charset=UTF-8",
+      "referrerPolicy": "no-referrer"
+    }
+  ],
+  "publicChecks": [
+    {
+      "case": "root",
+      "status": 302,
+      "pass": true,
+      "redirectHost": "kb-api.cloudflareaccess.com",
+      "redirectPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "queryRecorded": false,
+      "upgrade": false
+    },
+    {
+      "case": "login",
+      "status": 302,
+      "pass": true,
+      "redirectHost": "kb-api.cloudflareaccess.com",
+      "redirectPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "queryRecorded": false,
+      "upgrade": false
+    },
+    {
+      "case": "devices",
+      "status": 302,
+      "pass": true,
+      "redirectHost": "kb-api.cloudflareaccess.com",
+      "redirectPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "queryRecorded": false,
+      "upgrade": false
+    },
+    {
+      "case": "websocket",
+      "status": 302,
+      "pass": true,
+      "redirectHost": "kb-api.cloudflareaccess.com",
+      "redirectPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "queryRecorded": false,
+      "upgrade": false
+    }
+  ],
+  "signedIdentityFixturePubliclyExposed": false,
+  "queryTokenCookieContentsRecorded": false,
+  "accessPolicyChanged": false,
+  "tunnelConfigChanged": false
+}

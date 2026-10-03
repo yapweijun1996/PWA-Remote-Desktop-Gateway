@@ -1,13 +1,9 @@
 {
   "status": "PASS",
-  "recordedAt": "2026-10-03T02:37:38.484189+00:00",
-  "level": "LOCAL_PROTOCOL_CREDENTIAL_TRUST_AND_DEFAULT_POLICY_FIXTURES",
+  "recordedAt": "2026-10-03T03:48:19.023575+00:00",
+  "level": "LOCAL_PROTOCOL_CREDENTIAL_TRUST_NAVIGATION_AND_DEFAULT_POLICY_FIXTURES",
   "realMac": false,
   "realAccess": false,
-  "tests": 90,
-  "failures": 0,
-  "errors": 0,
-  "skipped": 0,
   "suites": [
     {
       "suite": "com.rdg.AccessVerifierTest",
@@ -15,7 +11,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.409,
+      "seconds": 0.661,
       "cases": [
         "keyRotationCacheExpiryAndRefreshFailure",
         "wrongIssuerAudienceEmailTypeAndSubject",
@@ -31,7 +27,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.237,
+      "seconds": 0.275,
       "cases": [
         "retentionAndNodeRestoreBinding"
       ]
@@ -55,7 +51,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.218,
+      "seconds": 0.203,
       "cases": [
         "rawWebsocketStillValidatesSignedIdentityAndOriginBeforeBlockedRefusal",
         "blockedIntentsAndClipboardRemainBehindIdentityOriginAndCsrf",
@@ -79,7 +75,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.037,
+      "seconds": 0.046,
       "cases": [
         "missingConfigPlaceholdersAndUnsafeSecretRefuseStartup",
         "blockedPolicyNeverReadsAnOptionalCredentialButRejectsInvalidConfiguration",
@@ -95,7 +91,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.188,
+      "seconds": 0.203,
       "cases": [
         "changedMasterFailsEachReadSaveAndRestartWithoutReplacingEnvelope",
         "corruptOrOversizedDataAndWrongKeyLengthFailClosed",
@@ -112,7 +108,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 1.261,
+      "seconds": 1.104,
       "cases": [
         "pendingIntentBlocksUpdateBoundaryAndEndCancelsIt",
         "liveAbsoluteExpiryClosesBothEvenWithRecentInput",
@@ -131,7 +127,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.081,
+      "seconds": 0.053,
       "cases": [
         "viewPolicyRejectsInputWithoutNeedingCalibratedKeysyms",
         "signedPilotTokenMatchesThePinnedTestOwnerSubject",
@@ -149,7 +145,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.05,
+      "seconds": 0.061,
       "cases": [
         "eachHandshakeUsesCurrentCredentialAndDropsRetainedConfigurationPassword"
       ]
@@ -160,7 +156,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.598,
+      "seconds": 1.115,
       "cases": [
         "closedBodyAndBoundedPasswordRejectTargetInjectionAndMalformedValues",
         "provisionEnablesIntentWithTruthfulStatusAndActiveReplaceRefusalWithoutSecretExposure",
@@ -173,7 +169,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.208,
+      "seconds": 0.216,
       "cases": [
         "expiryAndSubjectRateLimitDoNotAllowStaleAppsOrUnlimitedOtherTabs",
         "changedKeyFailsBeforeConnectorCanDereferenceDesktopAndDefaultSetupIsDisabled",
@@ -188,7 +184,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.049,
+      "seconds": 0.062,
       "cases": [
         "maintenanceRejectsPendingAndActiveSessions",
         "metadataContainsNoSessionOrPayload",
@@ -211,7 +207,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.225,
+      "seconds": 0.284,
       "cases": [
         "malformedExpiredOrMissingTokensNeverAuthenticate",
         "replacedKeyFailsLiveAndWrongKeyRefusesRestart",
@@ -233,21 +229,29 @@
     },
     {
       "suite": "com.rdg.TrustedGatewayIntegrationTest",
-      "tests": 8,
+      "tests": 12,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.81,
+      "seconds": 1.677,
       "cases": [
+        "signedLoginNavigationAcceptsReturnOriginsWithoutIssuingTrust",
         "missingForgedAndMismatchedBrowserProofRejectApiAndWebsocket",
         "signedAccessAndOneTimeSameOriginEnrollmentAreRequired",
         "removingAnotherBrowserPreservesTheManagingBrowserSession",
         "validTrustIsReusedWithoutExtensionAndReenrollmentClearsPriorApp",
+        "loginGetFailuresAreFriendlyHtmlWhileApiFailuresKeepJson",
         "logoutRevokesRememberedBrowser",
         "changedPinnedSubjectInvalidatesPersistedBrowserAndLiveAuthority",
+        "enrollmentPostsKeepExactOriginAndQueryGuardBeforeTrustedShortcut",
         "revocationClosesAnExistingOfficialTransportAndDeniesStaleProof",
-        "rememberedBrowserAccessDoesNotDependOnAnEdgeAssertion"
+        "rememberedBrowserAccessDoesNotDependOnAnEdgeAssertion",
+        "safeNavigationQueriesCanonicalizeWithoutReflectionAndProtectedQueriesRemainRejected"
       ]
     }
-  ]
+  ],
+  "tests": 94,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
 }
