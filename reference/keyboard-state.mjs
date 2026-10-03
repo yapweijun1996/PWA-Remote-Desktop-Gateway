@@ -12,6 +12,7 @@ export function mapLogicalKey(profile, key, {code = '', physical = true} = {}) {
   return physical && profile === 'windows-alt-command' && code === 'AltLeft' && key === 'OptionLeft'
     ? 'CommandLeft' : key;
 }
+const MODIFIER_KEY = /^(?:Command|Option|Control|Shift)(?:Left|Right)$/;
 export class KeyboardState {
   #sources = new Map(); #counts = new Map(); #emit; #profile; #broken = false; #sequence = 0;
   constructor({profile = 'mac-native', onTransition} = {}) {
@@ -58,6 +59,12 @@ export class KeyboardState {
   releaseAll() {
     if (this.#broken) return; // Sink failure already cleared all state; cleanup must stay safe on blur/hide.
     for (const source of [...this.#sources.keys()].reverse()) this.up(source);
+  }
+  /** macOS fires no keyup for non-modifier keys while Command is held; call when Command is released. */
+  releasePhysicalNonModifiers() {
+    if (this.#broken) return;
+    const stale = [...this.#sources].filter(([, e]) => e.physical && !MODIFIER_KEY.test(e.key)).map(([source]) => source);
+    for (const source of stale.reverse()) this.up(source);
   }
   setProfile(profile) {
     this.#ready(); requireProfile(profile);
