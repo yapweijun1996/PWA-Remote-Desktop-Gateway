@@ -50,3 +50,7 @@ The verified ARM64 images use pinned JRE/Ubuntu bases and locked Ubuntu packages
 - [web/vendor/provenance.json](web/vendor/provenance.json): Guacamole artifact source, SHA256 and verified Apache signing key.
 
 The original `.md` specification, prototype and reference modules remain design inputs. `npm run preview` opens the explicitly labelled design prototype. `MANIFEST.sha256` describes the untouched handoff; `npm run verify:handoff` is only for that original archive, not this intentionally modified implementation branch.
+
+## Owner-approved desktop setup and remembered browsers
+
+The optional OWNER_SETUP mode adds authenticated web provisioning of an AES-GCM encrypted VNC credential and revocable 365-day trusted browsers. See [the setup contract](docs/18_OWNER_SETUP_AND_TRUSTED_DEVICES.md) and [current deployment receipt](qa/implementation/owner-setup-deployment.json). Trust is disabled by default; its Access/Tunnel migration is a separate explicit deployment boundary. Successful setup does not establish real Mac keyboard/browser acceptance.
