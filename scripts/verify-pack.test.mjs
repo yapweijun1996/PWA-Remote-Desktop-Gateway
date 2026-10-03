@@ -25,3 +25,12 @@ test('.gitattributes pins LF and keeps CSV bytes untouched', () => {
   assert.match(attrs, /^\* .*\beol=lf\b/m);
   assert.match(attrs, /^\*\.csv -text$/m);
 });
+test('.gitignore covers OS and tool droppings', () => {
+  const lines = readFileSync(new URL('.gitignore', root), 'utf8').split('\n');
+  for (const entry of ['.DS_Store', '__pycache__/', 'node_modules/']) assert.ok(lines.includes(entry), entry);
+});
+test('No ignored droppings are tracked by git', t => {
+  try { execFileSync('git', ['rev-parse', '--git-dir'], {cwd: root, stdio: 'ignore'}); } catch { return t.skip('not a git checkout'); }
+  const tracked = execFileSync('git', ['ls-files'], {cwd: root, encoding: 'utf8'}).split('\n');
+  assert.deepEqual(tracked.filter(f => /(^|\/)\.DS_Store$|__pycache__\/|(^|\/)node_modules\//.test(f)), []);
+});

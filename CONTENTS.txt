@@ -1,5 +1,6 @@
 PWA Remote Desktop Gateway v1.0 — handoff inventory
 
+.gitignore
 AGENTS.md
 AI_AGENT_TASK_PROMPT.md
 CONTENTS.txt

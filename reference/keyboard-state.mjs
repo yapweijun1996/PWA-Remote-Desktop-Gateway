@@ -35,9 +35,13 @@ export class KeyboardState {
       throw new Error('Input sink failed; local state cleared. Close upstream; delivery is unknown.', {cause});
     }
   }
-  down(source, logicalKey, {code = '', physical = true} = {}) {
-    this.#ready(); requireString(source, 'source'); requireString(logicalKey, 'logicalKey');
+  #validateDown(source, logicalKey, {code = '', physical = true} = {}) {
+    requireString(source, 'source'); requireString(logicalKey, 'logicalKey');
     if (typeof physical !== 'boolean' || typeof code !== 'string') throw new TypeError('Invalid source metadata');
+  }
+  down(source, logicalKey, opts = {}) {
+    this.#ready(); this.#validateDown(source, logicalKey, opts);
+    const {code = '', physical = true} = opts;
     if (this.#sources.has(source)) return false; // Repeats cannot add a second owner.
     const key = mapLogicalKey(this.#profile, logicalKey, {code, physical});
     this.#sources.set(source, {key, physical});
@@ -62,7 +66,7 @@ export class KeyboardState {
   }
   /** Re-strike a physical non-modifier key whose keyup was never delivered (macOS Command held). */
   retrigger(source, logicalKey, opts = {}) {
-    this.#ready(); requireString(source, 'source');
+    this.#ready(); this.#validateDown(source, logicalKey, opts); // Validate before any release.
     const owned = this.#sources.get(source);
     if (owned?.physical && !MODIFIER_KEY.test(owned.key)) this.up(source);
     return this.down(source, logicalKey, opts);
