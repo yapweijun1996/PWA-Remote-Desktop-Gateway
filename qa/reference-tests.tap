@@ -1,458 +1,589 @@
-
 > pwa-remote-desktop-gateway-handoff@1.0.0 test
-> node --test reference/*.test.mjs
+> node --test reference/*.test.mjs scripts/*.test.mjs
 
 TAP version 13
 # Subtest: Allowlisted generic JS can cache
 ok 1 - Allowlisted generic JS can cache
   ---
-  duration_ms: 2.175388
+  duration_ms: 2.704292
   type: 'test'
   ...
 # Subtest: Generic offline page can cache
 ok 2 - Generic offline page can cache
   ---
-  duration_ms: 0.239865
+  duration_ms: 0.400833
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /api/devices
 ok 3 - Private or unknown path denied: /api/devices
   ---
-  duration_ms: 0.111125
+  duration_ms: 0.116917
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /api/session
 ok 4 - Private or unknown path denied: /api/session
   ---
-  duration_ms: 0.07387
+  duration_ms: 0.087375
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /tunnel
 ok 5 - Private or unknown path denied: /tunnel
   ---
-  duration_ms: 0.12815
+  duration_ms: 0.49075
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /cdn-cgi/access/login
 ok 6 - Private or unknown path denied: /cdn-cgi/access/login
   ---
-  duration_ms: 0.070314
+  duration_ms: 0.151792
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /
 ok 7 - Private or unknown path denied: /
   ---
-  duration_ms: 0.108641
+  duration_ms: 0.23625
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /assets/private.js
 ok 8 - Private or unknown path denied: /assets/private.js
   ---
-  duration_ms: 0.113327
+  duration_ms: 0.103583
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /constructor
 ok 9 - Private or unknown path denied: /constructor
   ---
-  duration_ms: 0.319663
+  duration_ms: 0.476667
   type: 'test'
   ...
 # Subtest: Private or unknown path denied: /toString
 ok 10 - Private or unknown path denied: /toString
   ---
-  duration_ms: 0.295727
+  duration_ms: 0.401083
   type: 'test'
   ...
 # Subtest: POST never cached
 ok 11 - POST never cached
   ---
-  duration_ms: 0.133257
+  duration_ms: 0.16425
   type: 'test'
   ...
 # Subtest: Error status never cached
 ok 12 - Error status never cached
   ---
-  duration_ms: 0.073308
+  duration_ms: 0.061
   type: 'test'
   ...
 # Subtest: Redirected login never cached
 ok 13 - Redirected login never cached
   ---
-  duration_ms: 0.059347
+  duration_ms: 0.237791
   type: 'test'
   ...
 # Subtest: HTML returned for JS never cached
 ok 14 - HTML returned for JS never cached
   ---
-  duration_ms: 0.109182
+  duration_ms: 0.1555
   type: 'test'
   ...
 # Subtest: Cross-origin never cached
 ok 15 - Cross-origin never cached
   ---
-  duration_ms: 0.073018
+  duration_ms: 0.091625
   type: 'test'
   ...
 # Subtest: Query and URL credential variants never cached
 ok 16 - Query and URL credential variants never cached
   ---
-  duration_ms: 0.089412
+  duration_ms: 0.22975
   type: 'test'
   ...
 # Subtest: Private and no-store override safelist
 ok 17 - Private and no-store override safelist
   ---
-  duration_ms: 0.083774
+  duration_ms: 0.133458
   type: 'test'
   ...
 # Subtest: Invalid URL and HTTP origin fail closed
 ok 18 - Invalid URL and HTTP origin fail closed
   ---
-  duration_ms: 0.104895
+  duration_ms: 0.134792
   type: 'test'
   ...
 # Subtest: Mac Command stays Command
 ok 19 - Mac Command stays Command
   ---
-  duration_ms: 0.821986
+  duration_ms: 1.9425
   type: 'test'
   ...
 # Subtest: Windows native Alt stays Option
 ok 20 - Windows native Alt stays Option
   ---
-  duration_ms: 0.147428
+  duration_ms: 0.269625
   type: 'test'
   ...
 # Subtest: Opt-in Left Alt becomes Command
 ok 21 - Opt-in Left Alt becomes Command
   ---
-  duration_ms: 0.090224
+  duration_ms: 0.098
   type: 'test'
   ...
 # Subtest: Opt-in Right Alt is not converted
 ok 22 - Opt-in Right Alt is not converted
   ---
-  duration_ms: 0.078947
+  duration_ms: 0.088458
   type: 'test'
   ...
 # Subtest: Control remains Control in every profile
 ok 23 - Control remains Control in every profile
   ---
-  duration_ms: 0.098716
+  duration_ms: 0.106167
   type: 'test'
   ...
 # Subtest: Virtual Option is never profile-remapped
 ok 24 - Virtual Option is never profile-remapped
   ---
-  duration_ms: 0.088451
+  duration_ms: 0.0975
   type: 'test'
   ...
 # Subtest: Unknown profile is rejected
 ok 25 - Unknown profile is rejected
   ---
-  duration_ms: 0.359872
+  duration_ms: 1.21125
   type: 'test'
   ...
 # Subtest: Missing transition sink is rejected
 ok 26 - Missing transition sink is rejected
   ---
-  duration_ms: 0.134419
+  duration_ms: 0.148708
   type: 'test'
   ...
 # Subtest: Simple down and up pair
 ok 27 - Simple down and up pair
   ---
-  duration_ms: 1.151603
+  duration_ms: 2.278209
   type: 'test'
   ...
 # Subtest: Repeat cannot add an owner
 ok 28 - Repeat cannot add an owner
   ---
-  duration_ms: 0.311811
+  duration_ms: 0.454333
   type: 'test'
   ...
 # Subtest: Keyup uses original logical snapshot
 ok 29 - Keyup uses original logical snapshot
   ---
-  duration_ms: 0.407372
+  duration_ms: 0.203833
   type: 'test'
   ...
 # Subtest: Unowned keyup does nothing
 ok 30 - Unowned keyup does nothing
   ---
-  duration_ms: 0.089152
+  duration_ms: 0.058667
   type: 'test'
   ...
 # Subtest: Two physical aliases keep Command held
 ok 31 - Two physical aliases keep Command held
   ---
-  duration_ms: 0.166276
+  duration_ms: 0.107708
   type: 'test'
   ...
 # Subtest: Profile switch releases original mapping first
 ok 32 - Profile switch releases original mapping first
   ---
-  duration_ms: 0.228148
+  duration_ms: 0.256208
   type: 'test'
   ...
 # Subtest: Invalid profile switch does not mutate held keys
 ok 33 - Invalid profile switch does not mutate held keys
   ---
-  duration_ms: 0.289749
+  duration_ms: 0.110208
   type: 'test'
   ...
 # Subtest: Same profile does not unexpectedly release keys
 ok 34 - Same profile does not unexpectedly release keys
   ---
-  duration_ms: 0.105146
+  duration_ms: 0.921334
   type: 'test'
   ...
 # Subtest: Release all is reverse acquisition order
 ok 35 - Release all is reverse acquisition order
   ---
-  duration_ms: 0.957306
+  duration_ms: 0.263167
   type: 'test'
   ...
 # Subtest: Release all handles alias count and is idempotent
 ok 36 - Release all handles alias count and is idempotent
   ---
-  duration_ms: 0.117714
+  duration_ms: 0.29075
   type: 'test'
   ...
 # Subtest: Virtual chord has balanced transitions
 ok 37 - Virtual chord has balanced transitions
   ---
-  duration_ms: 0.186165
+  duration_ms: 0.185041
   type: 'test'
   ...
 # Subtest: Virtual chord rejects held physical input
 ok 38 - Virtual chord rejects held physical input
   ---
-  duration_ms: 0.289589
+  duration_ms: 0.091416
   type: 'test'
   ...
 # Subtest: Virtual chord preserves previously latched ownership
 ok 39 - Virtual chord preserves previously latched ownership
   ---
-  duration_ms: 0.232214
+  duration_ms: 0.085
   type: 'test'
   ...
 # Subtest: Duplicate and empty chords are rejected
 ok 40 - Duplicate and empty chords are rejected
   ---
-  duration_ms: 0.118435
+  duration_ms: 0.072667
   type: 'test'
   ...
 # Subtest: Invalid input fails before state changes
 ok 41 - Invalid input fails before state changes
   ---
-  duration_ms: 0.117003
+  duration_ms: 0.084375
   type: 'test'
   ...
 # Subtest: Sink error clears state and permanently ends this instance
 ok 42 - Sink error clears state and permanently ends this instance
   ---
-  duration_ms: 0.221468
+  duration_ms: 0.18375
   type: 'test'
   ...
 # Subtest: Sink error on release also fails closed
 ok 43 - Sink error on release also fails closed
   ---
-  duration_ms: 0.124775
+  duration_ms: 0.213958
   type: 'test'
   ...
 # Subtest: Snapshot mutation cannot alter internal state
 ok 44 - Snapshot mutation cannot alter internal state
   ---
-  duration_ms: 0.094399
+  duration_ms: 0.106834
+  type: 'test'
+  ...
+# Subtest: Release all after sink failure is a safe no-op
+ok 45 - Release all after sink failure is a safe no-op
+  ---
+  duration_ms: 0.149208
+  type: 'test'
+  ...
+# Subtest: Profile change after sink failure still reports a fresh-session error
+ok 46 - Profile change after sink failure still reports a fresh-session error
+  ---
+  duration_ms: 0.09375
+  type: 'test'
+  ...
+# Subtest: Releasing non-modifiers keeps modifiers, latches and aliases
+ok 47 - Releasing non-modifiers keeps modifiers, latches and aliases
+  ---
+  duration_ms: 0.518792
+  type: 'test'
+  ...
+# Subtest: Releasing non-modifiers is a no-op when nothing is stale or after sink failure
+ok 48 - Releasing non-modifiers is a no-op when nothing is stale or after sink failure
+  ---
+  duration_ms: 0.173334
+  type: 'test'
+  ...
+# Subtest: Retrigger re-strikes a stuck non-modifier key of any name
+ok 49 - Retrigger re-strikes a stuck non-modifier key of any name
+  ---
+  duration_ms: 0.170958
+  type: 'test'
+  ...
+# Subtest: Retrigger on an unowned key is a plain down
+ok 50 - Retrigger on an unowned key is a plain down
+  ---
+  duration_ms: 0.053791
+  type: 'test'
+  ...
+# Subtest: Retrigger never re-strikes modifiers or virtual latches
+ok 51 - Retrigger never re-strikes modifiers or virtual latches
+  ---
+  duration_ms: 0.057625
+  type: 'test'
+  ...
+# Subtest: Retrigger after sink failure fails closed
+ok 52 - Retrigger after sink failure fails closed
+  ---
+  duration_ms: 0.104083
+  type: 'test'
+  ...
+# Subtest: Retrigger validates before releasing the held key
+ok 53 - Retrigger validates before releasing the held key
+  ---
+  duration_ms: 0.105208
   type: 'test'
   ...
 # Subtest: Exact HTTPS origin is accepted
-ok 45 - Exact HTTPS origin is accepted
+ok 54 - Exact HTTPS origin is accepted
   ---
-  duration_ms: 1.37935
+  duration_ms: 1.001625
   type: 'test'
   ...
 # Subtest: Origin rejected: null
-ok 46 - Origin rejected: null
+ok 55 - Origin rejected: null
   ---
-  duration_ms: 0.339562
+  duration_ms: 0.749375
   type: 'test'
   ...
 # Subtest: Origin rejected: https://evil.example.com
-ok 47 - Origin rejected: https://evil.example.com
+ok 56 - Origin rejected: https://evil.example.com
   ---
-  duration_ms: 0.140638
+  duration_ms: 0.095792
   type: 'test'
   ...
 # Subtest: Origin rejected: https://remote-mini.example.com.evil.test
-ok 48 - Origin rejected: https://remote-mini.example.com.evil.test
+ok 57 - Origin rejected: https://remote-mini.example.com.evil.test
   ---
-  duration_ms: 0.133978
+  duration_ms: 0.068375
   type: 'test'
   ...
 # Subtest: Origin rejected: https://remote-mini.example.com/
-ok 49 - Origin rejected: https://remote-mini.example.com/
+ok 58 - Origin rejected: https://remote-mini.example.com/
   ---
-  duration_ms: 0.137864
+  duration_ms: 0.119958
   type: 'test'
   ...
 # Subtest: Origin rejected: http://remote-mini.example.com
-ok 50 - Origin rejected: http://remote-mini.example.com
+ok 59 - Origin rejected: http://remote-mini.example.com
   ---
-  duration_ms: 0.165244
+  duration_ms: 0.108875
   type: 'test'
   ...
 # Subtest: Origin rejected: 
-ok 51 - Origin rejected: 
+ok 60 - Origin rejected: 
   ---
-  duration_ms: 0.126467
+  duration_ms: 0.0785
   type: 'test'
   ...
 # Subtest: Malformed expected origin cannot authorize
-ok 52 - Malformed expected origin cannot authorize
+ok 61 - Malformed expected origin cannot authorize
   ---
-  duration_ms: 0.312833
+  duration_ms: 0.216583
   type: 'test'
   ...
 # Subtest: Deadline bound to earlier verified Access expiry
-ok 53 - Deadline bound to earlier verified Access expiry
+ok 62 - Deadline bound to earlier verified Access expiry
   ---
-  duration_ms: 0.500701
+  duration_ms: 0.903708
   type: 'test'
   ...
 # Subtest: Deadline capped to one-hour design default
-ok 54 - Deadline capped to one-hour design default
+ok 63 - Deadline capped to one-hour design default
   ---
-  duration_ms: 0.495813
+  duration_ms: 0.707125
   type: 'test'
   ...
 # Subtest: Expired identity cannot bootstrap
-ok 55 - Expired identity cannot bootstrap
+ok 64 - Expired identity cannot bootstrap
   ---
-  duration_ms: 0.393412
+  duration_ms: 0.320708
   type: 'test'
   ...
 # Subtest: NaN/negative/overflow deadline rejected
-ok 56 - NaN/negative/overflow deadline rejected
+ok 65 - NaN/negative/overflow deadline rejected
   ---
-  duration_ms: 0.229449
+  duration_ms: 0.148417
   type: 'test'
   ...
 # Subtest: Valid active session
-ok 57 - Valid active session
+ok 66 - Valid active session
   ---
-  duration_ms: 0.85157
+  duration_ms: 0.477833
   type: 'test'
   ...
 # Subtest: Absolute deadline is exclusive
-ok 58 - Absolute deadline is exclusive
+ok 67 - Absolute deadline is exclusive
   ---
-  duration_ms: 0.08124
+  duration_ms: 0.057
   type: 'test'
   ...
 # Subtest: Input idle timeout even with no notion of heartbeat
-ok 59 - Input idle timeout even with no notion of heartbeat
+ok 68 - Input idle timeout even with no notion of heartbeat
   ---
-  duration_ms: 0.061612
+  duration_ms: 0.039958
   type: 'test'
   ...
 # Subtest: Revocation overrides otherwise active state
-ok 60 - Revocation overrides otherwise active state
+ok 69 - Revocation overrides otherwise active state
   ---
-  duration_ms: 0.967802
+  duration_ms: 0.043375
   type: 'test'
   ...
 # Subtest: Future or precreation activity fails closed
-ok 61 - Future or precreation activity fails closed
+ok 70 - Future or precreation activity fails closed
   ---
-  duration_ms: 0.072998
+  duration_ms: 0.0565
   type: 'test'
   ...
 # Subtest: Invalid zero idle fails closed
-ok 62 - Invalid zero idle fails closed
+ok 71 - Invalid zero idle fails closed
   ---
-  duration_ms: 0.055021
+  duration_ms: 2.531917
   type: 'test'
   ...
 # Subtest: Valid intent only eligible, not consumed by predicate
-ok 63 - Valid intent only eligible, not consumed by predicate
+ok 72 - Valid intent only eligible, not consumed by predicate
   ---
-  duration_ms: 0.114078
+  duration_ms: 0.1215
   type: 'test'
   ...
 # Subtest: Intent rejects mismatched id
-ok 64 - Intent rejects mismatched id
+ok 73 - Intent rejects mismatched id
   ---
-  duration_ms: 0.061481
+  duration_ms: 0.051
   type: 'test'
   ...
 # Subtest: Intent rejects mismatched ownerId
-ok 65 - Intent rejects mismatched ownerId
+ok 74 - Intent rejects mismatched ownerId
   ---
-  duration_ms: 0.037907
+  duration_ms: 0.028375
   type: 'test'
   ...
 # Subtest: Intent rejects mismatched appSessionId
-ok 66 - Intent rejects mismatched appSessionId
+ok 75 - Intent rejects mismatched appSessionId
   ---
-  duration_ms: 0.129592
+  duration_ms: 0.024833
   type: 'test'
   ...
 # Subtest: Intent rejects mismatched nodeId
-ok 67 - Intent rejects mismatched nodeId
+ok 76 - Intent rejects mismatched nodeId
   ---
-  duration_ms: 0.050565
+  duration_ms: 0.022459
   type: 'test'
   ...
 # Subtest: Intent rejects mismatched deviceId
-ok 68 - Intent rejects mismatched deviceId
+ok 77 - Intent rejects mismatched deviceId
   ---
-  duration_ms: 0.033399
+  duration_ms: 0.022333
   type: 'test'
   ...
 # Subtest: Intent does not permit mode escalation
-ok 69 - Intent does not permit mode escalation
+ok 78 - Intent does not permit mode escalation
   ---
-  duration_ms: 0.079578
+  duration_ms: 0.041333
   type: 'test'
   ...
 # Subtest: Intent rejects exact expiry boundary
-ok 70 - Intent rejects exact expiry boundary
+ok 79 - Intent rejects exact expiry boundary
   ---
-  duration_ms: 0.058237
+  duration_ms: 0.03375
   type: 'test'
   ...
 # Subtest: Intent rejects reuse
-ok 71 - Intent rejects reuse
+ok 80 - Intent rejects reuse
   ---
-  duration_ms: 0.053539
+  duration_ms: 0.031666
   type: 'test'
   ...
 # Subtest: Intent rejects revocation and inactive owner session
-ok 72 - Intent rejects revocation and inactive owner session
+ok 81 - Intent rejects revocation and inactive owner session
   ---
-  duration_ms: 0.101881
+  duration_ms: 0.035916
   type: 'test'
   ...
 # Subtest: Intent rejects excessive TTL and future creation
-ok 73 - Intent rejects excessive TTL and future creation
+ok 82 - Intent rejects excessive TTL and future creation
   ---
-  duration_ms: 0.095892
+  duration_ms: 0.032167
   type: 'test'
   ...
 # Subtest: Incomplete intent fields fail closed
-ok 74 - Incomplete intent fields fail closed
+ok 83 - Incomplete intent fields fail closed
   ---
-  duration_ms: 0.178204
+  duration_ms: 0.121333
   type: 'test'
   ...
-1..74
-# tests 74
+# Subtest: upstreamHost is only the host gateway name, never container-local 127.0.0.1
+ok 84 - upstreamHost is only the host gateway name, never container-local 127.0.0.1
+  ---
+  duration_ms: 1.119917
+  type: 'test'
+  ...
+# Subtest: Bookmark ids use the same pattern as local device ids
+ok 85 - Bookmark ids use the same pattern as local device ids
+  ---
+  duration_ms: 0.32175
+  type: 'test'
+  ...
+# Subtest: Device id pattern length bounds match the connect-intent deviceId bounds
+ok 86 - Device id pattern length bounds match the connect-intent deviceId bounds
+  ---
+  duration_ms: 0.338041
+  type: 'test'
+  ...
+# Subtest: Connect-intent contract rejects bookmark devices with 404
+ok 87 - Connect-intent contract rejects bookmark devices with 404
+  ---
+  duration_ms: 0.25175
+  type: 'test'
+  ...
+# Subtest: Input status chip in the viewer toolbar may shrink and wrap
+ok 88 - Input status chip in the viewer toolbar may shrink and wrap
+  ---
+  duration_ms: 1.433
+  type: 'test'
+  ...
+# Subtest: Prototype app uses retrigger instead of a character-length check
+ok 89 - Prototype app uses retrigger instead of a character-length check
+  ---
+  duration_ms: 0.904416
+  type: 'test'
+  ...
+# Subtest: Every MANIFEST.sha256 entry exists in the checkout
+ok 90 - Every MANIFEST.sha256 entry exists in the checkout
+  ---
+  duration_ms: 2.760208
+  type: 'test'
+  ...
+# Subtest: verify-pack passes on the current tree
+ok 91 - verify-pack passes on the current tree
+  ---
+  duration_ms: 71.34225
+  type: 'test'
+  ...
+# Subtest: Committed blobs match MANIFEST.sha256 byte for byte (no line-ending rewrite)
+ok 92 - Committed blobs match MANIFEST.sha256 byte for byte (no line-ending rewrite)
+  ---
+  duration_ms: 1221.035166
+  type: 'test'
+  ...
+# Subtest: .gitattributes pins LF and keeps CSV bytes untouched
+ok 93 - .gitattributes pins LF and keeps CSV bytes untouched
+  ---
+  duration_ms: 0.291667
+  type: 'test'
+  ...
+# Subtest: .gitignore covers OS and tool droppings
+ok 94 - .gitignore covers OS and tool droppings
+  ---
+  duration_ms: 0.21125
+  type: 'test'
+  ...
+# Subtest: No ignored droppings are tracked by git
+ok 95 - No ignored droppings are tracked by git
+  ---
+  duration_ms: 33.37625
+  type: 'test'
+  ...
+# Subtest: .gitignore blocks secrets but keeps .env.example tracked
+ok 96 - .gitignore blocks secrets but keeps .env.example tracked
+  ---
+  duration_ms: 184.729166
+  type: 'test'
+  ...
+1..96
+# tests 96
 # suites 0
-# pass 74
+# pass 96
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 87.932719
+# duration_ms 1599.460958

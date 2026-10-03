@@ -2,17 +2,17 @@
   "json_parse_files": 8,
   "yaml_parse_files": 3,
   "device_schema_examples_validated": 2,
-  "openapi_internal_refs_resolved": 18,
+  "openapi_internal_refs_resolved": 19,
   "openapi_paths": 6,
   "entrypoint_links_exist": 7,
   "source_refs_valid": 29,
   "font_files_included": 0,
-  "javascript_syntax_files": 9,
+  "javascript_syntax_files": 12,
   "macos_script_syntax": "PASS (not run on a Mac)",
   "real_acceptance_not_run_rows": 64,
   "heuristic_secret_literal_scan": "No matching private keys/API keys/JWT literals; templates contain placeholders only",
   "unit_tests": {
-    "pass": 74,
+    "pass": 96,
     "fail": 0,
     "evidence": "qa/reference-tests.tap"
   },
@@ -21,5 +21,18 @@
     "fail": 0,
     "scope": "LOCAL_UI: in-memory HTML/CSS/module render in Linux Chromium, plus separate Python HTTP boundary probes. Browser localhost navigation was blocked by environment policy; original policy unchanged. Not HTTP browser integration, Safari, Windows or live Mac acceptance",
     "browser": "144.0.7559.96"
+  },
+  "revalidation": {
+    "date": "2026-10-03",
+    "re_measured": [
+      "unit_tests",
+      "javascript_syntax_files (node --check on every tracked .mjs)",
+      "openapi_internal_refs_resolved (counted $ref occurrences)",
+      "openapi_paths",
+      "json_parse_files",
+      "macos_script_syntax (sh -n)"
+    ],
+    "not_re_run": "yaml parsing, full JSON Schema validation of device examples, source reference IDs, entrypoint links, heuristic secret scan, prototype_checks (needs Playwright), screenshots: values above for these fields are from the original 2026-10-02 handoff",
+    "note": "contracts changed after the original handoff (upstreamHost enum, bookmark id pattern, connect-intents 404); static consistency is covered by scripts/contracts.test.mjs"
   }
 }

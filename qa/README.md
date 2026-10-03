@@ -6,4 +6,6 @@
 
 The four `screenshots/*.png` are desktop/mobile renders of the labelled prototype, not screenshots of the user's Macs. They give the implementation Agent a visual target.
 
+**Stale:** `screenshots/*.png` and `prototype-browser-results.json` were produced from the earlier prototype layout (before the drawer and unified key bar). `reference-tests.tap` and `structural-validation.json` were re-measured on 2026-10-03; see the `revalidation` block for what was and was not re-run.
+
 To rerun basic checks: from the root, `npm test` and `npm run verify`. `npm run preview` launches the loopback-only interactive prototype. The optional Python UI harness needs separately installed Playwright and a local Chromium executable; see its header. It is not a dependency of the application or basic tests. Rerendering QA output changes the corresponding archive hashes; verify the untouched archive first.
