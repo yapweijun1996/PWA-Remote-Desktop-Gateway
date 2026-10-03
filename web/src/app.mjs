@@ -3,14 +3,14 @@ import {DesktopAdapter} from './adapter.mjs';
 import {setupUpdates} from './pwa.mjs';
 
 const $=id=>document.getElementById(id),api=new GatewayAPI();
-let adapter=null,device=null,diag=null,nodeId='',epoch=0,busy=false,update=null,updateSetup=false;
+let adapter=null,desktopIntentId=null,recoveryIntentId=null,device=null,diag=null,nodeId='',epoch=0,busy=false,update=null,updateSetup=false;
 let credentialSaving=false,trustedDevicesEnabled=false,trustedLoading=false,enrollmentRequired=false;
 const desktopBlockedMessage='Access verified. Desktop connections are disabled on this node until the Mac connection and keyboard calibration are verified.';
 const platform=/Mac/.test(navigator.platform)?'mac':'windows';
 function state(value,message=value.replaceAll('_',' ')){$('status').textContent=value;$('notice').textContent=message;$('loader').hidden=!['UPDATING','RELOADING'].includes(value);}
 function clearCredentialInput(){$('desktopPassword').value='';}
 function clearPrivate(){
-  clearCredentialInput();diag=null;$('credentialSetup').hidden=true;$('changeCredential').hidden=true;
+  clearCredentialInput();desktopIntentId=null;recoveryIntentId=null;$('recoverConnection').hidden=true;diag=null;$('credentialSetup').hidden=true;$('changeCredential').hidden=true;
   $('credentialStatus').textContent='';$('trustedDevicesBtn').hidden=true;$('trustedDevicesList').replaceChildren();$('trustedDevicesStatus').textContent='';
   document.body.classList.remove('viewing');
   adapter?.disconnect();adapter=null;device=null;$('localText').value='';$('remoteText').value='';$('clipboardStatus').textContent='Clipboard cleared.';
@@ -116,22 +116,49 @@ async function initialize(){
   }catch(error){if(request!==epoch)return;if(error.message==='TRUSTED_DEVICE_REQUIRED'){trustedDevicesEnabled=true;enrollmentRequired=true;}state(navigator.onLine?'AUTH_REQUIRED':'OFFLINE',navigator.onLine?(trustedDevicesEnabled?'Sign in to trust this browser and continue.':'Access verification failed. Reopen this node through Cloudflare Access.'):'No offline remote control.');$('reauth').hidden=false;}
   finally{if(request===epoch){busy=false;$('connect').disabled=false;}}
 }
-async function end(reason='READY') {
-  clearCredentialInput();++epoch;adapter?.disconnect();adapter=null;$('surface').replaceChildren();$('localText').value='';$('remoteText').value='';
+async function cancelIntent(intentId){
+  await api.request('/api/desktop-session',{method:'DELETE',body:{intentId}});
+}
+async function end(reason='READY',message){
+  const intentId=desktopIntentId;desktopIntentId=null;const request=++epoch;busy=true;
+  clearCredentialInput();adapter?.disconnect();adapter=null;$('surface').replaceChildren();$('localText').value='';$('remoteText').value='';
   for(const d of document.querySelectorAll('dialog[open]'))d.close();
-  document.body.classList.remove('viewing');$('workspace').hidden=true;$('launcher').hidden=false;state(reason);
-  try{await api.request('/api/desktop-session',{method:'DELETE'});}catch(error){if(trustedLoginRequired(error))return;state(navigator.onLine?'REAUTH_REQUIRED':'OFFLINE','Local input stopped. Server cleanup could not be confirmed; retry access.');$('reauth').hidden=false;}
+  document.body.classList.remove('viewing');$('workspace').hidden=true;$('launcher').hidden=false;recoveryIntentId=null;$('recoverConnection').hidden=true;state(reason,message);
+  try{if(intentId)await cancelIntent(intentId);}
+  catch(error){if(request!==epoch)return false;if(trustedLoginRequired(error))return false;state(navigator.onLine?'REAUTH_REQUIRED':'OFFLINE','Local input stopped. Server cleanup could not be confirmed; retry access.');$('reauth').hidden=false;return false;}
+  finally{if(request===epoch){busy=false;$('connect').disabled=false;}}
+  if(request!==epoch)return false;
   if(['SESSION_EXPIRED','REAUTH_REQUIRED','AUTH_REQUIRED'].includes(reason))$('reauth').hidden=false;
-  busy=false;$('connect').disabled=false;
+  return true;
+}
+async function connectionFailure(error){
+  const messages={CONTROL_BUSY:'A desktop connection is already open. End the previous connection before trying again.',UPDATE_IN_PROGRESS:'A page update is finishing. Wait 20 seconds, then click Open desktop again.'};
+  if(!await end(error.message,messages[error.message]??error.message.replaceAll('_',' ')))return;
+  const request=epoch;
+  if(error.message==='CONTROL_BUSY'){
+    try{const status=await api.request('/api/session');if(request===epoch&&status.activeDesktop===true&&/^[A-Za-z0-9_-]{43}$/.test(status.activeDesktopIntentId??'')){recoveryIntentId=status.activeDesktopIntentId;$('recoverConnection').hidden=false;$('notice').textContent='This browser has a previous connection. Ending it here also closes it in any other tab.';}}
+    catch(failure){if(request===epoch)trustedLoginRequired(failure);}
+  }
+}
+async function recoverConnection(){
+  if(busy||adapter||!recoveryIntentId||$('recoverConnection').hidden)return;
+  const request=epoch,intentId=recoveryIntentId;busy=true;$('recoverConnection').disabled=true;
+  try{
+    // Cancel the displayed snapshot, even if another tab replaces it while this request waits.
+    await cancelIntent(intentId);if(request!==epoch)return;
+    recoveryIntentId=null;$('recoverConnection').hidden=true;busy=false;await connect();
+  }catch(error){if(request===epoch&&!trustedLoginRequired(error))state('ERROR','The previous connection could not be ended. Try again.');}
+  finally{if(request===epoch)busy=false;$('recoverConnection').disabled=false;}
 }
 async function connect(){
   if(busy||!device)return;if(diag?.desktopEnabled===false||device.desktopEnabled===false||device.status==='BLOCKED'){state('BLOCKED',desktopBlockedMessage);return;}if(!$('consent').checked){$('notice').textContent='Confirm shared desktop consent before connecting.';return;}
-  clearCredentialInput();const request=++epoch;busy=true;$('connect').disabled=true;state('CONNECTING');
+  clearCredentialInput();recoveryIntentId=null;$('recoverConnection').hidden=true;const request=++epoch;busy=true;$('connect').disabled=true;state('CONNECTING');
   try{
     const clipboard=$('clipboardConsent').checked&&$('mode').value==='control';
     await api.request('/api/clipboard-consent',{method:'POST',body:{enabled:clipboard}});if(request!==epoch)return;
     const intent=await api.request('/api/connect-intents',{method:'POST',body:{deviceId:device.id,mode:$('mode').value,keyboardProfile:$('profile').value}});
-    if(request!==epoch)return;
+    if(request!==epoch){await cancelIntent(intent.intentId);return;}
+    desktopIntentId=intent.intentId;
     rememberProfile();$('workspaceName').textContent=`${device.label} · ${$('profile').selectedOptions[0].textContent}`;
     $('liveProfile').value=$('profile').value;document.body.classList.add('viewing');$('launcher').hidden=true;$('workspace').hidden=false;
     adapter=new DesktopAdapter({surface:$('surface'),profile:$('profile').value,keysyms:diag.keysyms,clipboard,
@@ -139,11 +166,11 @@ async function connect(){
       onClipboard:text=>{$('remoteText').value=text;$('clipboardStatus').textContent='Received text held in memory. Copy locally only with an explicit click.';}});
     adapter.connect(intent.intentId,$('mode').value);$('clipboardBtn').disabled=!clipboard;$('clipboardBtn').title=clipboard?'Explicit plain text transfer':'Enable clipboard before starting a control session';$('keysBtn').disabled=$('mode').value==='view';$('keysBtn').title=$('mode').value==='view'?'View-only sessions cannot send input':'';
     $('clipboardStatus').textContent=clipboard?'Explicit clipboard enabled. Use native paste here if permission is denied.':'Clipboard not enabled for this connection.';
-  }catch(error){if(request===epoch){if(trustedLoginRequired(error))return;await end('ERROR');$('notice').textContent=error.message.replaceAll('_',' ');}}
+  }catch(error){if(request===epoch){if(trustedLoginRequired(error))return;await connectionFailure(error);}}
 }
 function dialog(id){clearCredentialInput();adapter?.input?.pause();$(id).showModal();}
 for(const button of document.querySelectorAll('[data-close]'))button.onclick=()=>button.closest('dialog').close();
-$('reauth').onclick=()=>trustedDevicesEnabled&&enrollmentRequired?location.assign('/login'):initialize();$('connect').onclick=connect;$('end').onclick=()=>end();
+$('reauth').onclick=()=>trustedDevicesEnabled&&enrollmentRequired?location.assign('/login'):initialize();$('connect').onclick=connect;$('end').onclick=()=>end();$('recoverConnection').onclick=recoverConnection;
 $('credentialForm').onsubmit=saveCredential;
 $('changeCredential').onclick=()=>{if(busy||adapter||!credentialSetupAllowed())return;clearCredentialInput();$('credentialSetup').hidden=false;$('credentialStatus').textContent='';$('desktopPassword').focus();};
 $('cancelCredential').onclick=()=>{clearCredentialInput();$('credentialSetup').hidden=true;$('credentialStatus').textContent='';$('changeCredential').focus();};
@@ -186,6 +213,16 @@ window.addEventListener('offline',()=>{void end('OFFLINE');clearPrivate();$('rea
 window.addEventListener('blur',clearCredentialInput);
 window.addEventListener('pagehide',()=>{++epoch;clearPrivate();});
 window.addEventListener('pageshow',event=>{if(event.persisted)void initialize();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)clearCredentialInput();if(!document.hidden&&api.csrf)api.request('/api/session').catch(error=>{if(trustedLoginRequired(error))return;void end('REAUTH_REQUIRED');clearPrivate();$('reauth').hidden=false;});});
-setInterval(()=>{if(adapter&&api.csrf)api.request('/api/session').then(s=>{if(!s.activeDesktop)void end('SESSION_EXPIRED');}).catch(error=>{if(!trustedLoginRequired(error))void end('REAUTH_REQUIRED');});},10000);
+function checkSession(){
+  const request=epoch,currentAdapter=adapter;
+  api.request('/api/session').then(session=>{
+    if(request!==epoch||adapter!==currentAdapter)return;
+    if(currentAdapter&&!session.activeDesktop)void end('SESSION_EXPIRED');
+  }).catch(error=>{
+    if(request!==epoch||adapter!==currentAdapter||trustedLoginRequired(error))return;
+    void end('REAUTH_REQUIRED');clearPrivate();$('reauth').hidden=false;
+  });
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearCredentialInput();if(!document.hidden&&api.csrf)checkSession();});
+setInterval(()=>{if(adapter&&api.csrf)checkSession();},10000);
 void initialize();

@@ -122,6 +122,10 @@ paths:
                 properties:
                   expiresAt: {type: string, format: date-time}
                   activeDesktop: {type: boolean}
+                  activeDesktopIntentId:
+                    type: string
+                    pattern: '^[A-Za-z0-9_-]{43}$'
+                    description: Present only for this app's current desktop reservation; use this snapshot for scoped recovery. It does not prove a verified Mac display.
         default:
           $ref: '#/components/responses/Error'
     delete:
@@ -188,12 +192,24 @@ paths:
   /api/desktop-session:
     delete:
       operationId: endCurrentDesktop
-      description: End this app session's current desktop and release controller lease. Never closes another owner's tunnel.
+      description: With an intentId body, cancel exactly that app-owned intent/desktop. An absent body explicitly ends all desktops and pending intents for this shared app session, including other tabs. A foreign app's intent or desktop is denied without mutation. Normal tab cleanup always supplies its own intentId.
       parameters:
         - $ref: '#/components/parameters/Origin'
         - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [intentId]
+              properties:
+                intentId: {type: string, pattern: '^[A-Za-z0-9_-]{43}$'}
       responses:
-        '204': {description: Desktop ended or already absent; app session remains.}
+        '204': {description: Selected intent/desktop ended or already absent; app session remains.}
+        '403':
+          $ref: '#/components/responses/Error'
         default:
           $ref: '#/components/responses/Error'
   /api/clipboard-consent:

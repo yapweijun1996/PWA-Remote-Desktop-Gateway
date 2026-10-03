@@ -25,6 +25,7 @@
     "test:local-mac-view": "./qa/test-local-mac-view.sh",
     "test:vnc-security": "./qa/test-vnc-security-selection.sh",
     "test:blocked-container": "./qa/test-blocked-container.sh",
-    "test:login-browser": "./scripts/test-login-browser.sh"
+    "test:login-browser": "./scripts/test-login-browser.sh",
+    "test:connect-browser": "node qa/connect-browser-checks.mjs"
   }
 }

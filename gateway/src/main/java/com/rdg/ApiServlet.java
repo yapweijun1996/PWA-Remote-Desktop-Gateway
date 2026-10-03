@@ -23,7 +23,14 @@ final class ApiServlet extends HttpServlet {
             else if(method.equals("DELETE")&&path.equals("/api/session")) {
                 if(trusted!=null){trusted.revokeToken(TrustedDeviceCookies.read(r,TrustedDeviceCookies.NAME));TrustedDeviceCookies.clear(res);}
                 sessions.revoke(app,"LOGOUT");res.addHeader("Set-Cookie","__Host-rdg=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0");res.setStatus(204);
-            }else if(method.equals("DELETE")&&path.equals("/api/desktop-session")){sessions.endDesktop(app,"USER_ENDED");res.setStatus(204);}
+            }else if(method.equals("DELETE")&&path.equals("/api/desktop-session")) {
+                if(r.getContentLengthLong()>0 || r.getHeader("Transfer-Encoding")!=null) {
+                    JsonNode b=body(r);Config.fields(b,Set.of("intentId"));String intentId=text(b,"intentId");
+                    if(!intentId.matches("[A-Za-z0-9_-]{43}"))throw new Failure(400,"INVALID_REQUEST");
+                    sessions.endDesktop(app,intentId,"USER_ENDED");
+                }else sessions.endDesktop(app,"USER_ENDED");
+                res.setStatus(204);
+            }
             else if(method.equals("POST")&&path.equals("/api/desktop/credential")) {
                 JsonNode b=body(r);Config.fields(b,Set.of("password"));
                 if(!b.path("password").isTextual())throw new Failure(400,"INVALID_CREDENTIAL");

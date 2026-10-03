@@ -106,3 +106,13 @@ The authenticated PWA manifest uses `crossorigin="use-credentials"` so the nativ
 - [Trusted metadata authority](../gateway/src/main/java/com/rdg/TrustedDeviceStore.java), [device management](../gateway/src/main/java/com/rdg/TrustedDevicesServlet.java)
 - [Request/upgrade filter](../gateway/src/main/java/com/rdg/GatewayFilter.java), [short leases and live transport checks](../gateway/src/main/java/com/rdg/Sessions.java)
 - [Owner setup and trusted-device UI](../web/src/app.mjs), [deployment receipt/evidence](../qa/implementation/artifacts.json)
+
+## Connection conflicts and tab ownership
+
+A `409` from `POST /api/connect-intents` is either `CONTROL_BUSY` (an existing app desktop or node controller) or `UPDATE_IN_PROGRESS` (the 20-second update reservation). A pending intent alone does not produce that endpoint's conflict. Clipboard consent can also return `CONTROL_BUSY` before creating an intent. These are separate from VNC authentication errors; inspect the fixed response code before assigning a cause.
+
+Each tab retains its own intent ID only in memory. Normal disconnect, a failed adapter, and a late successful intent response cancel only that ID using `DELETE /api/desktop-session` with `{ "intentId": "<id>" }`. The server checks intent and desktop ownership atomically, including desktops that outlive the original 30-second intent. An unknown ID is idempotent; a foreign app ID returns `403` without touching a lease. Refused requests before an intent exists send no desktop DELETE. Delayed status checks are ignored once their epoch or adapter changes.
+
+For a conflict with this browser's shared app session, the launcher offers **End this browser's previous connection and retry**. This explicit click cancels the server-reported snapshot ID and can end that connection in its other tab; a newer replacement ID remains untouched. It never ends another browser's app or bypasses the node controller lock. Conflicts owned by another app require ending that controller at its browser. Updates show a 20-second retry explanation. The recovery UI does not claim that an upstream Mac display has been verified.
+
+Run `npm run test:connect-browser` after `npm run build:web`, with the same reviewed `RDG_PLAYWRIGHT_MODULE` and `RDG_TEST_CHROMIUM` settings as other browser checks. Its disposable HTTP loopback API/Guacamole fixture verifies UI lifecycle and records counts/booleans only; real signed ownership and transport boundaries are covered separately by `SessionsTest` and `GatewayIntegrationTest`. Neither fixture proves the owner's public Mac desktop.

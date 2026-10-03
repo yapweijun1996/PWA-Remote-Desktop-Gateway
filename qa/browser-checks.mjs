@@ -195,7 +195,7 @@ async function checkOwnerSetupUI(){
       try{document.dispatchEvent(new Event('visibilitychange'));}finally{delete document.hidden;}
     });
     await waitState(uiPage,'REAUTH_REQUIRED');await uiPage.waitForLoadState('networkidle');intentionalResponseError=false;
-    check(!expireSessionOnce&&desktopCleanupCalls===1&&await uiPage.locator('#reauth').isVisible(),'Expired application session stops locally and offers retry');
+    check(!expireSessionOnce&&desktopCleanupCalls===0&&await uiPage.locator('#reauth').isVisible(),'Expiry without a tab-owned intent stops locally without ending another tab and offers retry');
     await uiPage.locator('#reauth').click();await waitState(uiPage,'READY');await uiPage.waitForLoadState('networkidle');
     check(bootstrapRequests===bootstrapBeforeExpiry+1&&loginNavigations===0&&uiPage.url()===new URL('/',url).href,'Still-trusted UI uses a fresh application bootstrap without returning to login');
     check(await uiPage.locator('#prepare').isVisible()&&!await uiPage.getByRole('button',{name:'Prepare connection',exact:true}).isDisabled(),'Fresh application session restores owner desktop preparation');

@@ -185,6 +185,15 @@ final class Sessions implements AutoCloseable {
             throw new Failure(409,"CONTROL_BUSY");
         config.credentialStore().save(password);return config.desktopStatus();
     }
+    synchronized void endDesktop(App app,String intentId,String reason) {
+        requireApp(app);
+        Intent intent=intents.get(intentId);Desktop desktop=desktops.get(intentId);
+        // A connected desktop can outlive its consumed, 30-second intent record.
+        if((intent!=null&&!intent.appIndex.equals(app.index)) || (desktop!=null&&desktop.app!=app))
+            throw new Failure(403,"ACCESS_DENIED");
+        intents.remove(intentId);
+        if(desktop!=null)desktop.end(reason);
+    }
     synchronized void endDesktop(App app,String reason) {
         intents.values().removeIf(i->i.appIndex.equals(app.index));
         for(Desktop d:new ArrayList<>(desktops.values()))if(d.app==app)d.end(reason);
@@ -192,8 +201,11 @@ final class Sessions implements AutoCloseable {
     synchronized void revoke(App app,String reason) {apps.remove(app.index);endDesktop(app,reason);}
     synchronized Map<String,Object> status(App app) {
         requireApp(app);
-        return Map.of("expiresAt",app.expires.toString(),"activeDesktop",desktops.values().stream().anyMatch(d->d.app==app),
-            "nodeActiveDesktops",desktops.size(),"clipboardConsent",app.clipboard,"maintenance",ticker.getAsLong()<maintenanceUntil);
+        Desktop desktop=desktops.values().stream().filter(d->d.app==app).findFirst().orElse(null);
+        var status=new LinkedHashMap<String,Object>(Map.of("expiresAt",app.expires.toString(),"activeDesktop",desktop!=null,
+            "nodeActiveDesktops",desktops.size(),"clipboardConsent",app.clipboard,"maintenance",ticker.getAsLong()<maintenanceUntil));
+        if(desktop!=null)status.put("activeDesktopIntentId",desktop.intentId);
+        return status;
     }
     synchronized Map<String,Object> updateBoundary(App app) {
         requireApp(app);
