@@ -116,7 +116,7 @@ final class Sessions implements AutoCloseable {
     }
     static void csrf(App app,String token) {if(token==null||!MessageDigest.isEqual(app.csrf.getBytes(StandardCharsets.UTF_8),token.getBytes(StandardCharsets.UTF_8)))throw new Failure(403,"CSRF_INVALID");}
     synchronized Intent intent(App app,String device,String mode,String profile) {
-        requireApp(app);limit(app.subject+":intent",20);
+        requireApp(app);config.requireDesktop();limit(app.subject+":intent",20);
         if(cleanupUncertain)throw new Failure(503,"CLEANUP_UNCERTAIN");
         if(ticker.getAsLong()<maintenanceUntil)throw new Failure(409,"UPDATE_IN_PROGRESS");
         if(!config.deviceId().equals(device))throw new Failure(404,"DEVICE_UNKNOWN");
@@ -127,7 +127,7 @@ final class Sessions implements AutoCloseable {
         Intent i=new Intent(random(),app,mode,profile,ticker.getAsLong(),clock.instant());intents.put(i.id,i);return i;
     }
     synchronized Desktop begin(App app,String id) {
-        requireApp(app);
+        requireApp(app);config.requireDesktop();
         if(cleanupUncertain)throw new Failure(503,"CLEANUP_UNCERTAIN");
         if(ticker.getAsLong()<maintenanceUntil)throw new Failure(409,"UPDATE_IN_PROGRESS");
         Intent i=intents.get(id);
@@ -145,6 +145,7 @@ final class Sessions implements AutoCloseable {
     }
     synchronized void clipboard(App app,boolean consent) {
         requireApp(app);
+        if(consent)config.requireDesktop();
         if(desktops.values().stream().anyMatch(d->d.app==app)||intents.values().stream().anyMatch(i->i.appIndex.equals(app.index)&&!i.consumed))throw new Failure(409,"CONTROL_BUSY");
         app.clipboard=consent;
     }

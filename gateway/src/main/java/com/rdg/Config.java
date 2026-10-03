@@ -9,10 +9,29 @@ import java.util.*;
 record Config(String nodeId, String origin, String issuer, String audience, String ownerEmail,
               String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
               Path secret, String guacdHost, int guacdPort, String listenAddress, int listenPort,
-              Path stateDir, Path webDir, JsonNode bookmarks, Map<String,Integer> keysyms) {
+              Path stateDir, Path webDir, JsonNode bookmarks, Map<String,Integer> keysyms,
+              DesktopPolicy desktopPolicy) {
+    enum DesktopPolicy { FULL, BLOCKED }
+    static final String DESKTOP_BLOCKED_REASON = "DESKTOP_BLOCKED_BY_POLICY";
+    Config {
+        Objects.requireNonNull(desktopPolicy, "Explicit desktop policy required");
+    }
+    Config(String nodeId, String origin, String issuer, String audience, String ownerEmail,
+           String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
+           Path secret, String guacdHost, int guacdPort, String listenAddress, int listenPort,
+           Path stateDir, Path webDir, JsonNode bookmarks, Map<String,Integer> keysyms) {
+        this(nodeId, origin, issuer, audience, ownerEmail, ownerSubject, deviceId, label,
+            targetHost, targetPort, secret, guacdHost, guacdPort, listenAddress, listenPort,
+            stateDir, webDir, bookmarks, keysyms, DesktopPolicy.FULL);
+    }
+    boolean desktopEnabled() { return desktopPolicy == DesktopPolicy.FULL; }
+    void requireDesktop() {
+        if (!desktopEnabled()) throw new Failure(503, DESKTOP_BLOCKED_REASON);
+    }
     static final ObjectMapper JSON = new ObjectMapper()
         .enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
     static Config load(Map<String,String> env) throws Exception {
+        DesktopPolicy desktopPolicy = DesktopPolicy.valueOf(env.getOrDefault("RDG_DESKTOP_POLICY", "FULL"));
         String origin = required(env, "RDG_PUBLIC_ORIGIN");
         URI uri = URI.create(origin);
         if (!origin.matches("https://[a-z0-9.-]+") || !"https".equals(uri.getScheme()) || uri.getHost() == null || !origin.equals("https://" + uri.getHost())
@@ -39,9 +58,16 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
         if (!Set.of("host.docker.internal","127.0.0.1").contains(host) || !dev.path("upstreamPort").isInt() || dev.path("upstreamPort").intValue()!=5900)
             throw new IllegalArgumentException("Target outside supported local boundary");
         String ref = dev.path("credentialRef").asText();
-        if (!ref.matches("/run/secrets/[a-z0-9_-]+")) throw new IllegalArgumentException("Invalid credential reference");
-        Path secret = Path.of(env.getOrDefault("RDG_VNC_SECRET_FILE",ref));
-        secretValue(secret); // Refuse an absent, permissive, symlinked or oversized secret at startup.
+        if ((dev.has("credentialRef") && !dev.path("credentialRef").isTextual())
+                || (!ref.isEmpty() && !ref.matches("/run/secrets/[a-z0-9_-]+"))
+                || (desktopPolicy == DesktopPolicy.FULL && ref.isEmpty()))
+            throw new IllegalArgumentException("Invalid credential reference");
+        String secretPath = env.getOrDefault("RDG_VNC_SECRET_FILE", ref);
+        if (env.containsKey("RDG_VNC_SECRET_FILE") && secretPath.isBlank())
+            throw new IllegalArgumentException("Invalid credential path");
+        Path secret = secretPath.isEmpty() ? null : Path.of(secretPath);
+        // A deliberately blocked gateway neither needs nor reads desktop credentials.
+        if (desktopPolicy == DesktopPolicy.FULL) secretValue(secret);
         JsonNode bookmarks=root.path("bookmarks");
         if (!bookmarks.isArray() || bookmarks.size()>10) throw new IllegalArgumentException("Invalid bookmarks");
         Set<String> ids=new HashSet<>(Set.of(device));
@@ -53,18 +79,20 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
         }
         Map<String,Integer> keysyms=new HashMap<>();
         JsonNode ks=root.path("keysyms");
-        fields(ks,Set.of("CommandLeft","CommandRight","OptionLeft","OptionRight","ControlLeft","ControlRight"));
-        for(String k:List.of("CommandLeft","CommandRight","OptionLeft","OptionRight","ControlLeft","ControlRight")) {
-            if (!ks.path(k).isInt() || ks.path(k).intValue()<0xffe0 || ks.path(k).intValue()>0xffff)
-                throw new IllegalArgumentException("Target keysyms require explicit calibration configuration");
-            keysyms.put(k,ks.path(k).intValue());
+        if (!(desktopPolicy == DesktopPolicy.BLOCKED && (ks.isMissingNode() || (ks.isObject() && ks.isEmpty())))) {
+            fields(ks,Set.of("CommandLeft","CommandRight","OptionLeft","OptionRight","ControlLeft","ControlRight"));
+            for(String k:List.of("CommandLeft","CommandRight","OptionLeft","OptionRight","ControlLeft","ControlRight")) {
+                if (!ks.path(k).isInt() || ks.path(k).intValue()<0xffe0 || ks.path(k).intValue()>0xffff)
+                    throw new IllegalArgumentException("Target keysyms require explicit calibration configuration");
+                keysyms.put(k,ks.path(k).intValue());
+            }
         }
         String address=env.getOrDefault("RDG_LISTEN_ADDRESS","127.0.0.1");
         if (!Set.of("127.0.0.1","0.0.0.0").contains(address)) throw new IllegalArgumentException("Invalid bind address");
         return new Config(node,origin,issuer,audience,email,env.getOrDefault("RDG_OWNER_SUBJECT",""),device,label,host,5900,
             secret,env.getOrDefault("RDG_GUACD_HOST","127.0.0.1"),port(env.getOrDefault("RDG_GUACD_PORT","4822")),
             address,port(env.getOrDefault("RDG_LISTEN_PORT","32120")),Path.of(required(env,"RDG_STATE_DIR")),
-            Path.of(env.getOrDefault("RDG_WEB_DIR","web/dist")),bookmarks,Map.copyOf(keysyms));
+            Path.of(env.getOrDefault("RDG_WEB_DIR","web/dist")),bookmarks,Map.copyOf(keysyms),desktopPolicy);
     }
     static void fields(JsonNode node, Set<String> allowed) {
         if (!node.isObject()) throw new Failure(400,"INVALID_REQUEST");

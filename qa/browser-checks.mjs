@@ -9,13 +9,71 @@ const page=await context.newPage(),results=[],errors=[];let unexpectedConsoleErr
 context.on('page',p=>p.on('console',m=>{if(m.type()==='error' && !m.text().includes('status of 409')){if(intentionalOffline)expectedOfflineErrors++;else unexpectedConsoleErrors++;}}));
 page.on('console',m=>{if(m.type()==='error' && !m.text().includes('status of 409')){if(intentionalOffline)expectedOfflineErrors++;else unexpectedConsoleErrors++;}});
 page.on('pageerror',e=>errors.push(e.message));
-const pass=(name)=>results.push({test:name,status:'PASS',level:'LOCAL_PROTOCOL_FIXTURE'});
+const pass=(name,level='LOCAL_PROTOCOL_FIXTURE')=>results.push({test:name,status:'PASS',level});
 const check=(condition,name)=>{if(!condition)throw new Error(name);};
 async function waitState(p,value){await p.waitForFunction(value=>document.getElementById('status')?.textContent===value,value);}
 async function connect(p){await p.getByRole('button',{name:'Prepare connection',exact:true}).click();await p.getByLabel('I agree to control or view this shared desktop.').check();await p.getByRole('button',{name:'Open desktop',exact:true}).click();await waitState(p,'CONNECTED');}
+async function checkBlockedDesktopUI(){
+  // Only UI response fixtures change; bootstrap still uses the signed loopback gateway.
+  const blockedContext=await browser.newContext({ignoreHTTPSErrors:true,serviceWorkers:'block'});
+  let deviceResponses=0,diagnosticResponses=0,connectIntents=0,clipboardEnabledCalls=0,webSockets=0;
+  const blockedPage=await blockedContext.newPage();
+  blockedPage.on('pageerror',e=>errors.push(e.message));
+  blockedPage.on('console',m=>{if(m.type()==='error')unexpectedConsoleErrors++;});
+  blockedPage.on('websocket',()=>webSockets++);
+  try{
+    await blockedContext.route('**/api/devices',async route=>{
+      const response=await route.fetch(),devices=await response.json();
+      check(response.status()===200&&Array.isArray(devices)&&devices.some(d=>d.kind==='local'),'Signed device fixture response');
+      deviceResponses++;
+      await route.fulfill({response,json:devices.map(d=>d.kind==='local'?{...d,desktopEnabled:false,status:'BLOCKED',desktopPolicy:'BLOCKED'}:d)});
+    });
+    await blockedContext.route('**/api/diagnostics',async route=>{
+      const response=await route.fetch(),diagnostics=await response.json();
+      check(response.status()===200&&typeof diagnostics.nodeId==='string','Signed diagnostics fixture response');
+      diagnosticResponses++;
+      await route.fulfill({response,json:{...diagnostics,desktopEnabled:false,desktopPolicy:'BLOCKED',keysyms:{}}});
+    });
+    // Never forward a forbidden UI action into the fixture's FULL desktop backend.
+    await blockedContext.route('**/api/connect-intents',async route=>{
+      connectIntents++;
+      await route.fulfill({status:503,json:{code:'DESKTOP_BLOCKED_BY_POLICY'}});
+    });
+    await blockedContext.route('**/api/clipboard-consent',async route=>{
+      if(route.request().postDataJSON()?.enabled===true)clipboardEnabledCalls++;
+      await route.fulfill({status:503,json:{code:'DESKTOP_BLOCKED_BY_POLICY'}});
+    });
+    await blockedPage.goto(url);await waitState(blockedPage,'BLOCKED');
+    check(await blockedPage.getByText('BLOCKED — desktop connection not verified',{exact:true}).isVisible(),'Visible BLOCKED device state');
+    check(await blockedPage.getByText('Cloudflare Access login and gateway status are available. Remote viewing, input and clipboard are disabled.',{exact:true}).isVisible(),'Truthful BLOCKED capability explanation');
+    const prepare=blockedPage.getByRole('button',{name:'Prepare connection',exact:true});
+    check(await prepare.isVisible()&&await prepare.isDisabled(),'BLOCKED Prepare connection disabled');
+    // A DOM-dispatched action must also preserve the disabled-device boundary.
+    await prepare.evaluate(button=>button.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+    await blockedPage.evaluate(()=>{
+      document.getElementById('consent').checked=true;
+      document.getElementById('clipboardConsent').checked=true;
+      document.getElementById('connect').click();
+    });
+    check(!await blockedPage.locator('#prepare').isVisible(),'BLOCKED connection settings remain hidden');
+    check(!await blockedPage.locator('#workspace').isVisible(),'BLOCKED remote workspace remains hidden');
+    check(!await blockedPage.locator('#clipboardDialog').isVisible(),'BLOCKED clipboard remains hidden');
+    check(await blockedPage.locator('#surface canvas').count()===0,'BLOCKED creates no remote display canvas');
+    await blockedPage.getByRole('button',{name:'Diagnostics & session history',exact:true}).click();
+    await blockedPage.waitForFunction(()=>{try{return JSON.parse(document.getElementById('diagnostics').textContent).desktopPolicy==='BLOCKED';}catch{return false;}});
+    const diagnostics=JSON.parse(await blockedPage.locator('#diagnostics').innerText());
+    check(diagnostics.desktopEnabled===false&&Object.keys(diagnostics.keysyms).length===0,'BLOCKED diagnostics expose no calibrated keysyms');
+    await blockedPage.waitForLoadState('networkidle');
+    check(deviceResponses===1&&diagnosticResponses===2,'BLOCKED fixture routes exercised at bootstrap and diagnostics');
+    check(connectIntents===0&&clipboardEnabledCalls===0&&webSockets===0,'BLOCKED sends no desktop intent, enabled clipboard or WebSocket');
+    check(await blockedPage.locator('#status').innerText()==='BLOCKED','BLOCKED state survives diagnostics interaction');
+    pass('BLOCKED policy disables desktop preparation, display, connect intents and clipboard while diagnostics remain available','LOCAL_UI_ROUTE_FIXTURE');
+  }finally{await blockedContext.close();}
+}
 await mkdir('output/playwright',{recursive:true});
 const workerPath='web/dist/sw.js',originalWorker=await readFile(workerPath,'utf8');
 try{
+  await checkBlockedDesktopUI();
   await page.goto(url);await waitState(page,'READY');await page.waitForFunction(()=>navigator.serviceWorker.controller);
   check(await page.getByText('Gateway reachable — desktop not tested',{exact:true}).isVisible(),'Truthful readiness');
   check(!await page.locator('#updateBanner').isVisible(),'Initial install must not produce update prompt');pass('Signed bootstrap, truthful readiness and clean first worker activation');

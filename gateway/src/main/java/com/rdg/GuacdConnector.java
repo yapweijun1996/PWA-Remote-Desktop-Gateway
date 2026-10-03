@@ -14,6 +14,7 @@ class GuacdConnector {
     final Config config;
     GuacdConnector(Config config) {this.config=config;}
     GuacamoleTunnel open(Sessions.Desktop desktop) throws Exception {
+        config.requireDesktop();
         Socket raw=new Socket();
         desktop.pending(raw);
         try {

@@ -78,6 +78,7 @@ paths:
   /api/connect-intents:
     post:
       operationId: createConnectIntent
+      description: Desktop policy BLOCKED refuses both view and control with 503 DESKTOP_BLOCKED_BY_POLICY.
       parameters:
         - $ref: '#/components/parameters/Origin'
         - $ref: '#/components/parameters/CSRF'
@@ -125,7 +126,7 @@ paths:
   /api/clipboard-consent:
     post:
       operationId: setClipboardConsent
-      description: Explicit consent applies to the next control tunnel; reject while an intent/desktop is pending. Read-only tunnels always deny writes.
+      description: Explicit consent applies to the next control tunnel; reject while an intent/desktop is pending. Read-only tunnels always deny writes. Desktop policy BLOCKED refuses enabled=true with 503 DESKTOP_BLOCKED_BY_POLICY.
       parameters:
         - $ref: '#/components/parameters/Origin'
         - $ref: '#/components/parameters/CSRF'
@@ -165,7 +166,7 @@ paths:
     get:
       operationId: getSanitizedDiagnostics
       responses:
-        '200': {description: Build/library versions, node alias, configured keysyms and capability limits; no upstream address or credentials.}
+        '200': {description: Build/library versions, node alias, configured keysyms, desktopEnabled/desktopPolicy and capability limits; no upstream address or credentials.}
         default:
           $ref: '#/components/responses/Error'
   /api/history:
@@ -183,6 +184,7 @@ paths:
         Access assertion, same owner app cookie, unexpired intent and atomic consume.
         Upgraded frames use the official Guacamole protocol. Do not parse or invent
         JSON key messages. Active expiry and revocation continue after the upgrade.
+        Desktop policy BLOCKED refuses an authenticated upgrade with 503 DESKTOP_BLOCKED_BY_POLICY.
       parameters:
         - name: intentId
           in: path
@@ -235,7 +237,10 @@ components:
         kind: {type: string, enum: [local, bookmark]}
         status:
           type: string
-          enum: [UNVERIFIED, CHECKING, GATEWAY_REACHABLE, DESKTOP_READY, OFFLINE, DENIED]
+          enum: [UNVERIFIED, CHECKING, GATEWAY_REACHABLE, BLOCKED, DESKTOP_READY, OFFLINE, DENIED]
+        desktopEnabled: {type: boolean, description: Server policy permits desktop attempts; does not prove availability.}
+        desktopPolicy: {type: string, enum: [FULL, BLOCKED]}
+        blockedReason: {type: string, enum: [DESKTOP_BLOCKED_BY_POLICY]}
         checkedAt: {type: [string, 'null'], format: date-time}
         launchUrl: {type: string, format: uri}
     Error:

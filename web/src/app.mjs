@@ -4,11 +4,12 @@ import {setupUpdates} from './pwa.mjs';
 
 const $=id=>document.getElementById(id),api=new GatewayAPI();
 let adapter=null,device=null,diag=null,nodeId='',epoch=0,busy=false,update=null,updateSetup=false;
+const desktopBlockedMessage='Access verified. Desktop connections are disabled on this node until the Mac connection and keyboard calibration are verified.';
 const platform=/Mac/.test(navigator.platform)?'mac':'windows';
 function state(value,message=value.replaceAll('_',' ')){$('status').textContent=value;$('notice').textContent=message;$('loader').hidden=!['UPDATING','RELOADING'].includes(value);}
 function clearPrivate(){
   document.body.classList.remove('viewing');
-  adapter?.disconnect();adapter=null;$('localText').value='';$('remoteText').value='';$('clipboardStatus').textContent='Clipboard cleared.';
+  adapter?.disconnect();adapter=null;device=null;$('localText').value='';$('remoteText').value='';$('clipboardStatus').textContent='Clipboard cleared.';
   $('surface').replaceChildren();$('deviceList').replaceChildren();$('diagnostics').textContent='';$('history').replaceChildren();
   for(const d of document.querySelectorAll('dialog[open]'))d.close();
   $('workspace').hidden=true;$('launcher').hidden=false;$('prepare').hidden=true;
@@ -24,15 +25,17 @@ async function initialize(){
     for(const item of devices){
       const article=document.createElement('article');article.className='device';
       const title=document.createElement('h2');title.textContent=item.label;article.append(title);
-      const info=document.createElement('p');info.textContent=item.kind==='local'?'Gateway reachable — desktop not tested':'UNKNOWN — check by opening this node';article.append(info);
+      const blocked=item.kind==='local'&&(item.desktopEnabled===false||item.status==='BLOCKED');
+      const info=document.createElement('p');info.textContent=item.kind==='local'?(blocked?'BLOCKED — desktop connection not verified':'Gateway reachable — desktop not tested'):'UNKNOWN — check by opening this node';article.append(info);
       if(item.kind==='local'){
         const time=document.createElement('small');time.textContent=`Checked ${new Date(item.checkedAt).toLocaleString()}`;article.append(time);
-        const button=document.createElement('button');button.textContent='Prepare connection';button.className='primary';
-        button.onclick=()=>{device=item;$('targetName').textContent=item.label;$('prepare').hidden=false;$('consent').checked=false;};article.append(document.createElement('br'),button);
+        const button=document.createElement('button');button.textContent='Prepare connection';button.className='primary';button.disabled=blocked;
+        if(blocked){button.title=desktopBlockedMessage;const reason=document.createElement('p');reason.textContent='Cloudflare Access login and gateway status are available. Remote viewing, input and clipboard are disabled.';article.append(reason);}
+        button.onclick=()=>{if(blocked)return;device=item;$('targetName').textContent=item.label;$('prepare').hidden=false;$('consent').checked=false;};article.append(document.createElement('br'),button);
       }else{const link=document.createElement('a');link.href=item.launchUrl;link.textContent='Open independent node';link.rel='noreferrer';article.append(link);}
       $('deviceList').append(article);
     }
-    $('logout').hidden=false;state('READY','Access verified. Choose the configured local desktop.');
+    $('logout').hidden=false;state(diag.desktopEnabled===false?'BLOCKED':'READY',diag.desktopEnabled===false?desktopBlockedMessage:'Access verified. Choose the configured local desktop.');
     if(!updateSetup){updateSetup=true;try{update=await setupUpdates({api,onAvailable:()=>{$('updateBanner').hidden=false;},onState:value=>{state(value);$('updateLabel').textContent=value==='UPDATE_DEFERRED'?'Another node session or pending connection is active. End it and retry.':value.replaceAll('_',' ');},beforeUpdate:async()=>{++epoch;adapter?.disconnect();adapter=null;$('surface').replaceChildren();$('localText').value='';$('remoteText').value='';}});}catch{updateSetup=false;}}
   }catch(error){if(request!==epoch)return;state(navigator.onLine?'AUTH_REQUIRED':'OFFLINE',navigator.onLine?'Access verification failed. Reopen this node through Cloudflare Access.':'No offline remote control.');$('reauth').hidden=false;}
   finally{if(request===epoch){busy=false;$('connect').disabled=false;}}
@@ -46,7 +49,7 @@ async function end(reason='READY') {
   busy=false;$('connect').disabled=false;
 }
 async function connect(){
-  if(busy||!device)return;if(!$('consent').checked){$('notice').textContent='Confirm shared desktop consent before connecting.';return;}
+  if(busy||!device)return;if(diag?.desktopEnabled===false||device.desktopEnabled===false||device.status==='BLOCKED'){state('BLOCKED',desktopBlockedMessage);return;}if(!$('consent').checked){$('notice').textContent='Confirm shared desktop consent before connecting.';return;}
   const request=++epoch;busy=true;$('connect').disabled=true;state('CONNECTING');
   try{
     const clipboard=$('clipboardConsent').checked&&$('mode').value==='control';

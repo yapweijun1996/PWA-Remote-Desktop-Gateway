@@ -31,10 +31,14 @@ final class ApiServlet extends HttpServlet {
                 Config.fields(body(r),Set.of());send(res,200,sessions.updateBoundary(app));
             }else if(method.equals("GET")&&path.equals("/api/devices")) {
                 var list=new ArrayList<Map<String,Object>>();
-                list.add(Map.of("id",config.deviceId(),"label",config.label(),"kind","local","status","GATEWAY_REACHABLE","checkedAt",sessions.clock.instant().toString(),"launchUrl",config.origin()+"/"));
+                var local=new LinkedHashMap<String,Object>(Map.of("id",config.deviceId(),"label",config.label(),"kind","local",
+                    "status",config.desktopEnabled()?"GATEWAY_REACHABLE":"BLOCKED","checkedAt",sessions.clock.instant().toString(),
+                    "launchUrl",config.origin()+"/","desktopEnabled",config.desktopEnabled(),"desktopPolicy",config.desktopPolicy().name()));
+                if(!config.desktopEnabled())local.put("blockedReason",Config.DESKTOP_BLOCKED_REASON);
+                list.add(local);
                 for(JsonNode b:config.bookmarks())list.add(Map.of("id",b.path("id").asText(),"label",b.path("label").asText(),"kind","bookmark","status","UNVERIFIED","launchUrl",b.path("url").asText()));
                 send(res,200,list);
-            }else if(method.equals("GET")&&path.equals("/api/diagnostics"))send(res,200,Map.of("build","1.0.0","guacamole","1.6.0","nodeId",config.nodeId(),"keysyms",config.keysyms(),"clipboardLimit",16384,"remoteResize",false,"directLocalIME",false));
+            }else if(method.equals("GET")&&path.equals("/api/diagnostics"))send(res,200,Map.of("build","1.0.0","guacamole","1.6.0","nodeId",config.nodeId(),"keysyms",config.keysyms(),"clipboardLimit",16384,"remoteResize",false,"directLocalIME",false,"desktopEnabled",config.desktopEnabled(),"desktopPolicy",config.desktopPolicy().name()));
             else if(method.equals("GET")&&path.equals("/api/history"))send(res,200,sessions.audit.history(app.ref));
             else throw new Failure(404,"NOT_FOUND");
         }catch(Failure f){GatewayFilter.error(res,f);}catch(Exception e){GatewayFilter.error(res,new Failure(500,"INTERNAL_ERROR"));}

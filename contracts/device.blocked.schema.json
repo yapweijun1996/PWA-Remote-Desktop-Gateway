@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/rdg/device.blocked.schema.json",
+  "title": "Server-owned RDG node configuration for RDG_DESKTOP_POLICY=BLOCKED only",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "nodeId",
+    "publicOrigin",
+    "localDevice",
+    "bookmarks"
+  ],
+  "properties": {
+    "nodeId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{2,39}$"
+    },
+    "publicOrigin": {
+      "type": "string",
+      "pattern": "^https://[a-z0-9.-]+$"
+    },
+    "localDevice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "targetOS",
+        "upstreamHost",
+        "upstreamPort"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{2,39}$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "targetOS": {
+          "const": "macOS"
+        },
+        "upstreamHost": {
+          "enum": [
+            "host.docker.internal",
+            "127.0.0.1"
+          ]
+        },
+        "upstreamPort": {
+          "const": 5900
+        },
+        "credentialRef": {
+          "type": "string",
+          "pattern": "^/run/secrets/[a-z0-9_-]+$"
+        }
+      }
+    },
+    "bookmarks": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "url",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 3
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://[a-z0-9.-]+/$"
+          },
+          "status": {
+            "const": "UNVERIFIED"
+          }
+        }
+      }
+    },
+    "keysyms": {
+      "oneOf": [
+        {
+          "type": "object",
+          "maxProperties": 0
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CommandLeft",
+            "CommandRight",
+            "OptionLeft",
+            "OptionRight",
+            "ControlLeft",
+            "ControlRight"
+          ],
+          "properties": {
+            "CommandLeft": {
+              "type": "integer",
+              "minimum": 65504,
+              "maximum": 65535
+            },
+            "CommandRight": {
+              "type": "integer",
+              "minimum": 65504,
+              "maximum": 65535
+            },
+            "OptionLeft": {
+              "type": "integer",
+              "minimum": 65504,
+              "maximum": 65535
+            },
+            "OptionRight": {
+              "type": "integer",
+              "minimum": 65504,
+              "maximum": 65535
+            },
+            "ControlLeft": {
+              "type": "integer",
+              "minimum": 65504,
+              "maximum": 65535
+            },
+            "ControlRight": {
+              "type": "integer",
+              "minimum": 65504,
+              "maximum": 65535
+            }
+          }
+        }
+      ]
+    }
+  },
+  "description": "Does not authorize a desktop connection. FULL uses device.schema.json and requires calibrated keys and server credentials."
+}

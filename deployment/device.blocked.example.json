@@ -1,0 +1,12 @@
+{
+  "nodeId": "node-pilot",
+  "publicOrigin": "https://remote.example.com",
+  "localDevice": {
+    "id": "current-mac",
+    "label": "Current Mac — desktop not verified",
+    "targetOS": "macOS",
+    "upstreamHost": "host.docker.internal",
+    "upstreamPort": 5900
+  },
+  "bookmarks": []
+}
