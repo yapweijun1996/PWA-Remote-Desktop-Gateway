@@ -67,3 +67,5 @@ networks:
 volumes:
   rdg-metadata:
   rdg-vnc-key:
+    external: true
+    name: rdg-${RDG_NODE_ID:?Set this node ID}_rdg-vnc-key
