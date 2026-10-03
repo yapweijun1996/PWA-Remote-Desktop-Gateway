@@ -10,11 +10,22 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
               String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
               Path secret, String guacdHost, int guacdPort, String listenAddress, int listenPort,
               Path stateDir, Path webDir, JsonNode bookmarks, Map<String,Integer> keysyms,
-              DesktopPolicy desktopPolicy) {
-    enum DesktopPolicy { FULL, BLOCKED }
+              DesktopPolicy desktopPolicy, DesktopCredentialStore credentialStore) {
+    enum DesktopPolicy { FULL, BLOCKED, OWNER_SETUP }
     static final String DESKTOP_BLOCKED_REASON = "DESKTOP_BLOCKED_BY_POLICY";
     Config {
         Objects.requireNonNull(desktopPolicy, "Explicit desktop policy required");
+        if ((desktopPolicy == DesktopPolicy.OWNER_SETUP) != (credentialStore != null))
+            throw new IllegalArgumentException("Invalid credential policy");
+    }
+    Config(String nodeId, String origin, String issuer, String audience, String ownerEmail,
+           String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
+           Path secret, String guacdHost, int guacdPort, String listenAddress, int listenPort,
+           Path stateDir, Path webDir, JsonNode bookmarks, Map<String,Integer> keysyms,
+           DesktopPolicy desktopPolicy) {
+        this(nodeId, origin, issuer, audience, ownerEmail, ownerSubject, deviceId, label,
+            targetHost, targetPort, secret, guacdHost, guacdPort, listenAddress, listenPort,
+            stateDir, webDir, bookmarks, keysyms, desktopPolicy, null);
     }
     Config(String nodeId, String origin, String issuer, String audience, String ownerEmail,
            String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
@@ -24,9 +35,27 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
             targetHost, targetPort, secret, guacdHost, guacdPort, listenAddress, listenPort,
             stateDir, webDir, bookmarks, keysyms, DesktopPolicy.FULL);
     }
-    boolean desktopEnabled() { return desktopPolicy == DesktopPolicy.FULL; }
+    boolean credentialSetupEnabled() { return desktopPolicy == DesktopPolicy.OWNER_SETUP; }
+    boolean credentialConfigured() {
+        return desktopPolicy == DesktopPolicy.FULL || (credentialSetupEnabled() && credentialStore.configured());
+    }
+    boolean desktopEnabled() { return desktopPolicy == DesktopPolicy.FULL || (credentialSetupEnabled() && credentialConfigured()); }
+    String desktopBlockedReason() { return credentialSetupEnabled() ? "VNC_CREDENTIAL_REQUIRED" : DESKTOP_BLOCKED_REASON; }
+    String keyboardCalibration() {
+        return switch(desktopPolicy) {case FULL -> "OPERATOR_CONFIGURED";case BLOCKED -> "UNAVAILABLE";case OWNER_SETUP -> "UNVERIFIED_TEST_PROFILE";};
+    }
+    String desktopCredential() throws Exception {
+        if(credentialSetupEnabled())return credentialStore.read();
+        requireDesktop();return secretValue(secret);
+    }
+    Map<String,Object> desktopStatus() {
+        boolean configured=credentialConfigured();
+        return Map.of("credentialSetupEnabled",credentialSetupEnabled(),"credentialConfigured",configured,
+            "desktopEnabled",desktopPolicy == DesktopPolicy.FULL || configured,"desktopPolicy",desktopPolicy.name(),
+            "keyboardCalibration",keyboardCalibration());
+    }
     void requireDesktop() {
-        if (!desktopEnabled()) throw new Failure(503, DESKTOP_BLOCKED_REASON);
+        if (!desktopEnabled()) throw new Failure(503, desktopBlockedReason());
     }
     static final ObjectMapper JSON = new ObjectMapper()
         .enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
@@ -66,6 +95,8 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
         if (env.containsKey("RDG_VNC_SECRET_FILE") && secretPath.isBlank())
             throw new IllegalArgumentException("Invalid credential path");
         Path secret = secretPath.isEmpty() ? null : Path.of(secretPath);
+        if(desktopPolicy == DesktopPolicy.OWNER_SETUP && (secret!=null || dev.has("credentialRef")))
+            throw new IllegalArgumentException("Owner setup requires the encrypted credential store");
         // A deliberately blocked gateway neither needs nor reads desktop credentials.
         if (desktopPolicy == DesktopPolicy.FULL) secretValue(secret);
         JsonNode bookmarks=root.path("bookmarks");
@@ -89,10 +120,13 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
         }
         String address=env.getOrDefault("RDG_LISTEN_ADDRESS","127.0.0.1");
         if (!Set.of("127.0.0.1","0.0.0.0").contains(address)) throw new IllegalArgumentException("Invalid bind address");
+        Path stateDir=Path.of(required(env,"RDG_STATE_DIR"));
+        DesktopCredentialStore store=desktopPolicy == DesktopPolicy.OWNER_SETUP
+            ? new DesktopCredentialStore(stateDir,Path.of(required(env,"RDG_VNC_KEY_FILE")),node,device) : null;
         return new Config(node,origin,issuer,audience,email,env.getOrDefault("RDG_OWNER_SUBJECT",""),device,label,host,5900,
             secret,env.getOrDefault("RDG_GUACD_HOST","127.0.0.1"),port(env.getOrDefault("RDG_GUACD_PORT","4822")),
-            address,port(env.getOrDefault("RDG_LISTEN_PORT","32120")),Path.of(required(env,"RDG_STATE_DIR")),
-            Path.of(env.getOrDefault("RDG_WEB_DIR","web/dist")),bookmarks,Map.copyOf(keysyms),desktopPolicy);
+            address,port(env.getOrDefault("RDG_LISTEN_PORT","32120")),stateDir,
+            Path.of(env.getOrDefault("RDG_WEB_DIR","web/dist")),bookmarks,Map.copyOf(keysyms),desktopPolicy,store);
     }
     static void fields(JsonNode node, Set<String> allowed) {
         if (!node.isObject()) throw new Failure(400,"INVALID_REQUEST");

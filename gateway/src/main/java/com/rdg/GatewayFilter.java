@@ -8,26 +8,49 @@ import java.util.*;
 
 final class GatewayFilter implements Filter {
     final Config config;final AccessVerifier verifier;final Sessions sessions;
-    GatewayFilter(Config c,AccessVerifier v,Sessions s){config=c;verifier=v;sessions=s;}
+    final TrustedDeviceStore trusted;
+    GatewayFilter(Config c,AccessVerifier v,Sessions s){this(c,v,s,null);}
+    GatewayFilter(Config c,AccessVerifier v,Sessions s,TrustedDeviceStore t){config=c;verifier=v;sessions=s;trusted=t;}
     public void doFilter(ServletRequest req,ServletResponse res,FilterChain chain) throws IOException,ServletException {
         var request=(HttpServletRequest)req;var response=(HttpServletResponse)res;
         securityHeaders(response);
         String path=request.getRequestURI();boolean protectedPath=path.startsWith("/api/")||path.startsWith("/ws/");
-        if(!protectedPath){chain.doFilter(req,res);return;}
+        if(!protectedPath){
+            if(trusted!=null&&(path.equals("/")||path.equals("/index.html"))) {
+                response.setHeader("Cache-Control","no-store");
+                try {
+                    if(request.getQueryString()!=null||!URI.create(config.origin()).getAuthority().equals(single(request,"Host")))throw new Failure(403,"ORIGIN_DENIED");
+                    trusted.verify(TrustedDeviceCookies.read(request,TrustedDeviceCookies.NAME));
+                }catch(Failure failure){
+                    if(failure.status!=401){error(response,failure);return;}
+                    response.setStatus(303);response.setHeader("Location","/login");return;
+                }
+            }
+            chain.doFilter(req,res);return;
+        }
         response.setHeader("Cache-Control","no-store");
         try {
             if((request.getQueryString()!=null && !request.getQueryString().isEmpty()) || !URI.create(config.origin()).getAuthority().equals(single(request,"Host")))throw new Failure(403,"ORIGIN_DENIED");
             boolean socket=path.startsWith("/ws/"),mutation=!request.getMethod().equals("GET");
             String origin=single(request,"Origin");
             if((socket||mutation||origin!=null)&&!config.origin().equals(origin))throw new Failure(403,"ORIGIN_DENIED");
-            AccessVerifier.Identity identity=verifier.verify(single(request,"Cf-Access-Jwt-Assertion"));
+            AccessVerifier.Identity identity;
+            if(trusted==null)identity=verifier.verify(single(request,"Cf-Access-Jwt-Assertion"));
+            else {
+                TrustedDeviceStore.Verified verified;
+                try{verified=trusted.verify(TrustedDeviceCookies.read(request,TrustedDeviceCookies.NAME));}
+                catch(Failure failure){if(failure.status==401)throw new Failure(401,"TRUSTED_DEVICE_REQUIRED");throw failure;}
+                identity=verified.identity();request.setAttribute("trustedDeviceId",verified.deviceId());
+            }
             request.setAttribute("identity",identity);
             String cookie=cookie(request);request.setAttribute("appCookie",cookie);
             boolean bootstrap=path.equals("/api/session/bootstrap")&&request.getMethod().equals("POST");
             if(bootstrap) {
                 if(!json(request))throw new Failure(415,"INVALID_REQUEST");
             } else {
-                Sessions.App app=sessions.authorize(cookie,identity);request.setAttribute("app",app);
+                Sessions.App app=sessions.authorize(cookie,identity);
+                if(trusted!=null)sessions.checkTrustedBinding(app,(String)request.getAttribute("trustedDeviceId"));
+                request.setAttribute("app",app);
                 if(mutation)Sessions.csrf(app,single(request,"X-RDG-CSRF"));
                 if(socket) {
                     if(!request.getMethod().equals("GET") || !"websocket".equalsIgnoreCase(single(request,"Upgrade"))

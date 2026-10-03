@@ -4,7 +4,7 @@ COPY deployment/install-locked-debs.sh /install-locked-debs.sh
 COPY deployment/deb-locks/ /locks/
 # The pinned JRE image predates USN-8847-1; patch only the reviewed libssl3 artifact.
 RUN sh /install-locked-debs.sh "/locks/gateway-${TARGETARCH}.lock" && cp "/locks/gateway-${TARGETARCH}.lock" /opt/rdg-os-packages.lock && rm /install-locked-debs.sh && rm -r /locks
-RUN groupadd --gid 10001 rdg && useradd --uid 10001 --gid rdg --no-create-home rdg && mkdir -p /app /var/lib/rdg && chown 10001:10001 /var/lib/rdg
+RUN groupadd --gid 10001 rdg && useradd --uid 10001 --gid rdg --no-create-home rdg && mkdir -p /app /var/lib/rdg /var/lib/rdg-key && chown 10001:10001 /var/lib/rdg /var/lib/rdg-key && chmod 0700 /var/lib/rdg /var/lib/rdg-key
 WORKDIR /app
 COPY gateway/target/sqlite-native/org/sqlite/native/Linux/ /app/native/
 # Load the pinned native library from the immutable image; /tmp remains noexec.

@@ -15,6 +15,7 @@ class GuacdConnector {
     GuacdConnector(Config config) {this.config=config;}
     GuacamoleTunnel open(Sessions.Desktop desktop) throws Exception {
         config.requireDesktop();
+        String password=config.desktopCredential();
         Socket raw=new Socket();
         desktop.pending(raw);
         try {
@@ -36,7 +37,7 @@ class GuacdConnector {
             };
             GuacamoleConfiguration vnc=new GuacamoleConfiguration();vnc.setProtocol("vnc");
             vnc.setParameter("hostname",config.targetHost());vnc.setParameter("port",Integer.toString(config.targetPort()));
-            vnc.setParameter("password",Config.secretValue(config.secret()));
+            vnc.setParameter("password",password);
             vnc.setParameter("read-only",desktop.mode.equals("view")?"true":"false");
             vnc.setParameter("disable-copy",desktop.clipboard?"false":"true");
             vnc.setParameter("disable-paste",desktop.clipboard?"false":"true");
@@ -45,7 +46,8 @@ class GuacdConnector {
             GuacamoleClientInformation info=new GuacamoleClientInformation();
             info.setOptimalScreenWidth(1280);info.setOptimalScreenHeight(800);info.setOptimalResolution(96);
             info.getImageMimetypes().addAll(List.of("image/png","image/jpeg","image/webp"));
-            return new SimpleGuacamoleTunnel(new ConfiguredGuacamoleSocket(socket,vnc,info));
+            try {return new SimpleGuacamoleTunnel(new ConfiguredGuacamoleSocket(socket,vnc,info));}
+            finally {vnc.unsetParameter("password");}
         }catch(Exception e){raw.close();throw e;}
     }
 }

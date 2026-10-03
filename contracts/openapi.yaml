@@ -6,18 +6,91 @@ info:
     Implemented project-specific contract, not an existing Guacamole REST API.
     Exact Origin/Host, verified edge identity and server-authorized target resolution
     apply. All responses are no-store. Cookie/CSRF is required after bootstrap.
+    Default mode requires Access per API/WS. Explicit OWNER_SETUP with trusted devices
+    uses Access only at /login enrollment, and the revocable one-year device cookie
+    on all protected API/WS requests; authentication alternatives cannot be mixed.
 servers:
   - url: https://remote-mini.example.com
 security:
   - accessAssertion: []
     appCookie: []
+  - trustedDeviceCookie: []
+    appCookie: []
 paths:
+  /login:
+    get:
+      operationId: beginBrowserEnrollment
+      security: [{accessAssertion: []}]
+      description: OWNER_SETUP trust mode only. Verify signed owner Access assertion; issue five-minute, host-only HttpOnly enrollment nonce and same-origin form. Valid existing browser trust redirects without extending its deadline.
+      responses:
+        '200': {description: Enrollment form with one-time nonce.}
+        '303': {description: Existing trusted browser redirects to root.}
+        default: {$ref: '#/components/responses/Error'}
+    post:
+      operationId: enrollBrowser
+      security: [{accessAssertion: []}]
+      description: Exact Host/Origin, one-time form nonce plus matching HttpOnly nonce cookie. Issue opaque one-year device cookie; clear old app cookie. No token in response body. Cookie lifetime is fixed at enrollment.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [nonce]
+              properties:
+                nonce: {type: string, minLength: 43, maxLength: 43}
+      responses:
+        '303': {description: Device trusted, redirect to root.}
+        default: {$ref: '#/components/responses/Error'}
+  /api/desktop/credential:
+    post:
+      operationId: provisionDesktopCredential
+      description: Explicit OWNER_SETUP only. AES-GCM server storage, no plaintext echo. Reject while any live desktop or unexpired pending intent exists; fixed server-owned target and unverified test keyboard profile.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [password]
+              properties:
+                password: {type: string, minLength: 1, maxLength: 128, writeOnly: true}
+      responses:
+        '200': {description: Credential configured and desktop policy flags, never secret/ciphertext/path.}
+        default: {$ref: '#/components/responses/Error'}
+  /api/trusted-devices:
+    get:
+      operationId: listTrustedBrowsers
+      description: Enabled only with trusted mode. Owner-scoped IDs, createdAt/expiresAt/current metadata; no tokens, identities or private target data.
+      responses:
+        '200': {description: Devices metadata list.}
+        default: {$ref: '#/components/responses/Error'}
+  /api/trusted-devices/{deviceId}:
+    delete:
+      operationId: revokeTrustedBrowser
+      description: Revoke specified owner browser and close its app/desktop sessions. Other browsers remain valid. Current device cookie is cleared and reauthenticate is true when revoking this browser.
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema: {type: string}
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '200': {description: Revoked with reauthenticate boolean.}
+        default: {$ref: '#/components/responses/Error'}
   /api/session/bootstrap:
     post:
       operationId: bootstrapSession
       description: Exact Origin plus signed owner assertion; create or reuse the same valid owner-bound cookie without extending its deadline. No unauthenticated development bypass.
       security:
         - accessAssertion: []
+        - trustedDeviceCookie: []
       parameters:
         - $ref: '#/components/parameters/Origin'
       responses:
@@ -53,7 +126,7 @@ paths:
           $ref: '#/components/responses/Error'
     delete:
       operationId: logoutNode
-      description: Revoke current app session, close all its upstreams, expire cookie. Not a fleet-wide or Access-global logout.
+      description: Revoke current app session, close all its upstreams, expire cookie. In trusted mode also revoke this browser and clear its device cookie. Not a fleet-wide or Access-global logout.
       parameters:
         - $ref: '#/components/parameters/Origin'
         - $ref: '#/components/parameters/CSRF'
@@ -202,6 +275,11 @@ components:
       in: header
       name: Cf-Access-Jwt-Assertion
       description: Injected by trusted Access edge; gateway verifies JWT. Browser must not supply its own trusted identity.
+    trustedDeviceCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-rdg-device
+      description: Explicit opt-in only; opaque Secure HttpOnly revocable proof, verified against encrypted server state on every protected API/WS and active lease.
     appCookie:
       type: apiKey
       in: cookie
@@ -239,8 +317,11 @@ components:
           type: string
           enum: [UNVERIFIED, CHECKING, GATEWAY_REACHABLE, BLOCKED, DESKTOP_READY, OFFLINE, DENIED]
         desktopEnabled: {type: boolean, description: Server policy permits desktop attempts; does not prove availability.}
-        desktopPolicy: {type: string, enum: [FULL, BLOCKED]}
-        blockedReason: {type: string, enum: [DESKTOP_BLOCKED_BY_POLICY]}
+        desktopPolicy: {type: string, enum: [FULL, BLOCKED, OWNER_SETUP]}
+        blockedReason: {type: string, enum: [DESKTOP_BLOCKED_BY_POLICY, VNC_CREDENTIAL_REQUIRED]}
+        credentialSetupEnabled: {type: boolean}
+        credentialConfigured: {type: boolean}
+        keyboardCalibration: {type: string, enum: [OPERATOR_CONFIGURED, UNAVAILABLE, UNVERIFIED_TEST_PROFILE]}
         checkedAt: {type: [string, 'null'], format: date-time}
         launchUrl: {type: string, format: uri}
     Error:

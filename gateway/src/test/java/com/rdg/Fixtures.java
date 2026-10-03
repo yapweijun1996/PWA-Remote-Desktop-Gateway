@@ -35,6 +35,16 @@ final class Fixtures {
             "fixture-mac","Disposable blocked policy fixture","host.docker.internal",5900,null,"127.0.0.1",4822,"127.0.0.1",0,
             dir.resolve("state"),web,Config.JSON.createArrayNode(),Map.of(),Config.DesktopPolicy.BLOCKED);
     }
+    static Config ownerSetupConfig(Path dir,String origin) throws Exception {
+        dir=dir.toRealPath();Path state=dir.resolve("state"),key=dir.resolve("key/vnc.key");
+        DesktopCredentialStore.initializeKey(key,state);
+        var store=new DesktopCredentialStore(state,key,"fixture-node","fixture-mac");
+        Path web=Files.isDirectory(Path.of("web/dist"))?Path.of("web/dist"):Path.of("../web/dist");
+        return new Config("fixture-node",origin,"https://fixture-team.cloudflareaccess.com","a".repeat(64),"owner@fixture.test","",
+            "fixture-mac","Disposable owner setup fixture","127.0.0.1",5900,null,"127.0.0.1",4822,"127.0.0.1",0,
+            state,web,Config.JSON.createArrayNode(),Map.of("CommandLeft",0xffe7,"CommandRight",0xffe8,"OptionLeft",0xffe9,
+            "OptionRight",0xffea,"ControlLeft",0xffe3,"ControlRight",0xffe4),Config.DesktopPolicy.OWNER_SETUP,store);
+    }
     static RSAKey key(String kid) throws Exception{return new RSAKeyGenerator(2048).keyID(kid).generate();}
     static String token(Config c,RSAKey key,Instant now,long seconds,Map<String,Object> changes) throws Exception {
         var builder=new JWTClaimsSet.Builder().issuer(c.issuer()).audience(c.audience()).subject("fixture-owner")

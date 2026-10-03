@@ -14,10 +14,12 @@ import java.util.concurrent.*;
 
 public final class Main {
     static final class Runtime implements AutoCloseable {
-        final Tomcat tomcat;final Sessions sessions;final Audit audit;final ScheduledExecutorService timer;
+        final Tomcat tomcat;final Sessions sessions;final Audit audit;final ScheduledExecutorService timer;final TrustedDeviceStore trusted;
         Runtime(Config c,AccessVerifier verifier,GuacdConnector connector) throws Exception {this(c,verifier,connector,Clock.systemUTC(),System::nanoTime);}
-        Runtime(Config c,AccessVerifier verifier,GuacdConnector connector,Clock clock,java.util.function.LongSupplier ticker) throws Exception {
-            audit=new Audit(c.stateDir(),clock,c.nodeId());sessions=new Sessions(c,clock,ticker,audit);
+        Runtime(Config c,AccessVerifier verifier,GuacdConnector connector,Clock clock,java.util.function.LongSupplier ticker) throws Exception {this(c,verifier,connector,clock,ticker,null);}
+        Runtime(Config c,AccessVerifier verifier,GuacdConnector connector,Clock clock,java.util.function.LongSupplier ticker,TrustedDeviceStore trusted) throws Exception {
+            this.trusted=trusted;
+            audit=new Audit(c.stateDir(),clock,c.nodeId());sessions=new Sessions(c,clock,ticker,audit);sessions.useTrustedStore(trusted);
             tomcat=new Tomcat();tomcat.setBaseDir(c.stateDir().resolve("runtime").toString());tomcat.setPort(c.listenPort());
             tomcat.getConnector().setProperty("address",c.listenAddress());tomcat.getConnector().setProperty("maxThreads","24");
             tomcat.getConnector().setProperty("maxConnections","64");tomcat.getConnector().setProperty("acceptCount","16");
@@ -25,9 +27,15 @@ public final class Main {
             tomcat.getConnector().setProperty("maxPostSize","4096");tomcat.getConnector().setProperty("server","RDG");
             Context context=tomcat.addContext("",c.webDir().toAbsolutePath().toString());
             context.setSessionTimeout(0);context.setUseHttpOnly(true);
-            FilterDef f=new FilterDef();f.setFilterName("security");f.setFilter(new GatewayFilter(c,verifier,sessions));context.addFilterDef(f);
+            FilterDef f=new FilterDef();f.setFilterName("security");f.setFilter(new GatewayFilter(c,verifier,sessions,trusted));context.addFilterDef(f);
             FilterMap fm=new FilterMap();fm.setFilterName("security");fm.addURLPattern("/*");context.addFilterMapBefore(fm);
-            Tomcat.addServlet(context,"api",new ApiServlet(c,sessions));context.addServletMappingDecoded("/api/*","api");
+            Tomcat.addServlet(context,"api",new ApiServlet(c,sessions,trusted));context.addServletMappingDecoded("/api/*","api");
+            if(trusted!=null) {
+                Tomcat.addServlet(context,"login",new LoginServlet(c,verifier,trusted,clock,sessions));
+                context.addServletMappingDecoded("/login","login");context.addServletMappingDecoded("/login/","login");
+                Tomcat.addServlet(context,"trusted-devices",new TrustedDevicesServlet(trusted,sessions));
+                context.addServletMappingDecoded("/api/trusted-devices","trusted-devices");context.addServletMappingDecoded("/api/trusted-devices/*","trusted-devices");
+            }
             Tomcat.addServlet(context,"static",new StaticServlet(c.webDir()));context.addServletMappingDecoded("/","static");
             context.addServletContainerInitializer(new WsSci(),null);
             context.addServletContainerInitializer((classes,servlet)-> {
@@ -48,11 +56,20 @@ public final class Main {
             timer.scheduleAtFixedRate(sessions::tick,250,250,TimeUnit.MILLISECONDS);
         }
         int port(){return tomcat.getConnector().getLocalPort();}
-        public void close() throws Exception{timer.shutdownNow();sessions.close();tomcat.stop();tomcat.destroy();audit.close();}
+        public void close() throws Exception{timer.shutdownNow();sessions.close();tomcat.stop();tomcat.destroy();audit.close();if(trusted!=null)trusted.close();}
     }
     public static void main(String[] args) {
         // Third-party log messages may include protocol/upstream details. Use only bounded app audit.
         java.util.logging.LogManager.getLogManager().reset();
+        if(args.length==1 && args[0].equals("--init-vnc-key")) {
+            try {
+                String path=System.getenv("RDG_VNC_KEY_FILE"),state=System.getenv("RDG_STATE_DIR");
+                if(path==null || path.isBlank() || state==null || state.isBlank())throw new IllegalArgumentException();
+                DesktopCredentialStore.initializeKey(Path.of(path),Path.of(state));
+                System.out.println("RDG VNC key initialized.");
+            }catch(Exception e){System.err.println("RDG VNC key initialization refused: CONFIGURATION_OR_RUNTIME_INVALID");System.exit(1);}
+            return;
+        }
         if(args.length==1 && args[0].equals("--health")) {
             try {
                 int port=Integer.parseInt(System.getenv().getOrDefault("RDG_LISTEN_PORT","8080"));
@@ -63,7 +80,15 @@ public final class Main {
         }
         try {
             Config config=Config.load(System.getenv());
-            Runtime runtime=new Runtime(config,new AccessVerifier(config,Clock.systemUTC()),new GuacdConnector(config));
+            Clock clock=Clock.systemUTC();
+            String enabled=System.getenv().getOrDefault("RDG_TRUSTED_DEVICES_ENABLED","false");
+            if(!Set.of("true","false").contains(enabled))throw new IllegalArgumentException("Invalid device trust policy");
+            TrustedDeviceStore trusted=null;
+            if(enabled.equals("true")) {
+                if(!config.credentialSetupEnabled())throw new IllegalArgumentException("Trusted devices require explicit owner setup");
+                trusted=new TrustedDeviceStore(config.stateDir().resolve("trusted-devices"),config.credentialStore().keyFile(),config.nodeId(),config.ownerEmail(),config.ownerSubject(),clock);
+            }
+            Runtime runtime=new Runtime(config,new AccessVerifier(config,clock),new GuacdConnector(config),clock,System::nanoTime,trusted);
             java.lang.Runtime.getRuntime().addShutdownHook(new Thread(()->{try{runtime.close();}catch(Exception ignored){}}));
             System.out.println("RDG gateway ready; public/real-target acceptance requires operator verification.");
             runtime.tomcat.getServer().await();

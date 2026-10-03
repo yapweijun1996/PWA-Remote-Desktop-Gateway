@@ -1,0 +1,69 @@
+# Owner-approved self-test deployment; desktop compatibility remains unverified until observed.
+name: rdg-${RDG_NODE_ID:?Set a unique per-Mac node ID}
+services:
+  gateway:
+    image: ${GATEWAY_IMAGE:?Build and pin a reviewed gateway image digest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:32120:8080"
+    environment:
+      RDG_NODE_ID: ${RDG_NODE_ID:?Set this node ID}
+      RDG_PUBLIC_ORIGIN: ${RDG_PUBLIC_ORIGIN:?Set exact HTTPS origin}
+      RDG_ACCESS_ISSUER: ${RDG_ACCESS_ISSUER:?Set trusted Access team issuer}
+      RDG_ACCESS_AUDIENCE: ${RDG_ACCESS_AUDIENCE:?Set this Access application audience}
+      RDG_OWNER_EMAIL: ${RDG_OWNER_EMAIL:?Set exact approved owner email}
+      RDG_TARGET_CONFIG: /app/config/device.json
+      RDG_GUACD_HOST: guacd
+      RDG_GUACD_PORT: "4822"
+      RDG_DESKTOP_POLICY: "OWNER_SETUP"
+      RDG_VNC_KEY_FILE: /var/lib/rdg-key/vnc.key
+      RDG_TRUSTED_DEVICES_ENABLED: ${RDG_TRUSTED_DEVICES_ENABLED:-false}
+      RDG_LISTEN_PORT: "8080"
+      RDG_LISTEN_ADDRESS: "0.0.0.0"
+      RDG_WEB_DIR: /app/web
+      RDG_STATE_DIR: /var/lib/rdg
+    volumes:
+      - type: bind
+        source: ${RDG_DEVICE_CONFIG:?Set absolute path to validated server device config}
+        target: /app/config/device.json
+        read_only: true
+      - rdg-metadata:/var/lib/rdg
+      - type: volume
+        source: rdg-vnc-key
+        target: /var/lib/rdg-key
+        read_only: true
+    depends_on:
+      - guacd
+    read_only: true
+    cap_drop: [ALL]
+    tmpfs: ["/tmp:size=64m,uid=10001,gid=10001,mode=0700,noexec,nosuid"]
+    pids_limit: 128
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "java", "-Xmx32m", "-jar", "/app/rdg-gateway.jar", "--health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    # Process liveness only; never a promise of Screen Sharing authentication.
+    networks: [backend]
+    security_opt: [no-new-privileges:true]
+  guacd:
+    image: ${GUACD_IMAGE:?Build and pin a supported-OS official-source guacd image digest}
+    restart: unless-stopped
+    # No host port for 4822. Never publish it.
+    networks: [backend]
+    read_only: true
+    cap_drop: [ALL]
+    tmpfs: ["/tmp:size=32m,uid=10001,gid=10001,mode=0700,noexec,nosuid"]
+    pids_limit: 64
+    mem_limit: 256m
+    logging:
+      driver: none
+    security_opt: [no-new-privileges:true]
+networks:
+  backend:
+    driver: bridge
+    # Outbound Mac VNC reachability still required; enforce allowed destinations separately.
+volumes:
+  rdg-metadata:
+  rdg-vnc-key:

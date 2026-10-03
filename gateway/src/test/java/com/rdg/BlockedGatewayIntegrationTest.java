@@ -63,7 +63,8 @@ class BlockedGatewayIntegrationTest {
         assertEquals("BLOCKED",device.path("status").asText());assertFalse(device.path("desktopEnabled").booleanValue());
         assertEquals("BLOCKED",device.path("desktopPolicy").asText());
         assertEquals(Config.DESKTOP_BLOCKED_REASON,device.path("blockedReason").asText());
-        assertFalse(device.toString().contains("host.docker.internal"));assertFalse(device.toString().contains("credential"));
+        assertFalse(device.toString().contains("host.docker.internal"));assertFalse(device.toString().contains("credentialRef"));
+        assertFalse(device.path("credentialSetupEnabled").booleanValue());assertFalse(device.path("credentialConfigured").booleanValue());
         var diagnostic=Config.JSON.readTree(request("GET","/api/diagnostics",null,token,cookie,null,null).body());
         assertFalse(diagnostic.path("desktopEnabled").booleanValue());assertEquals("BLOCKED",diagnostic.path("desktopPolicy").asText());
         assertTrue(diagnostic.path("keysyms").isObject());assertTrue(diagnostic.path("keysyms").isEmpty());

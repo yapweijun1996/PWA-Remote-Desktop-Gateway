@@ -17,7 +17,7 @@ final class Sessions implements AutoCloseable {
         final String index, subject, csrf, ref;
         final Instant expires;
         final long deadline;
-        boolean clipboard;
+        boolean clipboard;String trustedDeviceId;
         App(String token,AccessVerifier.Identity id) {
             index=hash(token);subject=id.subject();csrf=random();ref=hash(config.nodeId()+":"+subject).substring(0,24);
             Instant now=clock.instant();expires=id.expiresAt().isBefore(now.plusSeconds(3600))?id.expiresAt():now.plusSeconds(3600);
@@ -59,6 +59,7 @@ final class Sessions implements AutoCloseable {
             tunnel=t;socket=ws;pending=null;
         }
         void checkActive() {
+            requireTrusted(app);
             long now=ticker.getAsLong();
             if(ended.get() || now>=app.deadline || !clock.instant().isBefore(app.expires) || now-lastInput>=IDLE_NANOS)
                 throw new Failure(401,"SESSION_EXPIRED");
@@ -81,6 +82,7 @@ final class Sessions implements AutoCloseable {
     final Clock clock;
     final LongSupplier ticker;
     final Audit audit;
+    private TrustedDeviceStore trustedStore;
     private final Map<String,App> apps=new HashMap<>();
     private final Map<String,Intent> intents=new HashMap<>();
     private final Map<String,Desktop> desktops=new HashMap<>();
@@ -88,6 +90,29 @@ final class Sessions implements AutoCloseable {
     private boolean cleanupUncertain;
     private final Map<String,ArrayDeque<Long>> limits=new HashMap<>();
     Sessions(Config c,Clock clock,LongSupplier ticker,Audit audit) {config=c;this.clock=clock;this.ticker=ticker;this.audit=audit;}
+    void useTrustedStore(TrustedDeviceStore trusted){trustedStore=trusted;}
+    synchronized void bindTrusted(App app,String deviceId) {
+        if(trustedStore==null)return;
+        var current=trustedStore.verifyDevice(deviceId);
+        if(!app.subject.equals(current.identity().subject())||(app.trustedDeviceId!=null&&!app.trustedDeviceId.equals(deviceId)))throw new Failure(403,"ACCESS_DENIED");
+        app.trustedDeviceId=deviceId;
+    }
+    synchronized void checkTrustedBinding(App app,String deviceId) {
+        if(trustedStore!=null && !Objects.equals(app.trustedDeviceId,deviceId))throw new Failure(403,"ACCESS_DENIED");
+    }
+    private void requireTrusted(App app) {
+        if(trustedStore==null)return;
+        var current=trustedStore.verifyDevice(app.trustedDeviceId);
+        if(!current.identity().subject().equals(app.subject))throw new Failure(403,"ACCESS_DENIED");
+    }
+    private boolean trustedActive(App app) {try{requireTrusted(app);return true;}catch(Failure failure){return false;}}
+    synchronized void revokeCookie(String cookie,String subject,String reason) {
+        App app=cookie==null?null:apps.get(hash(cookie));
+        if(app!=null && app.subject.equals(subject))revoke(app,reason);
+    }
+    synchronized void revokeDevice(String deviceId,String reason) {
+        for(App app:new ArrayList<>(apps.values()))if(Objects.equals(app.trustedDeviceId,deviceId))revoke(app,reason);
+    }
     synchronized Map.Entry<String,App> bootstrap(AccessVerifier.Identity id,String prior) {
         limit(id.subject()+":bootstrap",10);
         if(prior!=null) {
@@ -149,6 +174,17 @@ final class Sessions implements AutoCloseable {
         if(desktops.values().stream().anyMatch(d->d.app==app)||intents.values().stream().anyMatch(i->i.appIndex.equals(app.index)&&!i.consumed))throw new Failure(409,"CONTROL_BUSY");
         app.clipboard=consent;
     }
+    synchronized Map<String,Object> desktopCredential(App app,String password) {
+        requireApp(app);
+        if(!config.credentialSetupEnabled())throw new Failure(403,"CREDENTIAL_SETUP_DISABLED");
+        limit(app.subject+":credential",5);
+        if(cleanupUncertain)throw new Failure(503,"CLEANUP_UNCERTAIN");
+        long now=ticker.getAsLong();
+        // The node-wide lease lock also covers provisioning, including other tabs and owners' apps.
+        if(!desktops.isEmpty() || intents.values().stream().anyMatch(i->!i.consumed && now<i.expires))
+            throw new Failure(409,"CONTROL_BUSY");
+        config.credentialStore().save(password);return config.desktopStatus();
+    }
     synchronized void endDesktop(App app,String reason) {
         intents.values().removeIf(i->i.appIndex.equals(app.index));
         for(Desktop d:new ArrayList<>(desktops.values()))if(d.app==app)d.end(reason);
@@ -171,14 +207,14 @@ final class Sessions implements AutoCloseable {
         synchronized(this) {
             long now=ticker.getAsLong();
             expired=desktops.values().stream().filter(d->now>=d.app.deadline || !clock.instant().isBefore(d.app.expires)
-                || now-d.lastInput>=IDLE_NANOS || (!d.connected()&&now>=d.connectingDeadline)).toList();
+                || !trustedActive(d.app) || now-d.lastInput>=IDLE_NANOS || (!d.connected()&&now>=d.connectingDeadline)).toList();
             apps.values().removeIf(a->now>=a.deadline||!clock.instant().isBefore(a.expires));
             intents.values().removeIf(i->now>=i.expires);
             limits.entrySet().removeIf(e->e.getValue().isEmpty()||now-e.getValue().getLast()>Duration.ofMinutes(1).toNanos());
         }
         for(Desktop d:expired)d.end("DEADLINE_REACHED");
     }
-    private void requireApp(App app) {if(apps.get(app.index)!=app || ticker.getAsLong()>=app.deadline || !clock.instant().isBefore(app.expires))throw new Failure(401,"SESSION_EXPIRED");}
+    private void requireApp(App app) {if(apps.get(app.index)!=app || ticker.getAsLong()>=app.deadline || !clock.instant().isBefore(app.expires))throw new Failure(401,"SESSION_EXPIRED");requireTrusted(app);}
     private void limit(String key,int max) {
         long now=ticker.getAsLong();var q=limits.computeIfAbsent(key,k->new ArrayDeque<>());
         while(!q.isEmpty() && now-q.peekFirst()>=Duration.ofMinutes(1).toNanos())q.removeFirst();

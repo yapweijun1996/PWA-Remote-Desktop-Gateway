@@ -10,7 +10,7 @@ Act as the implementation engineer, PWA/input specialist and security-conscious 
 This archive authorizes preparation of a local implementation. It does not authorize public exposure, access-policy changes, Tunnel replacement, host permission changes, reboot, FileVault changes, remote shell on unrelated hosts, company-device enrollment, or edits to an existing MCP service. Inspect and preserve existing repositories/processes. Use a dedicated branch/worktree. Deploy only to the explicitly approved personal host.
 
 ## Invariants
-- Verify signed Access JWTs on every protected API and every WebSocket upgrade. Reject absent or unverifiable identity. Do not trust an email header or client-supplied subject.
+- Default FULL/BLOCKED modes verify signed Access JWTs on every protected API and WebSocket upgrade. Explicit owner-approved OWNER_SETUP trusted-device mode verifies signed Access at /login enrollment and revocable server-owned device proofs on every protected API/WS and live lease (docs/18). Reject absent or unverifiable identity; do not trust email headers or client-supplied subjects.
 - Reuse the official Guacamole Java transport/library; never expose guacd/VNC or a raw arbitrary-target proxy publicly.
 - A device ID resolves only to server-owned configuration. Browser requests cannot provide host, port, protocol or VNC password.
 - OTP login does not replace desktop credentials. Store the VNC credential server-side; a locked macOS account can still require its own login.

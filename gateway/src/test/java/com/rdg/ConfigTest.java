@@ -80,4 +80,22 @@ class ConfigTest {
         var incompleteKeys=environment(document);incompleteKeys.put("RDG_DESKTOP_POLICY","BLOCKED");
         assertThrows(Exception.class,()->Config.load(incompleteKeys));
     }
+    @Test void ownerSetupRequiresExternalProtectedKeyAndCompleteExplicitTestMappings() throws Exception {
+        var document=blockedDocument();var env=environment(document);env.put("RDG_DESKTOP_POLICY","OWNER_SETUP");
+        final var incomplete=env;assertThrows(Exception.class,()->Config.load(incomplete));
+        calibratedKeys(document);env=environment(document);env.put("RDG_DESKTOP_POLICY","OWNER_SETUP");
+        Path root=dir.toRealPath(),state=root.resolve("owner-state"),key=root.resolve("key/vnc.key");
+        env.put("RDG_STATE_DIR",state.toString());env.put("RDG_VNC_KEY_FILE",key.toString());
+        final var missingKey=env;assertThrows(Exception.class,()->Config.load(missingKey));
+        DesktopCredentialStore.initializeKey(key,state);var setup=Config.load(env);
+        assertTrue(setup.credentialSetupEnabled());assertFalse(setup.credentialConfigured());assertFalse(setup.desktopEnabled());
+        assertEquals("UNVERIFIED_TEST_PROFILE",setup.keyboardCalibration());assertEquals(6,setup.keysyms().size());assertNull(setup.secret());
+        setup.credentialStore().save("fixture-only-password");assertTrue(Config.load(env).desktopEnabled());
+        ((ObjectNode)document.path("localDevice")).put("credentialRef","/run/secrets/vnc_password");
+        var mixed=environment(document);mixed.put("RDG_DESKTOP_POLICY","OWNER_SETUP");mixed.put("RDG_STATE_DIR",state.toString());mixed.put("RDG_VNC_KEY_FILE",key.toString());
+        assertThrows(Exception.class,()->Config.load(mixed));
+        ((ObjectNode)document.path("localDevice")).remove("credentialRef");document.remove("keysyms");
+        var absentMappings=environment(document);absentMappings.put("RDG_DESKTOP_POLICY","OWNER_SETUP");absentMappings.put("RDG_STATE_DIR",state.toString());absentMappings.put("RDG_VNC_KEY_FILE",key.toString());
+        assertThrows(Exception.class,()->Config.load(absentMappings));
+    }
 }
