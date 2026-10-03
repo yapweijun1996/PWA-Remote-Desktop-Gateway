@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test reference/*.test.mjs",
+    "test": "node --test reference/*.test.mjs scripts/*.test.mjs",
     "preview": "node scripts/preview.mjs",
     "verify": "node scripts/verify-pack.mjs"
   }

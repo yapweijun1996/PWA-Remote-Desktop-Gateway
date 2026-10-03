@@ -1,6 +1,5 @@
 PWA Remote Desktop Gateway v1.0 — handoff inventory
 
-.gitignore
 AGENTS.md
 AI_AGENT_TASK_PROMPT.md
 CONTENTS.txt
@@ -64,3 +63,4 @@ reference/session-policy.mjs
 reference/session-policy.test.mjs
 scripts/preview.mjs
 scripts/verify-pack.mjs
+scripts/verify-pack.test.mjs

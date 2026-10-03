@@ -56,7 +56,7 @@ export class KeyboardState {
     return true;
   }
   releaseAll() {
-    this.#ready();
+    if (this.#broken) return; // Sink failure already cleared all state; cleanup must stay safe on blur/hide.
     for (const source of [...this.#sources.keys()].reverse()) this.up(source);
   }
   setProfile(profile) {
