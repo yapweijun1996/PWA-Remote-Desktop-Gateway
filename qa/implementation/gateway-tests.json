@@ -1,8 +1,10 @@
 {
   "status": "PASS",
-  "level": "LOCAL_PROTOCOL_FIXTURE",
+  "recordedAt": "2026-10-03T00:58:15.734624+00:00",
+  "level": "LOCAL_PROTOCOL_AND_BLOCKED_POLICY_FIXTURES",
   "realMac": false,
-  "tests": 38,
+  "realAccess": false,
+  "tests": 49,
   "failures": 0,
   "errors": 0,
   "skipped": 0,
@@ -13,7 +15,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.477,
+      "seconds": 2.27,
       "cases": [
         "keyRotationCacheExpiryAndRefreshFailure",
         "wrongIssuerAudienceEmailTypeAndSubject",
@@ -29,9 +31,35 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.218,
+      "seconds": 1.274,
       "cases": [
         "retentionAndNodeRestoreBinding"
+      ]
+    },
+    {
+      "suite": "com.rdg.BlockedDesktopPolicyTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.08,
+      "cases": [
+        "blockedClipboardCannotBeEnabledButCanBeCleared",
+        "connectorRefusesBeforeItUsesDesktopOrMissingCredential",
+        "blockedIntentAndUpgradeDoNotAllocateDesktopLeases"
+      ]
+    },
+    {
+      "suite": "com.rdg.BlockedGatewayIntegrationTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.675,
+      "cases": [
+        "rawWebsocketStillValidatesSignedIdentityAndOriginBeforeBlockedRefusal",
+        "blockedIntentsAndClipboardRemainBehindIdentityOriginAndCsrf",
+        "authenticatedStatusReportsBlockedWithoutDesktopPrerequisites"
       ]
     },
     {
@@ -40,20 +68,23 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.001,
+      "seconds": 0.003,
       "cases": [
         "instructionBudgetRejectsOverflowAndResetsOnlyAfterConsumption"
       ]
     },
     {
       "suite": "com.rdg.ConfigTest",
-      "tests": 2,
+      "tests": 5,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.008,
+      "seconds": 0.174,
       "cases": [
         "missingConfigPlaceholdersAndUnsafeSecretRefuseStartup",
+        "blockedPolicyNeverReadsAnOptionalCredentialButRejectsInvalidConfiguration",
+        "fullPolicyStillRequiresProtectedCredentialAndAllCalibratedModifiers",
+        "onlyExplicitBlockedPolicyStartsWithoutDesktopPrerequisites",
         "malformedJsonAndUnknownFieldsRefuseBeforeSideEffects"
       ]
     },
@@ -63,7 +94,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 1.791,
+      "seconds": 5.872,
       "cases": [
         "pendingIntentBlocksUpdateBoundaryAndEndCancelsIt",
         "liveAbsoluteExpiryClosesBothEvenWithRecentInput",
@@ -78,14 +109,16 @@
     },
     {
       "suite": "com.rdg.LocalMacViewTest",
-      "tests": 6,
+      "tests": 8,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.487,
+      "seconds": 2.861,
       "cases": [
         "viewPolicyRejectsInputWithoutNeedingCalibratedKeysyms",
         "signedPilotTokenMatchesThePinnedTestOwnerSubject",
+        "manualPilotRequiresTheExplicitBoundedDuration",
+        "automatedPilotRetainsItsSixtySecondDeadline",
         "controlIsRejectedBeforeAnyUpstreamOperation",
         "clipboardConsentIsRejectedEvenWhenViewIntentSuppressesClipboard",
         "configHasOnlyTheFixedLocalTargetAndNoInventedCalibration",
@@ -98,7 +131,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 0.107,
+      "seconds": 2.511,
       "cases": [
         "maintenanceRejectsPendingAndActiveSessions",
         "metadataContainsNoSessionOrPayload",

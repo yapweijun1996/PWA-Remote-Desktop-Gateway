@@ -1,6 +1,6 @@
 {
   "scope": "OWNER_REQUESTED_MANUAL_BROWSER_UI_FIXTURE",
-  "status": "UI_FIXTURE_SERVING",
+  "status": "EXPIRED_AND_CLEANED",
   "url": "https://127.0.0.1:32122",
   "realMac": false,
   "humanAcceptance": "PENDING",
@@ -18,6 +18,8 @@
   "maximumServerSeconds": 900,
   "transientCredentialEntry": "CLOSED_WITHOUT_SAVED_CREDENTIAL",
   "temporaryCredentialRetained": false,
-  "cleanup": "OWNED_UI_FIXTURE_SERVER_RUNNING_FOR_OWNER_WITH_AUTOMATIC_DEADLINE",
-  "claimLimit": "CONNECTED refers to the disposable protocol peer, not an actual Mac or rendered desktop."
+  "cleanup": "NO_32122_LISTENER_OR_OWNED_FIXTURE_DIRECTORY",
+  "claimLimit": "CONNECTED refers to the disposable protocol peer, not an actual Mac or rendered desktop.",
+  "historicalStatus": "UI_FIXTURE_SERVING",
+  "cleanupVerifiedAt": "2026-10-03T00:58:15.734624+00:00"
 }

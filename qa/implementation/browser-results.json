@@ -1,10 +1,15 @@
 {
   "status": "PASS",
   "version": "153.0.8010.12",
-  "build": "37d1363d197142d5",
+  "build": "cc385c894f584ae2",
   "fixture": true,
   "realMac": false,
   "results": [
+    {
+      "test": "BLOCKED policy disables desktop preparation, display, connect intents and clipboard while diagnostics remain available",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
     {
       "test": "Signed bootstrap, truthful readiness and clean first worker activation",
       "status": "PASS",
@@ -63,5 +68,5 @@
   ],
   "errors": [],
   "unexpectedConsoleErrors": 0,
-  "expectedOfflineErrors": 3
+  "expectedOfflineErrors": 2
 }
