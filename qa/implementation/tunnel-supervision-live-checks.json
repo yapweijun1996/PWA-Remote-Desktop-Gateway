@@ -1,0 +1,119 @@
+{
+  "status": "PASS",
+  "scope": "LIVE_TUNNEL_RECOVERY_NEGATIVE_HTTP",
+  "recordedAtUtc": "2026-10-03T10:23:43.968221+00:00",
+  "httpPassed": 10,
+  "httpTotal": 10,
+  "authenticatedSessionTested": false,
+  "realDesktopTested": false,
+  "anonymousRedirectProvesAvailability": false,
+  "credentialsSent": false,
+  "redirectsFollowed": false,
+  "sensitiveHeadersOrBodiesRetained": false,
+  "results": [
+    {
+      "check": "LOCAL_HEALTH",
+      "httpStatus": 200,
+      "contentCategory": "JSON",
+      "websocketUpgraded": false,
+      "expectedIdentityOrOriginBoundary": true,
+      "status": "PASS"
+    },
+    {
+      "check": "LOCAL_API_ABSENT_IDENTITY",
+      "httpStatus": 401,
+      "contentCategory": "JSON",
+      "websocketUpgraded": false,
+      "errorCategory": "TRUSTED_DEVICE_REQUIRED",
+      "expectedIdentityOrOriginBoundary": true,
+      "status": "PASS"
+    },
+    {
+      "check": "LOCAL_API_FORGED_IDENTITY",
+      "httpStatus": 401,
+      "contentCategory": "JSON",
+      "websocketUpgraded": false,
+      "errorCategory": "TRUSTED_DEVICE_REQUIRED",
+      "expectedIdentityOrOriginBoundary": true,
+      "status": "PASS"
+    },
+    {
+      "check": "LOCAL_API_WRONG_HOST",
+      "httpStatus": 403,
+      "contentCategory": "JSON",
+      "websocketUpgraded": false,
+      "errorCategory": "ORIGIN_DENIED",
+      "expectedIdentityOrOriginBoundary": true,
+      "status": "PASS"
+    },
+    {
+      "check": "LOCAL_API_FOREIGN_ORIGIN",
+      "httpStatus": 403,
+      "contentCategory": "JSON",
+      "websocketUpgraded": false,
+      "errorCategory": "ORIGIN_DENIED",
+      "expectedIdentityOrOriginBoundary": true,
+      "status": "PASS"
+    },
+    {
+      "check": "LOCAL_WS_ABSENT_IDENTITY",
+      "httpStatus": 401,
+      "contentCategory": "JSON",
+      "websocketUpgraded": false,
+      "errorCategory": "TRUSTED_DEVICE_REQUIRED",
+      "expectedIdentityOrOriginBoundary": true,
+      "status": "PASS"
+    },
+    {
+      "check": "PUBLIC_ROOT",
+      "httpStatus": 302,
+      "contentCategory": "HTML",
+      "websocketUpgraded": false,
+      "tlsVerified": true,
+      "approvedAccessRedirect": true,
+      "gatewayPrivateMarkersDetected": false,
+      "status": "PASS"
+    },
+    {
+      "check": "PUBLIC_LOGIN",
+      "httpStatus": 302,
+      "contentCategory": "HTML",
+      "websocketUpgraded": false,
+      "tlsVerified": true,
+      "approvedAccessRedirect": true,
+      "gatewayPrivateMarkersDetected": false,
+      "status": "PASS"
+    },
+    {
+      "check": "PUBLIC_API_ABSENT_IDENTITY",
+      "httpStatus": 302,
+      "contentCategory": "HTML",
+      "websocketUpgraded": false,
+      "tlsVerified": true,
+      "approvedAccessRedirect": true,
+      "gatewayPrivateMarkersDetected": false,
+      "status": "PASS"
+    },
+    {
+      "check": "PUBLIC_WS_ABSENT_IDENTITY",
+      "httpStatus": 302,
+      "contentCategory": "HTML",
+      "websocketUpgraded": false,
+      "tlsVerified": true,
+      "approvedAccessRedirect": true,
+      "gatewayPrivateMarkersDetected": false,
+      "status": "PASS"
+    }
+  ],
+  "officialTunnelInfo": {
+    "status": "UNAVAILABLE_SCHEMA",
+    "approvedTunnelIdentityVerified": true,
+    "activeConnectorCount": null,
+    "edgeConnectionCount": null
+  },
+  "limits": [
+    "ANONYMOUS_302_PROVES_ACCESS_EDGE_ONLY",
+    "NO_OWNER_LOGIN_OTP_OR_DESKTOP_AUTHENTICATION",
+    "TUNNEL_CONNECTION_COUNTS_ARE_A_POINT_IN_TIME"
+  ]
+}

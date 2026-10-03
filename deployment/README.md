@@ -52,13 +52,45 @@ The image runs as UID/GID 10001. The secret must be readable by that UID and hav
 
 `GET /health` and the container healthcheck prove process liveness only. Authenticated devices report GATEWAY_REACHABLE until an actual desktop stream is established. No network “online” claim is inferred from configuration.
 
+## Dedicated connector supervision on the approved Mac
+
+The current personal pilot uses a separate user LaunchAgent with label `com.rdg.current-mac-pilot.cloudflared`. [The plist example](cloudflared.current-mac-pilot.plist.example) specifies a direct foreground `cloudflared` process, its private configuration, a fixed Tunnel UUID, disabled auto-update, loopback-only metrics, `RunAtLoad`, `KeepAlive` and a ten-second restart throttle. Standard output/error are discarded; do not enable request or transport logging to diagnose availability.
+
+Before installation, inspect the approved Mac and existing service labels/listeners. Reserve `127.0.0.1:32124` for this connector; refuse installation if its label, destination plist or port belongs to another process. Replace the three example placeholders with the approved absolute executable path, owner-only private pilot directory and dedicated Tunnel UUID. Keep the existing credential file unchanged and outside Git. Validate the existing `tunnel.yml` with official `cloudflared tunnel --config <private-config> ingress validate`.
+
+Install the filled plist as an owner-owned `0600` regular file at `~/Library/LaunchAgents/com.rdg.current-mac-pilot.cloudflared.plist`, without overwriting an existing service. Run as the logged-in owner, without `sudo`:
+
+```sh
+plutil -lint "$HOME/Library/LaunchAgents/com.rdg.current-mac-pilot.cloudflared.plist"
+launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.rdg.current-mac-pilot.cloudflared.plist"
+curl --fail --silent --show-error http://127.0.0.1:32124/ready
+```
+
+Do not invoke default `cloudflared service install` on a Mac with an existing `com.cloudflare.cloudflared` service, replace `~/.cloudflared/config.yml`, or use `killall`/broad process matching. This dedicated service preserves unrelated Tunnels and Access policy. Review updates to the executable/config before applying them.
+
+Availability acceptance requires the dedicated launchd-owned PID, `/ready=200`, and the connector's `cloudflared_tunnel_ha_connections=4`, plus gateway process health and public authorization checks. A public unauthenticated `302` to Access proves the edge login boundary only: Access can return that redirect while the connector is down. Error 1033 means no healthy connector; gateway `/health=200` alone cannot rule it out. Read selected status/count fields in memory; do not retain raw metrics, environment dumps, URLs with login queries, tokens or request logs.
+
+For an approved recovery check, verify the current PID's exact executable/config/UUID and launchd ownership before terminating only that connector. Confirm the old PID disappears, the label obtains a different PID with an increased run count, and readiness/four connections return. Recheck that existing service files/processes and the gateway remain unchanged. An active remote desktop will disconnect during this check; no input is replayed or desktop automatically reconnected. [Current recovery evidence](../qa/implementation/tunnel-supervision-recovery.json) records this bounded check, not sleep/reboot or real desktop acceptance.
+
+This user agent starts at owner login and survives the launching terminal or Codex process. It does not keep a sleeping Mac, logged-out GUI session, Docker or network alive. Pre-login/FileVault, sleep/lid and reboot continuity remain unverified; do not change power, auto-login or host permissions as part of this connector repair.
+
+To stop this connector, use only its label:
+
+```sh
+launchctl bootout "gui/$(id -u)/com.rdg.current-mac-pilot.cloudflared"
+```
+
+`KeepAlive` means killing its process is not a stop/uninstall procedure. For removal, boot out this label, confirm its process/listener is gone, then remove only its plist. Preserve private configuration/credentials and the Access-protected route until the owner chooses their removal. Re-bootstrap the same reviewed plist to restore it.
+
+References: [Cloudflare macOS services](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/local-management/as-a-service/macos/), [Cloudflare Tunnel troubleshooting](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/troubleshoot-tunnels/common-errors/), [Apple launchd jobs](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html).
+
 ## Stop, rollback and uninstall
 
 End node sessions deliberately. Stop only this Compose project's gateway/guacd; a process restart invalidates all in-memory app sessions/intents/leases. For an emergency, stop that gateway directly through the approved local operator, then disable only the new approved Tunnel route if needed. Never expose VNC or disable Access as a rollback.
 
 Restore the previously recorded image digest and approved configuration diff. Retest identity denial, intent race, read-only and the actual keyboard smoke before restoring ingress. Keep prior remote-access/recovery intact. Remove only the project containers/network when uninstalling; preserve metadata/secrets until the owner chooses their custody/deletion policy. Do not use `down --volumes` as an automatic uninstall.
 
-Metadata backup/restore is described in docs/17. It excludes secret files, host config and live sessions. Actual host startup, FileVault, sleep/lid and runtime availability after reboot remain BLOCKED; no launch daemon, reboot or auto-login change was performed.
+Metadata backup/restore is described in docs/17. It excludes secret files, host config and live sessions. The dedicated connector now has the explicitly approved user LaunchAgent described above. Actual pre-login startup, FileVault, sleep/lid and runtime availability after reboot remain BLOCKED; no system launch daemon, reboot or auto-login change was performed.
 
 ## Explicitly approved authenticated status pilot
 

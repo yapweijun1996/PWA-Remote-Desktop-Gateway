@@ -78,6 +78,8 @@ Use only the owned Tunnel/connector/DNS route. Never expose raw VNC `5900`, guac
 
 Before calling migration complete, record the exact image/configuration/source identities and verify: unauthenticated `/login` is intercepted by Access; an untrusted root returns to `/login`; untrusted APIs and WebSocket upgrades refuse with no private data/upgrade; real owner enrollment sets only the protected cookie; restart preserves the encrypted credential and valid trust; targeted revocation closes affected transports; invalid identity/Origin/CSRF fails; and owner desktop self-tests distinguish observed results from unknown keyboard/platform behavior. Earlier all-path Access redirects and local UI route mocks are historical evidence for different scopes, not proof of this migration. Production migration remains **PENDING** until that receipt is recorded.
 
+The current dedicated connector uses the [separate user LaunchAgent](../deployment/README.md#dedicated-connector-supervision-on-the-approved-mac). [Recovery evidence](../qa/implementation/tunnel-supervision-recovery.json) covers loss of its process and automatic restart, while preserving the current all-path Access policy. Connector persistence does not complete the pending login-only Access migration or verify real Mac pixels/input.
+
 ## Backup, recovery and key rotation
 
 The existing metadata backup helper covers the audit database; it does not automatically include the new credentials directory or trusted-device database. An encrypted-state recovery snapshot must explicitly include both, with the gateway stopped for consistency.

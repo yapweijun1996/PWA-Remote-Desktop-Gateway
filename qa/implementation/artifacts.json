@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "recordedAt": "2026-10-03T04:11:22.480130+00:00",
+  "recordedAt": "2026-10-03T10:25:19.906896+00:00",
   "sourceCommit": "38b68354249cde5f79cc725cb8768fce227683b6",
   "branch": "codex/production-gateway",
   "level": "OWNER_SETUP_WITH_DEPLOYED_NATIVE_LOGIN_FIX_ACCESS_MIGRATION_PENDING",
@@ -125,7 +125,7 @@
     "contracts/source-register.json": "d05253cf52d7029e2f92f9890ba3b555dfc51046d0954c48213b654380e6691a",
     "deployment/.env.example": "9777141153cc4beba686614c035a2a284246be02bcb632fe430a9df1da5342ba",
     "deployment/Guacd.Dockerfile": "3547a102285a747a560b3c56b3159798f52eacfcb7d7b77dd3537302a78b9ba7",
-    "deployment/README.md": "283db8f0897fe79924381fc406a7dd03f4bf102e263887909ff07fb2b2bbc815",
+    "deployment/README.md": "5b7b3d7de5bfd2aff5cf41c27631f291dbd74ee2c88aa6f90460051ebb05f620",
     "deployment/apply-vnc-password-policy.py": "a00d0ea1a1f3ac9fe80a99d40809840e256b6a214df16aea5ca19bbb640299db",
     "deployment/cloudflared.config.example.yml": "34c9cadbafe3fbf96e9afc874d1e91bf8701d9cbe82110b3c03ee8b1411a5131",
     "deployment/compose.blocked-pilot.yaml": "a07968af3e7c5b01acd9e48dc76cc71cf08017a17f3fc7d91e22fec6aa21eef0",
@@ -149,7 +149,7 @@
     "docs/03_KEYBOARD_AND_INPUT.md": "907648665b3b01ff9b969ce68ab296066570544ab8a410c6660b35c3fc6c2719",
     "docs/04_AUTHENTICATION_AND_SECURITY.md": "0b2e0a9581a0234c1424d8295a07389dee92dafa503ef65c3609864e246170ed",
     "docs/05_MAC_SETUP_AND_COMPATIBILITY.md": "8566aca03f0200416b0b3302b24b0a5212c920dcebc118c2e51994ae00df591d",
-    "docs/06_CLOUDFLARE_DEPLOYMENT.md": "4f365f9b20f852ed1a6a30831a3f1d84050f1b7a9c32e39722f65077b6e84b16",
+    "docs/06_CLOUDFLARE_DEPLOYMENT.md": "ad18c323401294176be887f4c817582e6e3eea2ab60f88ff62c5f1f5175fd859",
     "docs/07_UI_UX.md": "3b8840d57934afadc91c43cad6c6f9095ba5c104842d8a486cd9c0804ed5e01a",
     "docs/08_API_AND_SESSION_CONTRACTS.md": "7a446365603eb4b269735ab18bbcb028e8f476cb815fdb0205440ef665b4a022",
     "docs/09_PWA_LIFECYCLE.md": "83b99275cdb5fd591b6e2aef1c3f817cf3c324a3dcd029911016005c7b213b85",
@@ -161,7 +161,7 @@
     "docs/15_PREFLIGHT_AND_REUSE.md": "2e89a7f6a2780ffb78263de7184260e715825215df254feb431060fc9582682e",
     "docs/16_DELIVERY_SCOPE_MATRIX.md": "91fa2260bfa1833258a4fb3bb50c6a02286156e93744f8ce5e57b9aca0035f2c",
     "docs/17_IMPLEMENTATION_AND_OPERATIONS.md": "2a37dadaa8e6eea158c4467bb3d6e6049d329114e1fa8a673e051d9fa84bc761",
-    "docs/18_OWNER_SETUP_AND_TRUSTED_DEVICES.md": "9dce64ade931cdf0bad143da9f1e876318f5dcc47ec1dc45cc263cd33fb98c1b",
+    "docs/18_OWNER_SETUP_AND_TRUSTED_DEVICES.md": "11005f8719f6763a89f9dc100f5d9572081dc0df1928cf4be1068c8edb9c05de",
     "gateway/dependencies.lock.json": "6a230e65275a42d7069dd27273c768bbf6f23fbbaed1d3711d0e7f63f9ab946f",
     "gateway/pom.xml": "93823e3da028c1e2d2a14a455962f93512e5c2b2d6ecd35ea051eccff22a38c3",
     "gateway/src/main/java/com/rdg/AccessVerifier.java": "42f9ca7d839a7b2452f5646a4f9c43b8066362dc3f63683726650fe3b8ade170",
@@ -270,7 +270,8 @@
     "web/vendor/LICENSE": "12bd816fe9a28a03c06fae6e45f1dab492bd972733eeb1c402c388adb0ebbbd7",
     "web/vendor/NOTICE": "9f1ec0252c59b209f5470b739039fcb5d29f51d832cef643000bf5e1d3dd29ff",
     "web/vendor/all.min.js": "cc89f710ecc544477dbe6bfea453fab752dafa1b1ab9770f523676e7b744b44a",
-    "web/vendor/provenance.json": "01f3b3d57ab4f2e1eb051b7761a5d3a5803a9bb7d3dd79d8b92e5679abfffeb9"
+    "web/vendor/provenance.json": "01f3b3d57ab4f2e1eb051b7761a5d3a5803a9bb7d3dd79d8b92e5679abfffeb9",
+    "deployment/cloudflared.current-mac-pilot.plist.example": "ddcf2e6e42d85abefa40519afd97f37800ad27cd652cd6c92b04360718cfadc9"
   },
   "outputs": {
     "gateway/target/rdg-gateway.jar": "959e9856cb1f580eeae9c9f55ca76337c29e913fd5e654eef3c1ad3c627321a7",
@@ -295,7 +296,7 @@
   },
   "evidence": {
     "qa/implementation/LOCALHOST_TEST_REPORT.md": "9ace7f2486811ea00a5d874e03d6a0932ccbdc7c8f5b84c0ae65bfb8210d9456",
-    "qa/implementation/REPORT.md": "931ec83c824f71efe39a4ba53a45058d4b555bf3555533af62e03d0d7064f07d",
+    "qa/implementation/REPORT.md": "3a5b01d34e9f801010d826dccc80783a86d086196e06dffa5d88aaa91390aea6",
     "qa/implementation/backup-tests.txt": "ce3c66c2fcf51d0d62979592893acf93fdcb6919c3ac84576712565ff55f54a7",
     "qa/implementation/blocked-container-results.json": "349a0cfc2e16b7d9e964e0dd2af702077000f33923acf30056e8091cf9d2cf67",
     "qa/implementation/blocked-pilot-cleanup.json": "f61a3ccebb3a73bd4a18f66e820ac1fbe2a07aae5a0dce1625748fedfaef638e",
@@ -344,7 +345,9 @@
     "qa/implementation/screenshots/cloudflare-access-login.jpg": "324055426990995b792d77d5a8d3c96b9383fa61be83ae937a36795516a6948d",
     "qa/implementation/screenshots/protocol-fixture-desktop.png": "9fde496e7d91b0925d2eb7b3cabdd367b9d2d6b1906db484734f771c26aa31ed",
     "qa/implementation/screenshots/protocol-fixture-mobile.png": "d15ecfd384327f5a802044235d08769a729c3d4df37a998bd33cfec2c90f02ba",
-    "qa/implementation/vnc-security-results.json": "774bf48d68cdc4cd71504cfeeb781ec1ed24b47db1a1349015630b36f3339831"
+    "qa/implementation/vnc-security-results.json": "774bf48d68cdc4cd71504cfeeb781ec1ed24b47db1a1349015630b36f3339831",
+    "qa/implementation/tunnel-supervision-recovery.json": "fa6861d75017954911ff0461e46a06b18e90384162ba12e724da3e459492965a",
+    "qa/implementation/tunnel-supervision-live-checks.json": "cc0f5bda68910e5160f51ae0159cb55e4ffedf3b1ce51e27b2edb1b49442a506"
   },
   "localMacTest": {
     "authorization": "BOUNDED_LOCALHOST_CURRENT_MAC",
@@ -419,5 +422,17 @@
     "liveChecks": "qa/implementation/login-return-live-checks.json",
     "realMac": false,
     "realAccessEnrollment": false
+  },
+  "currentConnectorSupervision": {
+    "status": "PASS_BOUNDED_CONNECTOR_PROCESS_RECOVERY",
+    "serviceLabel": "com.rdg.current-mac-pilot.cloudflared",
+    "serviceKind": "OWNER_USER_LAUNCH_AGENT",
+    "proof": "qa/implementation/tunnel-supervision-recovery.json",
+    "liveChecks": "qa/implementation/tunnel-supervision-live-checks.json",
+    "haConnections": 4,
+    "processRecoveryVerified": true,
+    "accessPolicyChanged": false,
+    "realMac": false,
+    "sleepLogoutPreloginRebootVerified": false
   }
 }

@@ -30,6 +30,8 @@ The browser WebSocket API does not support arbitrary custom authentication heade
 A launcher can open each node in a top-level navigation. Do not bypass browser third-party-cookie protections with insecure shared tokens or iframes. Access SSO may reduce repeat prompts; it does not guarantee that every hostname logs in or logs out simultaneously. Define node logout as revoking that node's app session/tunnels and clearing its cookie. Offer a separate, documented Access sign-out action; do not claim global logout across targets until it is actually implemented and tested.
 
 ## Availability and costs
+The approved Mac connector supervision and bounded recovery check are owned by the [deployment runbook](../deployment/README.md#dedicated-connector-supervision-on-the-approved-mac). Verify connector readiness and actual edge connections independently of the Access login redirect; a public `302` can still occur during a Tunnel outage.
+
 Tunnel/WebSocket networking, target upstream bandwidth, relay path and Mac availability affect experience. No FPS, latency, zero-cost plan or unlimited-bandwidth promise is made. Before production, check the owner's current Cloudflare plan, Access entitlements, acceptable-use constraints and chosen runtime licensing. This pack does not require a paid LLM service in the remote-control data path.
 
 ## Rollback
