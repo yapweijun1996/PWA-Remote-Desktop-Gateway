@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-03T03:00:43.381810+00:00",
+  "status": "DEPLOYED_WITH_ACCESS_MIGRATION_AWAITING_ACTION_CONFIRMATION",
+  "sourceCommit": "94207a404906e37ccda9229183aba8cb34db04b0",
+  "implementationCommit": "6e3fecf",
+  "url": "https://remote.gmb01.xyz",
+  "desktopPolicy": "OWNER_SETUP",
+  "trustedDevicesEnabled": true,
+  "trustLifetimeDays": 365,
+  "gatewayImage": "sha256:2721a952563e17db8586910ad7d3d83e312b96ec30dae984a9c2779076be1b8a",
+  "guacdImage": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+  "gatewayJarSha256": "34b30d2b68735545435dd8081e2be6a225a8c3ae8f77e29c6bc24e13937dd53a",
+  "webBuild": {
+    "build": "665e0cf1349fce23",
+    "assets": 14
+  },
+  "productionJarContainsTestClasses": false,
+  "credentialKey": {
+    "location": "separate private Docker volume, read-only in gateway",
+    "directoryMode": "0700",
+    "fileMode": "0600",
+    "bytes": 32,
+    "contentsRecorded": false
+  },
+  "realMacAuthenticated": false,
+  "keyboardCalibration": "UNVERIFIED_TEST_PROFILE",
+  "yearlyBrowserPositiveTest": "PENDING_OWNER_ENROLLMENT",
+  "accessMigration": {
+    "saved": false,
+    "currentScope": "all hostname paths",
+    "proposedScope": "/login",
+    "sameOwnerOtpPolicy": true,
+    "audienceChanged": false,
+    "browserRuleRequiresActionTimeConfirmation": true
+  },
+  "tunnelMigration": {
+    "applied": false,
+    "configValidated": true,
+    "loginRuleMatch": 0,
+    "gatewayRuleMatch": 1,
+    "catchAll404": true,
+    "existingConnectorStillInUse": true
+  },
+  "verification": {
+    "nodeTests": 84,
+    "gatewayTests": 90,
+    "chromiumChecks": 18,
+    "javascriptErrors": 0,
+    "unexpectedConsoleErrors": 0,
+    "originNegativeChecks": 8,
+    "independentStaticReview": "resolved findings; no remaining actionable source finding within reviewed scope",
+    "publicAllPathAccessChecks": 4,
+    "ownerSubjectComposeInterpolation": "PASS"
+  },
+  "packageScan": {
+    "imageMatchesRuntime": true,
+    "databaseRefreshed": false,
+    "severities": {
+      "LOW": 16,
+      "MEDIUM": 13
+    },
+    "fixedVersionRows": 0
+  },
+  "limits": [
+    "The owner must enter the actual Mac Screen Sharing VNC password once in the authenticated webpage.",
+    "Real Mac desktop/display/input/clipboard and one-year live owner enrollment are not yet verified.",
+    "Access/Tunnel login-only migration waits the required final browser action confirmation.",
+    "The Mac, Docker and dedicated connector must remain running; sleep/reboot continuity is unverified.",
+    "The prior 64 real hardware acceptance gates remain unverified; this is an owner-requested self-test deployment."
+  ],
+  "autoReviewThisTurn": {
+    "directCheckFilePrint": "REJECTED_NOT_EXECUTED",
+    "reason": "possible Access redirect query credential disclosure",
+    "saferAlternative": "selected scalar fields only; curl parses only host/path/status in memory",
+    "alternativeSucceeded": true
+  },
+  "preservation": {
+    "unrelatedContainerIdsUnchanged": [
+      "5cb680ca7304",
+      "964309bbb900",
+      "15a8a8cb5f89",
+      "242889a361f7",
+      "ae3375fb14be",
+      "8f886a7fbd96",
+      "fd2f5352ccfe",
+      "9e326b75bb83"
+    ],
+    "existingCloudflaredPidsPreserved": [
+      47030,
+      47039,
+      65515
+    ],
+    "dedicatedConnectorPid": 19520,
+    "allPathAccessStillActive": true
+  },
+  "browserObserved": {
+    "actualPublicLoginHeading": "Log in to RDG current Mac authenticated pilot",
+    "otpInputAutomated": false,
+    "ownerDesktopPasswordAutomated": false
+  }
+}

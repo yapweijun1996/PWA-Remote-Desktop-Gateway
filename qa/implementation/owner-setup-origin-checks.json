@@ -1,0 +1,65 @@
+{
+  "recordedAt": "2026-10-03T02:47:38.804284+00:00",
+  "level": "REAL_PRODUCTION_LOOPBACK_TRUST_NEGATIVE_BOUNDARY",
+  "realMac": false,
+  "realAccessPositive": false,
+  "status": "PASS",
+  "results": [
+    {
+      "case": "health",
+      "status": 200,
+      "expected": 200,
+      "pass": true,
+      "location": null
+    },
+    {
+      "case": "root-untrusted",
+      "status": 303,
+      "expected": 303,
+      "pass": true,
+      "location": "/login"
+    },
+    {
+      "case": "login-no-access",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null
+    },
+    {
+      "case": "devices-untrusted",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null
+    },
+    {
+      "case": "forged-device",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null
+    },
+    {
+      "case": "host-denied",
+      "status": 403,
+      "expected": 403,
+      "pass": true,
+      "location": null
+    },
+    {
+      "case": "origin-denied",
+      "status": 403,
+      "expected": 403,
+      "pass": true,
+      "location": null
+    },
+    {
+      "case": "websocket-untrusted",
+      "status": 401,
+      "expected": 401,
+      "pass": true,
+      "location": null
+    }
+  ]
+}

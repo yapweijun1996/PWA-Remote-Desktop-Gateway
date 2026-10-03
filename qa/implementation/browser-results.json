@@ -1,12 +1,42 @@
 {
   "status": "PASS",
   "version": "153.0.8010.12",
-  "build": "cc385c894f584ae2",
+  "build": "665e0cf1349fce23",
   "fixture": true,
   "realMac": false,
   "results": [
     {
       "test": "BLOCKED policy disables desktop preparation, display, connect intents and clipboard while diagnostics remain available",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP missing-credential form clears on blur and hide without browser password storage",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP maps credential failures to fixed messages without echoing password or server detail",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP credential success opens control, view and explicit clipboard settings without auto-connecting",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP short session expiry bootstraps again with valid trust without login or automatic desktop reconnect",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "Trusted-device UI lists expiry/current metadata, maps failures and returns current revocation to login",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "Trusted signout keeps generic failures visible and refreshes an expired application before successful revocation and login",
       "status": "PASS",
       "level": "LOCAL_UI_ROUTE_FIXTURE"
     },
@@ -68,5 +98,6 @@
   ],
   "errors": [],
   "unexpectedConsoleErrors": 0,
-  "expectedOfflineErrors": 2
+  "expectedOfflineErrors": 2,
+  "expectedUiErrors": 8
 }

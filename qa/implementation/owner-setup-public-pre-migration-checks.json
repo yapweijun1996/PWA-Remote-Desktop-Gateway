@@ -1,0 +1,59 @@
+{
+  "recordedAt": "2026-10-03T02:58:24.439420+00:00",
+  "status": "PASS",
+  "scope": "CURRENT_ALL_PATH_ACCESS_BEFORE_ACTION_CONFIRMATION",
+  "client": "system curl with normal TLS validation",
+  "tlsVerification": true,
+  "followRedirects": false,
+  "credentialsUsed": false,
+  "results": [
+    {
+      "case": "root",
+      "status": 302,
+      "expected": 302,
+      "locationHost": "kb-api.cloudflareaccess.com",
+      "locationPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "noUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "login",
+      "status": 302,
+      "expected": 302,
+      "locationHost": "kb-api.cloudflareaccess.com",
+      "locationPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "noUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "devices",
+      "status": 302,
+      "expected": 302,
+      "locationHost": "kb-api.cloudflareaccess.com",
+      "locationPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "noUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "websocket",
+      "status": 302,
+      "expected": 302,
+      "locationHost": "kb-api.cloudflareaccess.com",
+      "locationPath": "/cdn-cgi/access/login/remote.gmb01.xyz",
+      "noUpgrade": true,
+      "pass": true
+    }
+  ],
+  "earlierClientAttempt": {
+    "client": "Python urllib",
+    "status": "FAIL",
+    "observedStatuses": [
+      403,
+      403,
+      403,
+      403
+    ],
+    "expectedStatus": 302,
+    "cause": "UNKNOWN; retained rather than reclassifying as a successful redirect test"
+  }
+}

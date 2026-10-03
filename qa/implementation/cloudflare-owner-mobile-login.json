@@ -1,0 +1,45 @@
+{
+  "recordedAt": "2026-10-03T01:52:51.447026+00:00",
+  "status": "PASS_OWNER_OBSERVED_AUTHENTICATED_STATUS_PILOT",
+  "scope": "HUMAN_MOBILE_LOGIN_AND_PRODUCTION_BOOTSTRAP_ONLY",
+  "url": "https://remote.gmb01.xyz",
+  "sourceCommit": "d7fe91be5507654597cc7734292b3d47f3038b35",
+  "fixture": false,
+  "userReport": "Login succeeded",
+  "visibleUi": [
+    "Access verified",
+    "Current Mac \u2014 desktop not verified",
+    "BLOCKED",
+    "Sign out of node"
+  ],
+  "attachmentContentCommitted": false,
+  "platform": "MOBILE_IOS_APPEARANCE_IN_USER_SCREENSHOT",
+  "browserName": "UNKNOWN",
+  "browserVersion": "UNKNOWN",
+  "serverCorroboration": {
+    "authorizedBootstrapCount": 1,
+    "latestAuthorizedBootstrapAt": "2026-10-03T01:50:08.907949221Z",
+    "query": "READ_ONLY_AGGREGATE_OF_FIXED_AUDIT_METADATA",
+    "identityOrTokenExtracted": false,
+    "temporaryDatabaseCopyRemoved": true
+  },
+  "runtime": {
+    "exactReviewedImage": true,
+    "healthy": true,
+    "desktopPolicy": "BLOCKED"
+  },
+  "supportedInference": "The displayed production state follows successful signed-identity bootstrap, owner-bound app session and protected devices/diagnostics responses; the production audit corroborates an authorized bootstrap.",
+  "ownerJwtAcceptance": "PASS_CORROBORATED_HUMAN_TEST_WITHOUT_TOKEN_CAPTURE",
+  "realMac": false,
+  "desktopConnectionTested": false,
+  "keyboardCalibration": false,
+  "clipboardTested": false,
+  "pwaInstallOrLifecycleTested": false,
+  "release": "BLOCKED",
+  "limits": [
+    "No JWT or OTP captured or inspected; no claim about rotation, expiry or revocation",
+    "Screenshot and owner report plus aggregate audit corroborate login; no packet-level measurement",
+    "Mobile browser and OS versions not supplied; no Safari/iOS PWA compatibility acceptance",
+    "Actual Mac desktop pixels, control, keyboard and clipboard remain unverified"
+  ]
+}
