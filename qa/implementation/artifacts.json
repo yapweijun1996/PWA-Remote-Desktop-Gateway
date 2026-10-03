@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "recordedAt": "2026-10-03T01:06:41.490523+00:00",
+  "recordedAt": "2026-10-03T01:33:42.801914+00:00",
   "sourceCommit": "d7fe91be5507654597cc7734292b3d47f3038b35",
   "branch": "codex/production-gateway",
-  "level": "LOCAL_BLOCKED_PILOT_IMPLEMENTATION_AND_FAILED_CURRENT_MAC_VIEW",
+  "level": "LOCAL_IMPLEMENTATION_AND_LIVE_CLOUDFLARE_BLOCKED_STATUS_PILOT",
   "release": "BLOCKED",
   "realMac": false,
   "webBuild": "cc385c894f584ae2",
@@ -289,7 +289,12 @@
     "qa/implementation/scanner-provenance.json": "010ba9e0ff05481dd76cc587a7a4bdeb6e9ce90555de64c2e7b5ad6cdff03c21",
     "qa/implementation/screenshots/protocol-fixture-desktop.png": "9fde496e7d91b0925d2eb7b3cabdd367b9d2d6b1906db484734f771c26aa31ed",
     "qa/implementation/screenshots/protocol-fixture-mobile.png": "d15ecfd384327f5a802044235d08769a729c3d4df37a998bd33cfec2c90f02ba",
-    "qa/implementation/vnc-security-results.json": "774bf48d68cdc4cd71504cfeeb781ec1ed24b47db1a1349015630b36f3339831"
+    "qa/implementation/vnc-security-results.json": "774bf48d68cdc4cd71504cfeeb781ec1ed24b47db1a1349015630b36f3339831",
+    "qa/implementation/cloudflare-origin-negative-checks.json": "72ec019795b666af9cdc8672abc46c5356e1089359aecf3395de855bbbf3e0eb",
+    "qa/implementation/cloudflare-public-negative-checks.json": "6f214b58bac2b760dd1784eb82cd7f9f45d2e96094d1b40ce907d8faef9face3",
+    "qa/implementation/cloudflare-pilot-deployment.json": "fa4a0e0672f6cdb67f1edb5163dcf80099c150f5c611c370b34f55f17e1b01db",
+    "qa/implementation/screenshots/cloudflare-access-login.jpg": "324055426990995b792d77d5a8d3c96b9383fa61be83ae937a36795516a6948d",
+    "qa/implementation/cloudflare-pilot-review.json": "62b412755395d754c96d1480190f4bec4eeaadde7b621e97590d5a189ec48066"
   },
   "localMacTest": {
     "authorization": "BOUNDED_LOCALHOST_CURRENT_MAC",
@@ -326,14 +331,19 @@
     "transientCredentialEntry": "CLOSED_WITHOUT_SAVED_CREDENTIAL"
   },
   "cloudflarePilot": {
-    "status": "WAITING_FOR_OWNER_INPUT",
+    "status": "LIVE_ACCESS_LOGIN_OWNER_TEST_PENDING",
+    "url": "https://remote.gmb01.xyz",
     "tunnelCreated": true,
     "dedicatedConnectorHaConnections": 4,
-    "ingress": "404_ONLY",
-    "accessDraftSaved": false,
-    "dnsPublished": false,
-    "realAccess": false,
+    "ingress": "EXACT_HOST_LOOPBACK_ACCESS_REQUIRED_PLUS_404",
+    "accessAppAndPolicySaved": true,
+    "dnsPublished": true,
+    "publicAccessBoundaryVerified": true,
+    "ownerJwtAcceptanceVerified": false,
     "realMac": false,
-    "proof": "qa/implementation/cloudflare-pilot-preparation.json"
+    "desktopPolicy": "BLOCKED",
+    "proof": "qa/implementation/cloudflare-pilot-deployment.json",
+    "negativeProof": "qa/implementation/cloudflare-public-negative-checks.json",
+    "independentConfigRuntimeReview": "NO_ACTIONABLE_FINDINGS_WITHIN_SCOPE"
   }
 }

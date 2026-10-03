@@ -1,0 +1,68 @@
+{
+  "status": "LIVE_ACCESS_LOGIN_OWNER_TEST_PENDING",
+  "recordedAt": "2026-10-03T01:29:53.124499+00:00",
+  "sourceCommit": "d7fe91be5507654597cc7734292b3d47f3038b35",
+  "url": "https://remote.gmb01.xyz",
+  "scope": "OWNER_APPROVED_AUTHENTICATED_STATUS_ONLY_PILOT",
+  "desktopPolicy": "BLOCKED",
+  "realMac": false,
+  "ownerAuthenticatedGateway": "PENDING_HUMAN_OTP",
+  "publicRoutePublished": true,
+  "access": {
+    "appId": "1fd4f24f-5b2c-4dde-8742-0741cc9ad764",
+    "policyId": "58add2fa-7709-47c7-8f8c-2bbed73e595e",
+    "saved": true,
+    "hostScope": "ENTIRE_REMOTE_HOSTNAME",
+    "allowExactOwnerEmail": true,
+    "requireOneTimePin": true,
+    "otherAllowOrBypassPolicies": 0,
+    "sessionDurationMinutes": 30,
+    "publicJwksTlsVerified": true,
+    "publicJwksStatus": 200,
+    "publicJwksKeyCount": 2
+  },
+  "dedicatedTunnel": {
+    "name": "rdg-current-mac-pilot",
+    "id": "c7401595-b920-447e-8537-db7b4d7be78d",
+    "connectorPid": 19520,
+    "observedHaConnections": 4,
+    "route": "EXACT_HOST_HTTP_LOOPBACK_PLUS_404_FALLBACK",
+    "originAccessValidationRequired": true,
+    "realAppAudienceConfigured": true,
+    "dnsPublishMethod": "OFFICIAL_CLOUDFLARED_CLI_NO_OVERWRITE"
+  },
+  "gateway": {
+    "imageId": "sha256:c6adb1af9c2d1c1eee58ff30292b1dd66d649d552f8c040d103542cff438450a",
+    "webBuild": "cc385c894f584ae2",
+    "jarSha256": "a3437db315b1decbdae76d60c9716c3844920c7291bbd05270f3764749dd8f31",
+    "containerId": "62f3a47beaed7d226cf9e085f44044acde1a08df1cee2fea4f7dc8b50ff01e0d",
+    "composeProject": "rdg-current-mac-pilot",
+    "user": "10001:10001",
+    "status": "running",
+    "health": "healthy",
+    "bind": "127.0.0.1:32120",
+    "rootFilesystemReadOnly": true,
+    "vncCredentialMounted": false,
+    "testIdentitySigner": false,
+    "guacdStarted": false
+  },
+  "preservation": {
+    "apexRouteReplaced": false,
+    "existingCloudflaredConfigChanged": false,
+    "existing8ContainersStillRunning": true,
+    "existing3CloudflaredPidsStillRunning": true,
+    "hostPermissionsChanged": false
+  },
+  "proof": {
+    "originChecks": "cloudflare-origin-negative-checks.json",
+    "publicChecks": "cloudflare-public-negative-checks.json",
+    "browserScreenshot": "screenshots/cloudflare-access-login.jpg",
+    "independentReview": "cloudflare-pilot-review.json"
+  },
+  "limits": [
+    "Owner OTP completion and genuine JWT accepted by gateway are pending",
+    "Actual Mac desktop and modifier calibration are unverified; desktop remains BLOCKED",
+    "Restart/sleep/external-device continuity is unverified; this pilot runs on the current Mac",
+    "All 64 broader release acceptance gates remain BLOCKED"
+  ]
+}
