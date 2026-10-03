@@ -12,6 +12,7 @@ services:
       RDG_ACCESS_ISSUER: ${RDG_ACCESS_ISSUER:?Set trusted Access team issuer}
       RDG_ACCESS_AUDIENCE: ${RDG_ACCESS_AUDIENCE:?Set this Access application audience}
       RDG_OWNER_EMAIL: ${RDG_OWNER_EMAIL:?Set exact approved owner email}
+      RDG_OWNER_SUBJECT: ${RDG_OWNER_SUBJECT:-}
       RDG_TARGET_CONFIG: /app/config/device.json
       RDG_GUACD_HOST: guacd
       RDG_GUACD_PORT: "4822"
