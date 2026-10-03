@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T15:53:55.283Z",
+  "sourceCommit": "5ee01be86054b42bb413c783db4b7070fa69fd60",
+  "branch": "codex/real-local-gateway",
+  "scope": "LOCAL_IMPLEMENTATION_AND_FIXTURE_REVALIDATION",
+  "releaseAcceptance": "BLOCKED",
+  "webBuild": "fed92dc04e51b378",
+  "node": {
+    "status": "PASS",
+    "command": "npm test",
+    "tests": 108,
+    "pass": 108,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "outputSha256": "cf73776780086b296aaa9fc4bfef0caa09e60b9971133286ee4721fa72a252d4"
+  },
+  "java": {
+    "status": "PASS",
+    "command": "npm run build",
+    "suites": 15,
+    "tests": 104,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suiteReports": [
+      {
+        "name": "com.rdg.AccessVerifierTest",
+        "reportSha256": "d8dbd86cbdf62a300c4d986973bda3687942cf99ecf99d2c456caef4fe30ea0d",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.AuditTest",
+        "reportSha256": "07bb6e4493efe709874deebccf2a41d98454c3fbfe25746f0de270a6689c60c9",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.BlockedDesktopPolicyTest",
+        "reportSha256": "94a0e5ac79cb7325a69345824d78368dfe05cc1f65315ece0a29539f21d47ec0",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.BlockedGatewayIntegrationTest",
+        "reportSha256": "a3184c1c91fb0f6d447efaed2bee3ea3aa776c4f41ca4196b7cf90f4c17ee1e2",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.BoundedReaderTest",
+        "reportSha256": "9e9deb3ecfe623d11af446c10aed2cdd463b4fcd7ed0d1528d946ff0b513a4ad",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.ConfigTest",
+        "reportSha256": "d742953ea500b9b1fad1ba22a1ec76d4e3b91c4420d0ad0c7345e730c135da8e",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.DesktopCredentialStoreTest",
+        "reportSha256": "b7e5bfbda910553c9300fb56ce31803986da171646ef4e31d50c07fba8891fb9",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.GatewayIntegrationTest",
+        "reportSha256": "374e43d01c83d6b9c502b73bed46fce3a4f6dbd50d3f4d19def0ef656d66cbaf",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.LocalMacViewTest",
+        "reportSha256": "65ad8bfef244e101437ae32db1f3ed14b00dbf24daa2472b37a6cb00d12a6d2c",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.OwnerSetupConnectorTest",
+        "reportSha256": "b417595703a525aeaeb6e3781eac8fc13b80c7fa81447d4e45b4e06da2e3a9f0",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.OwnerSetupGatewayIntegrationTest",
+        "reportSha256": "3e5070385cb41d0ae124a2cb7cfd322c2a71fa0dc9cb75e3b82c906647848dbf",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.OwnerSetupSessionsTest",
+        "reportSha256": "21d677c4c57b770883e1bf6af3a62b33a08cd6acaa466f6b5a72d6c306802e4c",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.SessionsTest",
+        "reportSha256": "de46ade8f15222a42d001da9f74fdb09062dc31e49130536b5ce9b77fae7d8a3",
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.TrustedDeviceStoreTest",
+        "reportSha256": "cc61e3916ea102d1114ebc823e3a07af1f09919805caac393b40110db65e6aa0",
+        "tests": 16,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.rdg.TrustedGatewayIntegrationTest",
+        "reportSha256": "9a06471ae34c8e2e70677123f65654674e1da70749d874f3737ce4798f2d6837",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "browsers": {
+    "ui": {
+      "status": "PASS",
+      "checks": 18,
+      "version": "154.0.8037.93",
+      "scope": "LOCAL_PRODUCTION_UI_PROTOCOL_FIXTURE",
+      "realMac": false,
+      "unexpectedConsoleErrors": 0,
+      "evidence": "qa/implementation/browser-results.json",
+      "sha256": "2c073c65e17587cf77ad3c0304cb2b700e00d846d9519dd9e0f59212f10746aa"
+    },
+    "login": {
+      "status": "PASS",
+      "checks": 8,
+      "version": "154.0.8037.93",
+      "scope": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE",
+      "realMac": false,
+      "unexpectedConsoleErrors": 0,
+      "evidence": "qa/implementation/login-browser-results.json",
+      "sha256": "c3b047799dac27a2ff12ecf75dece6c0fda564086204d890144f5854ff82d811"
+    },
+    "connection": {
+      "status": "PASS",
+      "checks": 10,
+      "version": "154.0.8037.93",
+      "scope": "LOCAL_BROWSER_CONNECTION_LIFECYCLE_FIXTURE",
+      "realMac": false,
+      "unexpectedConsoleErrors": 0,
+      "evidence": "qa/implementation/connect-browser-results.json",
+      "sha256": "58a70e9de6d33e98441a2a077bb87a660ebb494d39bc08b6511405b8cb80ab7e"
+    }
+  },
+  "additionalChecks": [
+    {
+      "command": "npm ci --ignore-scripts",
+      "status": "PASS",
+      "scope": "Pinned frontend package lock; zero runtime package dependencies"
+    },
+    {
+      "command": "npm run verify:dependencies",
+      "status": "PASS",
+      "runtimeJarDigests": 11,
+      "lockedOSPackageRecords": 393,
+      "scope": "Pinned JAR, SQLite native, official JS and OS package provenance"
+    },
+    {
+      "command": "npm run verify",
+      "status": "PASS",
+      "files": 66,
+      "sourceRevision": "96bc1331015ff5c8e3aae6049e35f10ee3c812d1",
+      "scope": "Original handoff archive only"
+    },
+    {
+      "command": "npm run test:backup",
+      "status": "PASS",
+      "checks": 3,
+      "scope": "Disposable metadata backup/restore"
+    },
+    {
+      "command": "node --test qa/native-vnc-diagnostics.test.mjs",
+      "status": "PASS",
+      "checks": 6,
+      "scope": "Bounded diagnostic metadata tests"
+    },
+    {
+      "command": "npm run test:container",
+      "status": "PASS",
+      "scope": "Final local image; network-none, non-root/read-only, SQLite and missing-JWT 401"
+    },
+    {
+      "command": "npm run test:official-guacd",
+      "status": "PASS",
+      "checks": 4,
+      "scope": "Official-source VNC argument contract and disposable control/view failure cleanup; preceding frontend image with byte-identical JAR",
+      "gatewayImage": "sha256:b9f7aade9cb7195f440d4e22dace771bad35d09ce56236933bcc45215debf9c9",
+      "realMac": false
+    },
+    {
+      "command": "Final image-to-workspace digest comparison",
+      "status": "PASS",
+      "scope": "JAR, Service Worker, favicon and build.json"
+    }
+  ],
+  "artifacts": {
+    "localGatewayImage": "sha256:0f561366d73b3c96cec78f35e8f70f3ee52df2e47cb8bda3c41ac538423f74f7",
+    "jarSha256": "6e614867afc693108337fd6ac9b051494b03c60e2656f52ed22ccc89080836f5",
+    "serviceWorkerSha256": "b9d5cee7aeb4cf39d09a9bee57689530d25e4b73860288f990d455446c392b99",
+    "faviconSha256": "c0123bc77c8ca887a62972118dc3b8117d291159c3a103408afa4e7ad552b735",
+    "buildJsonSha256": "0922011877bd81ce0d443630399d8ffc4065fb5d8661ffcf4d1035eab50f3240"
+  },
+  "observedTarget": {
+    "scope": "Read-only reachability only",
+    "rfbGreetingRecognized": true,
+    "containerToTargetGreetingRecognized": true,
+    "classicVNCOffered": true,
+    "appleARDOffered": true,
+    "unauthenticatedSchemeOffered": false,
+    "existingEncryptedCredentialFileNonempty": true,
+    "credentialContentsRead": false,
+    "authenticationAttempted": false,
+    "desktopPixelsVerified": false
+  },
+  "preserved": {
+    "mainRevision": "96bc1331015ff5c8e3aae6049e35f10ee3c812d1",
+    "productionBranchRevision": "f815571b2427551d34fbf7e85abb639bcef19069",
+    "existingContainerCount": 10,
+    "pilotGatewayImage": "sha256:9b81c30a0fae9f77a8fe2a26612376935a627a2a91c15088070a9ba35d47b806",
+    "pilotGuacdImage": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+    "deployedNewRuntime": false,
+    "hostPermissionsChanged": false,
+    "accessPolicyChanged": false,
+    "tunnelChanged": false
+  },
+  "remaining": {
+    "status": "BLOCKED",
+    "prerequisite": "Exact approved personal target and owner-provisioned protected VNC credential prerequisite for fresh real authentication",
+    "realSystemAcceptanceComplete": false,
+    "newVulnerabilityScanPerformed": false
+  }
+}
