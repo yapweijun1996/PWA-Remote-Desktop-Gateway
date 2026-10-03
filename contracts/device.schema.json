@@ -45,9 +45,9 @@
         },
         "upstreamHost": {
           "enum": [
-            "host.docker.internal",
-            "127.0.0.1"
-          ]
+            "host.docker.internal"
+          ],
+          "description": "Reached from the guacd container. 127.0.0.1 would be that container itself, not the Mac."
         },
         "upstreamPort": {
           "const": 5900
@@ -73,7 +73,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "minLength": 3
+            "pattern": "^[a-z][a-z0-9-]{2,39}$"
           },
           "label": {
             "type": "string",

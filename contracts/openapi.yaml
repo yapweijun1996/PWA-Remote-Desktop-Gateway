@@ -107,6 +107,12 @@ paths:
                 properties:
                   intentId: {type: string, minLength: 32, maxLength: 128}
                   expiresAt: {type: string, format: date-time}
+        '404':
+          description: Unknown deviceId or a kind=bookmark device. Bookmarks only link to another node and are never connectable here.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '409':
           $ref: '#/components/responses/Error'
         default:

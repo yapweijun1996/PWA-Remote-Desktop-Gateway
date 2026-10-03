@@ -66,3 +66,4 @@ scripts/preview.mjs
 scripts/verify-pack.mjs
 scripts/verify-pack.test.mjs
 scripts/prototype-layout.test.mjs
+scripts/contracts.test.mjs
