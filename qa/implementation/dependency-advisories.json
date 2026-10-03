@@ -1,0 +1,60 @@
+{
+  "scope": "Public Maven coordinates only; not a container OS scan",
+  "results": [
+    {
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "9.0.122",
+      "advisories": []
+    },
+    {
+      "package": "org.apache.tomcat:tomcat-annotations-api",
+      "version": "9.0.122",
+      "advisories": []
+    },
+    {
+      "package": "org.apache.tomcat.embed:tomcat-embed-websocket",
+      "version": "9.0.122",
+      "advisories": []
+    },
+    {
+      "package": "org.apache.guacamole:guacamole-common",
+      "version": "1.6.0",
+      "advisories": []
+    },
+    {
+      "package": "com.nimbusds:nimbus-jose-jwt",
+      "version": "10.10",
+      "advisories": []
+    },
+    {
+      "package": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "2.22.3",
+      "advisories": []
+    },
+    {
+      "package": "com.fasterxml.jackson.core:jackson-annotations",
+      "version": "2.22",
+      "advisories": []
+    },
+    {
+      "package": "com.fasterxml.jackson.core:jackson-core",
+      "version": "2.22.3",
+      "advisories": []
+    },
+    {
+      "package": "org.xerial:sqlite-jdbc",
+      "version": "3.53.4.0",
+      "advisories": []
+    },
+    {
+      "package": "org.slf4j:slf4j-nop",
+      "version": "2.0.17",
+      "advisories": []
+    },
+    {
+      "package": "org.slf4j:slf4j-api",
+      "version": "2.0.17",
+      "advisories": []
+    }
+  ]
+}

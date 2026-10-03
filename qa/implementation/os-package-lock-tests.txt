@@ -1,0 +1,5 @@
+
+> pwa-remote-desktop-gateway@1.0.0 test:os-lock
+> ./qa/test-os-package-lock.sh
+
+PASS: tampered Ubuntu package digest rejected before installation; original libssl3 unchanged.

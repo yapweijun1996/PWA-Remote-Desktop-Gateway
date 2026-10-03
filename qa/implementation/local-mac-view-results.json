@@ -1,0 +1,39 @@
+{
+  "scope": "LOCAL_REAL_VNC_VIEW_ONLY",
+  "runId": "local-mac-view.y6arKP",
+  "nativeDiagnosticLogger": true,
+  "status": "FAIL",
+  "testIdentity": true,
+  "localDockerEndpointPinned": true,
+  "cloudflare": false,
+  "calibration": false,
+  "realMac": false,
+  "screenSharingIdentityVerified": false,
+  "realVncEndpoint": false,
+  "target": "CURRENT_MAC_VIA_HOST_DOCKER_INTERNAL_5900",
+  "guacdImageId": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+  "connected": false,
+  "display": null,
+  "leaseTeardown": false,
+  "screenshots": false,
+  "clipboard": false,
+  "inputTested": false,
+  "mode": "view",
+  "javascriptErrors": 0,
+  "unexpectedConsoleErrors": 0,
+  "browserVersion": "153.0.8010.12",
+  "failedPhase": "VIEW_CONNECTION",
+  "observedState": "TARGET_UNAVAILABLE",
+  "elapsedMs": 21193,
+  "nativeDiagnostics": {
+    "scope": "TEST_ONLY_NATIVE_LOGGER",
+    "status": "COMPLETE",
+    "runId": "local-mac-view.y6arKP",
+    "librarySha256": "602ee3ed0f95c8ebe3671173a7cdd6d50be010a0b520024874bc412ebda7f2d3",
+    "stages": {
+      "NATIVE_CONNECTION_FAILURE_UNCLASSIFIED": 1
+    },
+    "discardedLines": 0,
+    "rawLogsSaved": false
+  }
+}

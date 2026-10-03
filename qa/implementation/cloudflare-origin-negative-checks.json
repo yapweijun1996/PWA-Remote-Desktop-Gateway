@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-03T01:26:38.071014+00:00",
+  "origin": "http://127.0.0.1:32120",
+  "publicHostname": "remote.gmb01.xyz",
+  "desktopPolicy": "BLOCKED",
+  "noRealUserJwtUsed": true,
+  "checks": [
+    {
+      "name": "health",
+      "status": 200,
+      "expectedStatus": 200,
+      "pass": true
+    },
+    {
+      "name": "api_without_assertion",
+      "status": 401,
+      "expectedStatus": 401,
+      "pass": true
+    },
+    {
+      "name": "api_forged_assertion",
+      "status": 401,
+      "expectedStatus": 401,
+      "pass": true
+    },
+    {
+      "name": "api_invalid_host",
+      "status": 403,
+      "expectedStatus": 403,
+      "pass": true
+    },
+    {
+      "name": "api_invalid_origin",
+      "status": 403,
+      "expectedStatus": 403,
+      "pass": true
+    },
+    {
+      "name": "websocket_without_assertion",
+      "status": 401,
+      "expectedStatus": 401,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

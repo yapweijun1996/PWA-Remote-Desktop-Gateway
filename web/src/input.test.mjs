@@ -1,0 +1,22 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {logicalKey,encodeKey,RemoteInput} from './input.mjs';
+const keysyms={CommandLeft:0xffe7,CommandRight:0xffe8,OptionLeft:0xffe9,OptionRight:0xffea,ControlLeft:0xffe3,ControlRight:0xffe4};
+function fixture(profile='windows-alt-command',calibrated=keysyms){
+  globalThis.window=new EventTarget();const surface=new EventTarget();globalThis.document=new EventTarget();document.hidden=false;document.activeElement=surface;surface.blur=()=>{};surface.focus=()=>{};
+  let keyboard,transitions=[],failures=[];
+  class Keyboard{constructor(){keyboard=this;}reset(){}}
+  class State{constructor(x,y,left,middle,right,up,down){Object.assign(this,{x,y,left,middle,right,up,down});}}
+  class Mouse{static State=State;onEach(){}}Mouse.Touchpad=Mouse;
+  const input=new RemoteInput({surface,client:{sendKeyEvent:(down,key)=>transitions.push([key,down]),sendMouseState:()=>{}},Guacamole:{Keyboard,Mouse},profile,keysyms:calibrated,onPause:()=>{},onFailure:e=>failures.push(e)});
+  input.start('control');input.enabled=true;return{input,keyboard,transitions,failures,surface};
+}
+test('Calibrated mapping preserves Control and distinguishes Meta/Super logical aliases',()=>{assert.equal(logicalKey(0xffe3),'ControlLeft');assert.equal(encodeKey(logicalKey(0xffe3),keysyms),0xffe3);assert.equal(logicalKey(0xffeb),'CommandLeft');assert.equal(logicalKey(0xffe7),'CommandLeft');assert.throws(()=>encodeKey('Unknown',keysyms));});
+test('Only observed physical Left Alt maps to Command; Right Alt remains Option',()=>{const f=fixture();f.input.leftAltPhysical=true;f.keyboard.onkeydown(0xffe9);f.keyboard.onkeyup(0xffe9);f.keyboard.onkeydown(0xffea);f.keyboard.onkeyup(0xffea);assert.deepEqual(f.transitions,[[0xffe7,1],[0xffe7,0],[0xffea,1],[0xffea,0]]);f.input.dispose();});
+test('Blur and profile changes release original owned mapping',()=>{const f=fixture();f.input.leftAltPhysical=true;f.keyboard.onkeydown(0xffe9);f.surface.dispatchEvent(new Event('blur'));assert.deepEqual(f.transitions,[[0xffe7,1],[0xffe7,0]]);assert.equal(f.input.enabled,false);f.input.setProfile('windows-native');assert.equal(f.input.keys.profile,'windows-native');f.input.dispose();});
+test('Synthetic AltGr modifiers do not leak Control/Command',()=>{const f=fixture();f.input.altGraph=true;f.keyboard.onkeydown(0xffe3);f.keyboard.onkeydown(0xffea);f.keyboard.onkeydown(64);f.keyboard.onkeyup(64);assert.deepEqual(f.transitions,[[64,1],[64,0]]);f.input.dispose();});
+test('View mode, unfocused surface and Unicode fallback emit no typing',()=>{const f=fixture();f.input.start('view');f.keyboard.onkeydown(99);f.input.start('control');document.activeElement=null;f.keyboard.onkeydown(99);document.activeElement=f.surface;f.input.enabled=true;f.keyboard.onkeydown(0x01004f60);assert.deepEqual(f.transitions,[]);f.input.dispose();});
+test('Latch releases after the next physical character',()=>{const f=fixture();f.input.toggle('CommandLeft');f.keyboard.onkeydown(99);f.keyboard.onkeyup(99);assert.deepEqual(f.transitions,[[0xffe7,1],[99,1],[99,0],[0xffe7,0]]);assert.equal(f.input.latches.size,0);f.input.dispose();});
+test('Physical alias ownership is balanced and a virtual chord waits for a clean boundary',()=>{const f=fixture();f.input.leftAltPhysical=true;f.keyboard.onkeydown(0xffe9);f.keyboard.onkeydown(0xffeb);f.keyboard.onkeyup(0xffe9);assert.deepEqual(f.transitions,[[0xffe7,1]]);f.input.chord('copy');assert.deepEqual(f.failures,[]);f.keyboard.onkeyup(0xffeb);assert.deepEqual(f.transitions,[[0xffe7,1],[0xffe7,0]]);f.input.dispose();});
+
+test('Protocol refcounts preserve two sides when the target collapses keysyms',()=>{const f=fixture('mac-native',{...keysyms,CommandRight:keysyms.CommandLeft});f.keyboard.onkeydown(0xffeb);f.keyboard.onkeydown(0xffec);f.keyboard.onkeyup(0xffeb);assert.deepEqual(f.transitions,[[0xffe7,1]]);f.keyboard.onkeyup(0xffec);assert.deepEqual(f.transitions,[[0xffe7,1],[0xffe7,0]]);f.input.dispose();});
+test('Composition pauses ASCII commits and focus cleanup discards raw modifier metadata',()=>{const f=fixture();f.input.leftAltPhysical=true;f.input.altGraph=true;f.surface.dispatchEvent(new Event('compositionstart'));f.keyboard.onkeydown(99);assert.equal(f.input.enabled,false);assert.equal(f.input.leftAltPhysical,false);assert.equal(f.input.altGraph,false);assert.deepEqual(f.transitions,[]);f.input.dispose();});

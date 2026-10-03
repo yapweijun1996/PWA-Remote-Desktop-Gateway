@@ -1,0 +1,63 @@
+{
+  "status": "WAITING_FOR_OWNER_INPUT",
+  "recordedAt": "2026-10-03T00:58:15.734624+00:00",
+  "sourceCommit": "d7fe91be5507654597cc7734292b3d47f3038b35",
+  "scope": "OWNER_APPROVED_CLOUDFLARE_AUTH_STATUS_TEST_PREPARATION",
+  "realMac": false,
+  "realAccess": false,
+  "publicRoutePublished": false,
+  "gatewayImageId": "sha256:c6adb1af9c2d1c1eee58ff30292b1dd66d649d552f8c040d103542cff438450a",
+  "gatewayJarSha256": "a3437db315b1decbdae76d60c9716c3844920c7291bbd05270f3764749dd8f31",
+  "webBuild": "cc385c894f584ae2",
+  "productionJarHasTestClasses": false,
+  "defaultPolicy": "FULL",
+  "pilotPolicy": "BLOCKED",
+  "zoneOwnershipVerified": true,
+  "existingAccessOrganizationVerified": true,
+  "existingOtpProviderVerified": true,
+  "existingCliAccessDnsScopes": "INSUFFICIENT",
+  "accessDraftSaved": false,
+  "dnsChanged": false,
+  "hostnameDecision": "PENDING_OWNER_CHOICE",
+  "accessUiConfirmation": "PENDING_REQUIRED_BROWSER_POLICY_CONFIRMATION",
+  "dedicatedTunnel": {
+    "name": "rdg-current-mac-pilot",
+    "id": "c7401595-b920-447e-8537-db7b4d7be78d",
+    "connectorPid": 12368,
+    "observedHaConnections": 4,
+    "ingress": "HTTP_STATUS_404_ONLY"
+  },
+  "packageScan": {
+    "report": "blocked-pilot-image-trivy.json",
+    "findings": {
+      "LOW": 16,
+      "MEDIUM": 13
+    },
+    "fixedVersionRows": 0,
+    "cachedDatabaseUpdatedAt": "2026-10-02T12:48:00.080865328Z"
+  },
+  "autoReview": {
+    "action": "Extract API token from existing cloudflared certificate for Access/DNS queries",
+    "result": "REJECTED_NOT_EXECUTED",
+    "reason": "Credential probing outside specifically authorized credential mechanism",
+    "saferAlternative": "Logged-in Cloudflare dashboard; unsaved exact-owner OTP policy draft"
+  },
+  "verification": {
+    "nodeTests": 84,
+    "javaTests": 49,
+    "browserScenarios": 12,
+    "jsErrors": 0,
+    "unexpectedConsoleErrors": 0,
+    "fullExactImageContainer": "PASS",
+    "blockedExactImageContainer": "PASS_WITH_HOSTILE_AMBIENT_CONTEXT_AND_TWO_INVALID_IMAGE_REFUSALS",
+    "boundedIndependentStaticReview": "NO_ACTIONABLE_FINDINGS"
+  },
+  "limits": [
+    "Owner OTP and real public JWT issuance remain unverified",
+    "No actual Mac desktop or modifier calibration",
+    "All release acceptance gates remain BLOCKED"
+  ],
+  "dnsInventoryVerifiedThroughLoggedInDashboard": true,
+  "apexHasExistingTunnelRoute": true,
+  "recommendedSubdomainHasNoDnsRecord": true
+}

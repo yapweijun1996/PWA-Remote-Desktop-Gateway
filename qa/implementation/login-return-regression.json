@@ -1,0 +1,83 @@
+{
+  "recordedAt": "2026-10-03T04:09:10.572453+00:00",
+  "status": "PASS_DEPLOYED",
+  "scope": "REAL_LOOPBACK_TOMCAT_WITH_DISPOSABLE_SIGNED_OWNER_IDENTITY",
+  "actualMobileRequestTrigger": "UNKNOWN_NOT_CAPTURED",
+  "realMac": false,
+  "realAccessPositive": false,
+  "oldSourceCommit": "270628f",
+  "oldCodeRegressionTests": {
+    "tests": 4,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fixedFocusedTests": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "name": "signedLoginNavigationAcceptsReturnOriginsWithoutIssuingTrust",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "name": "safeNavigationQueriesCanonicalizeWithoutReflectionAndProtectedQueriesRemainRejected",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "name": "enrollmentPostsKeepExactOriginAndQueryGuardBeforeTrustedShortcut",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "name": "loginGetFailuresAreFriendlyHtmlWhileApiFailuresKeepJson",
+      "before": "FAIL",
+      "after": "PASS"
+    }
+  ],
+  "preservedBoundaries": [
+    "exact Host on login/landing",
+    "signed owner Access assertion before challenge or login canonical redirect",
+    "exact same-origin enrollment POST, no query, one-use challenge",
+    "API and WebSocket query/Origin rejection",
+    "no GET trust issuance"
+  ],
+  "nodeTests": {
+    "tests": 84,
+    "pass": 84,
+    "fail": 0,
+    "skipped": 0
+  },
+  "sensitiveRequestDataRecorded": false,
+  "externalKnowledgeLookup": "AUTO_REVIEW_REJECTED_NOT_EXECUTED; continued with local source and public standards",
+  "accessMigration": "PENDING_EXISTING_ACTION_TIME_CONFIRMATION",
+  "nativeFormBug": {
+    "scope": "REAL_LOCAL_CHROMIUM_NATIVE_FORM",
+    "before": {
+      "referrerPolicy": "no-referrer",
+      "originCategory": "NULL",
+      "status": 403,
+      "deviceCookieIssued": false
+    },
+    "fix": "Login GET responses use same-origin; strict POST Origin remains",
+    "specificPhoneRequestObserved": false
+  },
+  "gatewayTests": {
+    "tests": 94,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "independentFinalReview": "PASS: login-only referrer override; no API or WebSocket guard changes",
+  "sourceCommit": "38b68354249cde5f79cc725cb8768fce227683b6",
+  "browserChecks": 6,
+  "liveOriginChecks": 13,
+  "publicChecks": 4,
+  "deploymentReceipt": "login-return-deployment.json",
+  "browserReceipt": "login-browser-results.json"
+}

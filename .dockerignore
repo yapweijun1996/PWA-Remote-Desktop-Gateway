@@ -1,0 +1,10 @@
+.git
+.tools
+node_modules
+prototype
+qa
+reference
+.env
+.env.*
+*.sqlite*
+**/*.log

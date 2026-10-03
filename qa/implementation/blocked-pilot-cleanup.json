@@ -1,0 +1,17 @@
+{
+  "recordedAt": "2026-10-03T00:58:15.734624+00:00",
+  "preExistingDockerContainersStillRunning": 8,
+  "ownedTemporaryContainerCount": 0,
+  "ownedTemporaryDirectoryCount": 0,
+  "manualFixturePort32122": "NO_LISTENER",
+  "existingCloudflaredPidsPreserved": [
+    47030,
+    47039,
+    65515
+  ],
+  "newProjectCloudflaredPid": 12368,
+  "newProjectRoute": "404_ONLY",
+  "originalMainHead": "d0ce352b7ad76e6b427f68488c40346d0601d491",
+  "originalMainOtherStagedFilesObserved": 5,
+  "originalMainChangesTouchedByThisTask": false
+}

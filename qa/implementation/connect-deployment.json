@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "status": "DEPLOYED_BOUNDED_VERIFICATION_PASS",
+  "recordedAt": "2026-10-03T12:49:47Z",
+  "url": "https://remote.gmb01.xyz",
+  "gateway": {
+    "id": "464a4b222edfe7732ac803c3f7fd65834181e49a4ddcdb727bb4df21f227168e",
+    "image": "sha256:9b81c30a0fae9f77a8fe2a26612376935a627a2a91c15088070a9ba35d47b806",
+    "health": "healthy",
+    "user": "10001:10001",
+    "readOnlyRootFs": true,
+    "portBindings": {
+      "8080/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "32120"
+        }
+      ]
+    },
+    "volumes": [
+      {
+        "name": "rdg-current-mac-pilot_rdg-metadata",
+        "destination": "/var/lib/rdg",
+        "readOnly": false
+      },
+      {
+        "name": "rdg-current-mac-pilot_rdg-vnc-key",
+        "destination": "/var/lib/rdg-key",
+        "readOnly": true
+      }
+    ]
+  },
+  "previousImage": "sha256:3e854a62f4c3d8f5bcc629b66500902fa806a4cf1b207a3e5a739d896977519c",
+  "webBuild": "b6f74fcc8435c7c8",
+  "jarSha256": "6e614867afc693108337fd6ac9b051494b03c60e2656f52ed22ccc89080836f5",
+  "activeDesktopConnectionsBeforeReplacement": 0,
+  "changedEnvironmentField": "GATEWAY_IMAGE_ONLY",
+  "separateRollbackSaved": true,
+  "stateAndKeyVolumesPreserved": true,
+  "otherNineContainerIdsUnchanged": true,
+  "guacdPreserved": true,
+  "tunnelConfigUnchanged": true,
+  "connectorReady": 200,
+  "haConnections": 4,
+  "manifestCredentialsAttributePreserved": true,
+  "recoveryButtonDeployed": true,
+  "accessPolicyChanged": false,
+  "realOwnerCredentialReadOrEnteredByAgent": false,
+  "realMacDesktopVerified": false,
+  "reported409Code": "NOT_PROVIDED",
+  "verification": {
+    "nodeTests": 84,
+    "gatewayTests": 104,
+    "existingBrowserCases": 18,
+    "connectionBrowserCases": 10,
+    "unexpectedBrowserErrors": 0
+  },
+  "sourceCommit": "8e40a1ac56ef64a0211929200549de1502d4e2f0",
+  "evidence": {
+    "connectionBrowser": "connect-browser-results.json",
+    "priorSourceNegative": "connect-browser-prior-app-negative.json",
+    "existingBrowser": "browser-results.json",
+    "live": "connect-live-checks.json",
+    "imageScan": "connect-image-trivy.json"
+  },
+  "exactImageScan": {
+    "severityCounts": {
+      "MEDIUM": 13,
+      "LOW": 16
+    },
+    "fixedVersionRows": 0,
+    "onlineAdvisoryRefresh": false,
+    "cachedDatabaseUpdatedAt": "2026-10-02T12:48:00.080865328Z"
+  },
+  "limits": {
+    "realMacDesktop": false,
+    "realSafari": false,
+    "publicOwnerPositiveConnection": false,
+    "reported409Cause": "UNKNOWN_RESPONSE_CODE_NOT_PROVIDED",
+    "loginOnlyAccessMigration": "PENDING_EXISTING_ACTION_TIME_CONFIRMATION"
+  }
+}

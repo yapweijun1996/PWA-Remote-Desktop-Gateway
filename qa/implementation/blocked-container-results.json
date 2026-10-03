@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "recordedAt": "2026-10-03T01:03:45.544408+00:00",
+  "imageId": "sha256:c6adb1af9c2d1c1eee58ff30292b1dd66d649d552f8c040d103542cff438450a",
+  "level": "LOCAL_BLOCKED_CONTAINER_FIXTURE",
+  "desktopPolicy": "BLOCKED",
+  "localDockerEndpointPinned": true,
+  "imagePullPolicy": "NEVER",
+  "realMac": false,
+  "realAccess": false,
+  "tests": [
+    "Non-root read-only SQLite startup without secret or calibration",
+    "Network-none health without host ports",
+    "Missing and forged JWT API denial",
+    "Missing and forged JWT WebSocket-path denial"
+  ],
+  "cleanupScope": "Exit trap targets only this temporary container, state volume and fixture directory",
+  "negativeChecks": [
+    {
+      "test": "Moving-tag refusal",
+      "status": "PASS",
+      "exitCode": 2
+    },
+    {
+      "test": "Malformed-digest refusal",
+      "status": "PASS",
+      "exitCode": 2
+    }
+  ],
+  "hostileAmbientRemoteContextRerun": "PASS_LOCAL_ENDPOINT_PINNED",
+  "remainingOwnedTemporaryDirectories": 0,
+  "independentStaticReview": "NO_REMAINING_ACTIONABLE_FINDINGS"
+}

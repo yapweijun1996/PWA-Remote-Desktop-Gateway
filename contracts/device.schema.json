@@ -8,7 +8,8 @@
     "nodeId",
     "publicOrigin",
     "localDevice",
-    "bookmarks"
+    "bookmarks",
+    "keysyms"
   ],
   "properties": {
     "nodeId": {
@@ -88,6 +89,50 @@
           "status": {
             "const": "UNVERIFIED"
           }
+        }
+      }
+    },
+    "keysyms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CommandLeft",
+        "CommandRight",
+        "OptionLeft",
+        "OptionRight",
+        "ControlLeft",
+        "ControlRight"
+      ],
+      "properties": {
+        "CommandLeft": {
+          "type": "integer",
+          "minimum": 65504,
+          "maximum": 65535
+        },
+        "CommandRight": {
+          "type": "integer",
+          "minimum": 65504,
+          "maximum": 65535
+        },
+        "OptionLeft": {
+          "type": "integer",
+          "minimum": 65504,
+          "maximum": 65535
+        },
+        "OptionRight": {
+          "type": "integer",
+          "minimum": 65504,
+          "maximum": 65535
+        },
+        "ControlLeft": {
+          "type": "integer",
+          "minimum": 65504,
+          "maximum": 65535
+        },
+        "ControlRight": {
+          "type": "integer",
+          "minimum": 65504,
+          "maximum": 65535
         }
       }
     }

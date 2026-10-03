@@ -1,0 +1,257 @@
+{
+  "status": "PASS",
+  "recordedAt": "2026-10-03T03:48:19.023575+00:00",
+  "level": "LOCAL_PROTOCOL_CREDENTIAL_TRUST_NAVIGATION_AND_DEFAULT_POLICY_FIXTURES",
+  "realMac": false,
+  "realAccess": false,
+  "suites": [
+    {
+      "suite": "com.rdg.AccessVerifierTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.661,
+      "cases": [
+        "keyRotationCacheExpiryAndRefreshFailure",
+        "wrongIssuerAudienceEmailTypeAndSubject",
+        "validIdentity",
+        "expiredFutureNbfAndAlgorithmConfusion",
+        "duplicateKeysAndUntrustedUrlsFailClosed",
+        "missingForgedAndEmailHeaderCannotAuthorize"
+      ]
+    },
+    {
+      "suite": "com.rdg.AuditTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.275,
+      "cases": [
+        "retentionAndNodeRestoreBinding"
+      ]
+    },
+    {
+      "suite": "com.rdg.BlockedDesktopPolicyTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.008,
+      "cases": [
+        "blockedClipboardCannotBeEnabledButCanBeCleared",
+        "connectorRefusesBeforeItUsesDesktopOrMissingCredential",
+        "blockedIntentAndUpgradeDoNotAllocateDesktopLeases"
+      ]
+    },
+    {
+      "suite": "com.rdg.BlockedGatewayIntegrationTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.203,
+      "cases": [
+        "rawWebsocketStillValidatesSignedIdentityAndOriginBeforeBlockedRefusal",
+        "blockedIntentsAndClipboardRemainBehindIdentityOriginAndCsrf",
+        "authenticatedStatusReportsBlockedWithoutDesktopPrerequisites"
+      ]
+    },
+    {
+      "suite": "com.rdg.BoundedReaderTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.0,
+      "cases": [
+        "instructionBudgetRejectsOverflowAndResetsOnlyAfterConsumption"
+      ]
+    },
+    {
+      "suite": "com.rdg.ConfigTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.046,
+      "cases": [
+        "missingConfigPlaceholdersAndUnsafeSecretRefuseStartup",
+        "blockedPolicyNeverReadsAnOptionalCredentialButRejectsInvalidConfiguration",
+        "fullPolicyStillRequiresProtectedCredentialAndAllCalibratedModifiers",
+        "ownerSetupRequiresExternalProtectedKeyAndCompleteExplicitTestMappings",
+        "onlyExplicitBlockedPolicyStartsWithoutDesktopPrerequisites",
+        "malformedJsonAndUnknownFieldsRefuseBeforeSideEffects"
+      ]
+    },
+    {
+      "suite": "com.rdg.DesktopCredentialStoreTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.203,
+      "cases": [
+        "changedMasterFailsEachReadSaveAndRestartWithoutReplacingEnvelope",
+        "corruptOrOversizedDataAndWrongKeyLengthFailClosed",
+        "unsafeFilesDirectoriesSymlinksAndHardLinksRefuse",
+        "everyEnvelopeMetadataAndCiphertextTamperRefusesAtStartup",
+        "canonicalClosedEnvelopeRefusesDuplicatesPaddingAndUnknownFields",
+        "encryptedRestartRecoveryFreshNonceAndRestrictiveStorage",
+        "invalidValuesNeverOverwriteAndInitNeverRotatesOrAcceptsStateKey"
+      ]
+    },
+    {
+      "suite": "com.rdg.GatewayIntegrationTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.104,
+      "cases": [
+        "pendingIntentBlocksUpdateBoundaryAndEndCancelsIt",
+        "liveAbsoluteExpiryClosesBothEvenWithRecentInput",
+        "websocketRejectsMissingIdentityHostileOriginAndReplay",
+        "oversizedFrameAndMalformedInstructionEndTransport",
+        "identityOriginCsrfAndTargetInjectionBeforeUpstream",
+        "liveIdleExpiryClosesBrowserAndUpstreamDespiteHeartbeat",
+        "terminalUpstreamErrorClosesNonResponsiveBrowserAndUpstream",
+        "unavailableUpstreamClosesBrowserBeforeHandshakeAndReleasesLease",
+        "rawViewInputClosesBothResources"
+      ]
+    },
+    {
+      "suite": "com.rdg.LocalMacViewTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.053,
+      "cases": [
+        "viewPolicyRejectsInputWithoutNeedingCalibratedKeysyms",
+        "signedPilotTokenMatchesThePinnedTestOwnerSubject",
+        "manualPilotRequiresTheExplicitBoundedDuration",
+        "automatedPilotRetainsItsSixtySecondDeadline",
+        "controlIsRejectedBeforeAnyUpstreamOperation",
+        "clipboardConsentIsRejectedEvenWhenViewIntentSuppressesClipboard",
+        "configHasOnlyTheFixedLocalTargetAndNoInventedCalibration",
+        "onlyAViewWithNoClipboardDelegatesToTheOfficialConnector"
+      ]
+    },
+    {
+      "suite": "com.rdg.OwnerSetupConnectorTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.061,
+      "cases": [
+        "eachHandshakeUsesCurrentCredentialAndDropsRetainedConfigurationPassword"
+      ]
+    },
+    {
+      "suite": "com.rdg.OwnerSetupGatewayIntegrationTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.115,
+      "cases": [
+        "closedBodyAndBoundedPasswordRejectTargetInjectionAndMalformedValues",
+        "provisionEnablesIntentWithTruthfulStatusAndActiveReplaceRefusalWithoutSecretExposure",
+        "credentialSetupRequiresSignedOwnerAppCsrfHostAndOrigin"
+      ]
+    },
+    {
+      "suite": "com.rdg.OwnerSetupSessionsTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.216,
+      "cases": [
+        "expiryAndSubjectRateLimitDoNotAllowStaleAppsOrUnlimitedOtherTabs",
+        "changedKeyFailsBeforeConnectorCanDereferenceDesktopAndDefaultSetupIsDisabled",
+        "atomicIntentAndReplacementRacePreservesLeaseCredential",
+        "missingCredentialBlocksEveryDesktopPathThenProvisionAllowsIntent",
+        "replacementRefusesAnyApplicationsPendingIntentAndActiveOrUncertainLease"
+      ]
+    },
+    {
+      "suite": "com.rdg.SessionsTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.062,
+      "cases": [
+        "maintenanceRejectsPendingAndActiveSessions",
+        "metadataContainsNoSessionOrPayload",
+        "expiredIntentsAndTargetInjection",
+        "connectingDeadlineAndLateResourceCleanup",
+        "failedUpstreamCleanupBlocksNewTunnelsAndUpdates",
+        "controllerRaceAndIdor",
+        "logoutReleasesLeaseAndEndsTransport",
+        "browserIsOwnedAndClosedDuringUpstreamHandshakeDeadline",
+        "secondTabBootstrapPreservesLiveDesktopAndDeadline",
+        "secureBindingAndCsrf",
+        "viewOnlyRawInputAndClipboardLimits",
+        "atomicIntentRace",
+        "idleAndAbsoluteTimersIgnoreStatusTraffic"
+      ]
+    },
+    {
+      "suite": "com.rdg.TrustedDeviceStoreTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.284,
+      "cases": [
+        "malformedExpiredOrMissingTokensNeverAuthenticate",
+        "replacedKeyFailsLiveAndWrongKeyRefusesRestart",
+        "expiryFreesCapacityWithoutTrustingTamperedExpiry",
+        "internalLiveAuthorityFailsOnEnvelopeTampering",
+        "revocationIsImmediateAndPersists",
+        "databaseCorruptionAndUnsafePermissionsFailClosed",
+        "exactAbsoluteExpiryNeverExtendsOnUse",
+        "canonicalEncodingAndAllEnvelopeMetadataAreAuthenticated",
+        "validShapedLifecycleTamperingCannotBecomeExpiredPruning",
+        "concurrentStoresCannotExceedDeviceLimit",
+        "internalLiveAuthorityStopsAfterRevocationAndExactExpiry",
+        "symlinkAndKeyInsideStateAreRejected",
+        "ownershipScopesListAndRevocation",
+        "storageContainsNeitherBearerNorIdentityAndUsesPrivateModes",
+        "issueLookupRestartAndSafeListing",
+        "journalSymlinkAndInvalidMasterLengthAreRejected"
+      ]
+    },
+    {
+      "suite": "com.rdg.TrustedGatewayIntegrationTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.677,
+      "cases": [
+        "signedLoginNavigationAcceptsReturnOriginsWithoutIssuingTrust",
+        "missingForgedAndMismatchedBrowserProofRejectApiAndWebsocket",
+        "signedAccessAndOneTimeSameOriginEnrollmentAreRequired",
+        "removingAnotherBrowserPreservesTheManagingBrowserSession",
+        "validTrustIsReusedWithoutExtensionAndReenrollmentClearsPriorApp",
+        "loginGetFailuresAreFriendlyHtmlWhileApiFailuresKeepJson",
+        "logoutRevokesRememberedBrowser",
+        "changedPinnedSubjectInvalidatesPersistedBrowserAndLiveAuthority",
+        "enrollmentPostsKeepExactOriginAndQueryGuardBeforeTrustedShortcut",
+        "revocationClosesAnExistingOfficialTransportAndDeniesStaleProof",
+        "rememberedBrowserAccessDoesNotDependOnAnEdgeAssertion",
+        "safeNavigationQueriesCanonicalizeWithoutReflectionAndProtectedQueriesRemainRejected"
+      ]
+    }
+  ],
+  "tests": 94,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
+}

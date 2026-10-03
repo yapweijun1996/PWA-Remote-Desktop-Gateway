@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-10-03T03:49:46.525300+00:00",
+  "scope": "LOCAL_HTTPS_LOGIN_BROWSER_FIXTURE_ONLY",
+  "realAccess": false,
+  "realMac": false,
+  "realSafari": false,
+  "sensitiveRequestDataRecorded": false,
+  "attempts": [
+    {
+      "issue": "Harness required a null/foreign Origin on provider-return GET; actual Chromium sent no Origin",
+      "result": "FAIL_HARNESS_EXPECTATION",
+      "correction": "Accept observed ABSENT; keep explicit synthetic null-Origin GET separate"
+    },
+    {
+      "issue": "Native enrollment POST from the login page serialized Origin as null under no-referrer",
+      "result": "FAIL_SOURCE_FORM_NAVIGATION",
+      "observedLoginPost": {
+        "method": "POST",
+        "originCategory": "NULL",
+        "status": 403,
+        "deviceCookieIssued": false
+      },
+      "correction": "Login GET-only Referrer-Policy same-origin; exact-Origin POST checks retained"
+    },
+    {
+      "issue": "Opaque sandbox fixture emitted SecurityError before its POST, with no application source",
+      "result": "UNKNOWN_FIXTURE_ONLY",
+      "observed": {
+        "stage": "OPAQUE_POST",
+        "name": "SecurityError",
+        "opaquePostsAtError": 0,
+        "sandboxSameOriginFlagAbsentPhrase": true
+      },
+      "correction": "Use a native top-level no-referrer form that produces real Origin:null; retain zero unexpected-error gate",
+      "productionCodeChangedForThisAttempt": false
+    }
+  ]
+}

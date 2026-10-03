@@ -1,0 +1,10 @@
+
+> pwa-remote-desktop-gateway@1.0.0 test:container
+> ./qa/test-container.sh
+
+HTTP/1.1 401
+openjdk version "17.0.20.1" 2026-08-18
+OpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)
+OpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)
+linux/arm64 sha256:f1994501e0d375c16c7e6c3993b6c60de2cabcc5a6126ca8e8ca3218caa34ca1
+PASS: isolated container liveness, SQLite initialization and missing-JWT rejection. No target or public port.

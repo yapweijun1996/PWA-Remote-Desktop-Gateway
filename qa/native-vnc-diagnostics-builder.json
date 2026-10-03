@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "scope": "TEST_ONLY_NATIVE_LOGGER_COMPILER",
+  "builderImageId": "sha256:132e4d0f841d82d538a3303018a0ff946223a10d1e8f5ea09e256719ba06b168",
+  "origin": "Reviewed deployment/Guacd.Dockerfile builder stage, LinuxARM64 Ubuntu24.04, existing six architecture-specific package locks."
+}

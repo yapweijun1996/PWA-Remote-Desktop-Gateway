@@ -1,0 +1,37 @@
+{
+  "recordedAt": "2026-10-03T01:33:42.801023+00:00",
+  "reviewer": "INDEPENDENT_READ_ONLY_SUBAGENT",
+  "scope": "DEDICATED_PRIVATE_CONFIG_AND_LOCAL_DOCKER_RUNTIME",
+  "sourceCommit": "d7fe91be5507654597cc7734292b3d47f3038b35",
+  "status": "NO_ACTIONABLE_FINDINGS_WITHIN_SCOPE",
+  "configurationReadyBeforeReview": true,
+  "checks": {
+    "runtimeExactReviewedImage": true,
+    "productionJar": true,
+    "uid10001": true,
+    "desktopPolicyBlocked": true,
+    "uniqueOwnedComposeNamespaceGatewayOnly": true,
+    "loopbackPort32120Only": true,
+    "configurationReadOnlyMount": true,
+    "noVncSecretMount": true,
+    "noGuacd": true,
+    "noTestIdentityEntrypoint": true,
+    "privateEnvMatchesRuntimeAccessAndNodeConfig": true,
+    "tunnelExactHostnameApproved": true,
+    "tunnelRealTeamAndAudienceRequired": true,
+    "tunnel404Fallback": true,
+    "privateParent0700": true,
+    "privateEnvAndTunnel0600": true,
+    "credential0400MetadataOnly": true,
+    "deviceConfig0644InsidePrivateParentWithoutSecretOrCalibration": true
+  },
+  "credentialsRead": false,
+  "cloudflareApiUsed": false,
+  "runtimeMutationPerformed": false,
+  "limits": [
+    "Read-only config/runtime review only; not owner OTP or genuine JWT acceptance",
+    "No real desktop connection verified",
+    "Existing service historical preservation is outside this review scope and was separately checked by root",
+    "Saved remote Access policy UI was observed by root, not reviewed by this subagent"
+  ]
+}

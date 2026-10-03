@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T11:29:39.411718+00:00",
+  "status": "PASS",
+  "scope": "BOUNDED_POST_DEPLOYMENT_HTTP_NEGATIVE_CHECKS",
+  "checks": [
+    {
+      "case": "ORIGIN_API_MISSING_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NO_REAL_IDENTITY",
+      "expectedStatus": 401,
+      "status": 401,
+      "strictSelfScriptCsp": true,
+      "errorBodyOnly": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_API_FAKE_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NO_REAL_IDENTITY",
+      "expectedStatus": 401,
+      "status": 401,
+      "strictSelfScriptCsp": true,
+      "errorBodyOnly": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_API_WRONG_HOST",
+      "scope": "LOCAL_ORIGIN_NO_REAL_IDENTITY",
+      "expectedStatus": 403,
+      "status": 403,
+      "strictSelfScriptCsp": true,
+      "errorBodyOnly": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_API_WRONG_ORIGIN",
+      "scope": "LOCAL_ORIGIN_NO_REAL_IDENTITY",
+      "expectedStatus": 403,
+      "status": 403,
+      "strictSelfScriptCsp": true,
+      "errorBodyOnly": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_WS_MISSING_IDENTITY",
+      "scope": "LOCAL_ORIGIN_NO_REAL_IDENTITY",
+      "expectedStatus": 401,
+      "status": 401,
+      "strictSelfScriptCsp": true,
+      "errorBodyOnly": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "ORIGIN_BOOTSTRAP_MISSING_ORIGIN",
+      "scope": "LOCAL_ORIGIN_NO_REAL_IDENTITY",
+      "expectedStatus": 403,
+      "status": 403,
+      "strictSelfScriptCsp": true,
+      "errorBodyOnly": true,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_ROOT_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "expectedStatus": 302,
+      "status": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_API_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "expectedStatus": 302,
+      "status": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_WS_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "expectedStatus": 302,
+      "status": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_MANIFEST_ANONYMOUS",
+      "scope": "PUBLIC_ANONYMOUS_EDGE_BOUNDARY_ONLY",
+      "expectedStatus": 302,
+      "status": 302,
+      "redirectToRealAccess": true,
+      "tlsVerified": true,
+      "redirectFollowed": false,
+      "noWebSocketUpgrade": true,
+      "pass": true
+    }
+  ],
+  "checkCount": 10,
+  "originHealth": {
+    "status": 200,
+    "processLivenessOnly": true
+  },
+  "localManifest": {
+    "status": 200,
+    "jsonContentType": true,
+    "recognized": true,
+    "beaconAbsent": true
+  },
+  "limits": {
+    "publicPositiveOwnerSession": false,
+    "publicManifestWithOwnerCookie": false,
+    "publicBeaconAbsenceVerified": false,
+    "realMacDesktop": false,
+    "availabilityProvedByAccess302": false,
+    "rawResponsesStored": false,
+    "cookieTokenQueryValuesRecorded": false,
+    "accessPolicyChanged": false,
+    "servicesRestarted": false
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "scope": "SYNTHETIC_NATIVE_LOGGER_PRIVACY_AND_ABI",
+  "status": "PASS",
+  "nativeCases": 279,
+  "nativeBuilderRun": "PASS",
+  "nativeProductionImageABIRun": "PASS",
+  "nodePrivacyAndProvenanceCases": 6,
+  "builderImageId": "sha256:132e4d0f841d82d538a3303018a0ff946223a10d1e8f5ea09e256719ba06b168",
+  "sourceSha256": "0a2f3179b5c4c151f8c07c02b622a173363bca46ed0a18f4b7bdb1579b0e35ea",
+  "librarySha256": "602ee3ed0f95c8ebe3671173a7cdd6d50be010a0b520024874bc412ebda7f2d3",
+  "productionNativeImageId": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+  "rawLogsSaved": false,
+  "authAttempted": false,
+  "realMac": false,
+  "staticReview": "NO_REMAINING_ACTIONABLE_FINDINGS_WITHIN_LOGGER_AND_WRAPPER_SCOPE",
+  "scopeLimit": "Static review and synthetic runs do not prove real desktop authentication or release acceptance."
+}

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T10:23:41.035889+00:00",
+  "status": "PASS_BOUNDED_CONNECTOR_PROCESS_RECOVERY",
+  "sourceCommit": "d72acb687def3bf7fbca8b8d664b341b909890ee",
+  "url": "https://remote.gmb01.xyz",
+  "incident": {
+    "reportedError": 1033,
+    "reportedAt": "2026-10-03T10:07:29Z",
+    "observedBeforeRepair": {
+      "dedicatedConnectorPid19520Absent": true,
+      "dedicatedReadyEndpoint": "CONNECTION_REFUSED",
+      "gatewayHealth": 200,
+      "persistentDedicatedServiceAbsent": true
+    },
+    "previousConnectorExitCause": "UNKNOWN",
+    "deploymentGap": "Dedicated connector had no process supervisor."
+  },
+  "connector": {
+    "tunnelId": "c7401595-b920-447e-8537-db7b4d7be78d",
+    "version": "2025.11.1",
+    "executableSha256": "5c82c2bd0b57c01fc1aee533aac606c8a6496d49446b68f307b46a6be4524739",
+    "serviceLabel": "com.rdg.current-mac-pilot.cloudflared",
+    "serviceKind": "OWNER_USER_LAUNCH_AGENT",
+    "plistMode": "0600",
+    "plistSha256": "a0b5bdb9cfad5a4db5ddaec12436143d84110e69aa9ce0b9bddf2e01e4a98d53",
+    "configurationSha256": "8d741ea5eeefd84f9a88093d0e355ff5cb66fe2109ee085085d5a081f9821375",
+    "configurationChanged": false,
+    "credentialContentsRead": false,
+    "credentialFileMode": "0400",
+    "runAtLoad": true,
+    "keepAlive": true,
+    "throttleIntervalSeconds": 10,
+    "metricsBind": "127.0.0.1:32124",
+    "autoUpdateEnabled": false,
+    "rawLogsStored": false
+  },
+  "initialVerification": {
+    "launchd": {
+      "state": "running",
+      "pid": "87171",
+      "runs": "1",
+      "last exit code": "(never exited)"
+    },
+    "parent": 1,
+    "connector_ready": 200,
+    "gateway_health": 200,
+    "ha_connections": 4
+  },
+  "processRecovery": {
+    "old_pid": 87171,
+    "new_pid": 87723,
+    "parent": 1,
+    "launchd": {
+      "state": "running",
+      "pid": "87723",
+      "runs": "2",
+      "last exit code": "0"
+    },
+    "ready": 200,
+    "ha_connections": 4,
+    "trigger": "SIGTERM sent only to verified dedicated connector",
+    "recovery_seconds": null,
+    "timing_note": "Exact elapsed measurement was not retained because the first collector failed during a subsequent preservation probe."
+  },
+  "postLaunchingExecVerification": {
+    "pid": 87723,
+    "parent": 1,
+    "ready": 200,
+    "haConnections": 4,
+    "method": "Separate subsequent execution after the installation and recovery executions ended."
+  },
+  "preservation": {
+    "configuration_and_existing_service_files_unchanged": true,
+    "other_connector_pids_alive": [
+      47030,
+      47039,
+      65515
+    ]
+  },
+  "templateValidation": {
+    "plutil": "PASS",
+    "rendered_example_matches_installed_plist": true,
+    "sha256": "ddcf2e6e42d85abefa40519afd97f37800ad27cd652cd6c92b04360718cfadc9"
+  },
+  "runtime": {
+    "gateway": {
+      "containerId": "adf2cedc7f6d148c5e55f1d692ddd24710f7c8c9c451feb064e62f3eb2634719",
+      "image": "sha256:cbbfaadd12d4dce9dc8f15d3909d4b343ed91a01f546fc7c1afddba669e5bab3",
+      "health": "healthy",
+      "user": "10001:10001",
+      "readOnlyRootFs": true,
+      "portBindings": {
+        "8080/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32120"
+          }
+        ]
+      }
+    },
+    "original_running_container_ids_unchanged": true,
+    "checked_container_count": 10,
+    "containers_restarted": false
+  },
+  "collectorCorrection": "Root-owned unrelated connector existence was rechecked with read-only ps; kill(pid,0) returned EPERM. No signal was sent to unrelated processes.",
+  "liveCheckEvidence": "tunnel-supervision-live-checks.json",
+  "accessPolicyChanged": false,
+  "tunnelIngressOrDnsChanged": false,
+  "gatewayImageOrConfigurationChanged": false,
+  "hostPermissionsOrPowerSettingsChanged": false,
+  "verificationLimits": {
+    "realOwnerAccessEnrollment": false,
+    "realMacDesktop": false,
+    "loginOnlyAccessMigration": "PENDING_EXISTING_ACTION_TIME_CONFIRMATION",
+    "sleepOrLidContinuity": false,
+    "logoutContinuity": false,
+    "preLoginOrFileVault": false,
+    "rebootContinuity": false,
+    "requires": "Owner GUI login, awake Mac, running Docker and network."
+  },
+  "acceptanceRule": "Access302 is an edge authorization check, never origin availability proof. Verify dedicated connector readiness and actual edge connections separately.",
+  "liveChecks": {
+    "httpPassed": 10,
+    "httpTotal": 10,
+    "officialTunnelInfo": {
+      "status": "UNAVAILABLE_SCHEMA",
+      "approvedTunnelIdentityVerified": true,
+      "activeConnectorCount": null,
+      "edgeConnectionCount": null
+    }
+  }
+}

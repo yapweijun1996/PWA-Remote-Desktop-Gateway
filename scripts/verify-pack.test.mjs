@@ -1,24 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {execFileSync} from 'node:child_process';
+import {execFileSync, spawnSync} from 'node:child_process';
 import {readFileSync, existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {HANDOFF_REVISION, verifyManifest} from './verify-pack.mjs';
 const root = new URL('../', import.meta.url);
 test('Every MANIFEST.sha256 entry exists in the checkout', () => {
   const paths = readFileSync(new URL('MANIFEST.sha256', root), 'utf8').trim().split('\n').map(l => l.slice(66));
   assert.deepEqual(paths.filter(p => !existsSync(new URL(p, root))), []);
 });
-test('verify-pack passes on the current tree', () => {
-  assert.match(execFileSync('node', ['scripts/verify-pack.mjs'], {cwd: root, encoding: 'utf8'}), /^PASS/);
+test('Pinned original handoff verifies without treating the implementation as an archive', () => {
+  assert.match(execFileSync('node', ['scripts/verify-pack.mjs', '--handoff'], {cwd: root, encoding: 'utf8'}), /^PASS/);
+  const current = spawnSync('node', ['scripts/verify-pack.mjs'], {cwd: root, encoding: 'utf8'});
+  assert.equal(current.status, 1);
+  assert.match(current.stderr, /Mismatch: package.json/);
 });
-test('Committed blobs match MANIFEST.sha256 byte for byte (no line-ending rewrite)', t => {
+test('Pinned handoff blobs match its original manifest byte for byte', t => {
   const git = args => execFileSync('git', args, {cwd: root, maxBuffer: 1 << 26});
   try { git(['rev-parse', '--git-dir']); } catch { return t.skip('not a git checkout'); }
-  const bad = readFileSync(new URL('MANIFEST.sha256', root), 'utf8').trim().split('\n').filter(line => {
+  const original = git(['show', `${HANDOFF_REVISION}:MANIFEST.sha256`]).toString('utf8');
+  assert.equal(readFileSync(new URL('MANIFEST.sha256', root), 'utf8'), original);
+  const bad = original.trim().split('\n').filter(line => {
     const rel = line.slice(66);
-    return createHash('sha256').update(git(['show', `:${rel}`])).digest('hex') !== line.slice(0, 64);
+    return createHash('sha256').update(git(['show', `${HANDOFF_REVISION}:${rel}`])).digest('hex') !== line.slice(0, 64);
   });
   assert.deepEqual(bad, []);
+});
+test('Integrity verification still rejects tampered, absent and malformed files', async () => {
+  const digest = createHash('sha256').update('original').digest('hex');
+  assert.deepEqual(await verifyManifest(`${digest}  sample.txt`, async () => Buffer.from('original')), {count: 1, errors: []});
+  assert.deepEqual((await verifyManifest(`${digest}  sample.txt`, async () => Buffer.from('changed'))).errors, ['Mismatch: sample.txt']);
+  assert.deepEqual((await verifyManifest(`${digest}  sample.txt`, async () => {throw new Error();})).errors, ['Missing/unreadable: sample.txt']);
+  for (const manifest of ['', 'invalid', `${digest}  ../secret`, `${digest}  /secret`, `${digest}  sample.txt\n${digest}  sample.txt`]) {
+    assert.ok((await verifyManifest(manifest, async () => Buffer.from('original'))).errors.length);
+  }
 });
 test('.gitattributes pins LF and keeps CSV bytes untouched', () => {
   const attrs = readFileSync(new URL('.gitattributes', root), 'utf8');

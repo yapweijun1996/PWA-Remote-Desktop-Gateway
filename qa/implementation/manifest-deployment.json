@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T11:32:19.535187+00:00",
+  "status": "DEPLOYED_BOUNDED_VERIFICATION_PASS",
+  "sourceCommit": "4deb5fc3d7262ed6a8de813c4fc7a7c33d0b95ed",
+  "url": "https://remote.gmb01.xyz",
+  "productionChange": "Same-origin manifest link includes crossorigin=use-credentials; Java/auth/CSP source unchanged.",
+  "gateway": {
+    "gateway": {
+      "id": "3aaa6c499d2306f61387a6ad4ed5d5b64ec102bc1f10ead068bf4d2da7831273",
+      "image": "sha256:3e854a62f4c3d8f5bcc629b66500902fa806a4cf1b207a3e5a739d896977519c",
+      "health": "healthy",
+      "user": "10001:10001",
+      "readOnlyRootFs": true,
+      "portBindings": {
+        "8080/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32120"
+          }
+        ]
+      },
+      "volumes": [
+        {
+          "name": "rdg-current-mac-pilot_rdg-metadata",
+          "destination": "/var/lib/rdg",
+          "readOnly": false
+        },
+        {
+          "name": "rdg-current-mac-pilot_rdg-vnc-key",
+          "destination": "/var/lib/rdg-key",
+          "readOnly": true
+        }
+      ]
+    },
+    "sourceCommit": "4deb5fc3d7262ed6a8de813c4fc7a7c33d0b95ed",
+    "webBuild": "e74a550dae75ff3d",
+    "jarSha256": "eaf9d5b7639e3e20aa0fc67a56a9c76b90767203728f2a4d82df951a354f40f6",
+    "deployedManifestCrossoriginVerified": true,
+    "ownedHtmlContainsBeacon": false,
+    "health": 200,
+    "connectorReady": 200,
+    "haConnections": 4,
+    "otherNineContainerIdsUnchanged": true,
+    "activeDesktopConnectionsBeforeReplacement": 0,
+    "changedEnvironmentField": "GATEWAY_IMAGE_ONLY",
+    "separateRollbackSaved": true,
+    "collectorCorrection": "Startup health probe raised RemoteDisconnected after gateway-only replacement. Subsequent read-only check confirmed healthy exact image; no additional restart. Docker volume ordering varied; preservation compared name, destination and read-only semantics.",
+    "recordedAt": "2026-10-03T11:29:11.772819+00:00"
+  },
+  "cloudflareRule": {
+    "id": "5b9cac04cdd544538f02f5f138e131fa",
+    "name": "RDG remote gateway no analytics",
+    "expression": "(http.host eq \"remote.gmb01.xyz\")",
+    "action": "set_config",
+    "parameters": {
+      "disable_rum": true
+    },
+    "enabled": true,
+    "savedAndActiveObserved": true,
+    "order": "LAST",
+    "previousErpRulePreserved": true,
+    "globalWebAnalyticsUnchanged": true,
+    "proofScreenshotSha256": "16470c1999b229527d29b1fd77c1670f5a27b5d551b54c31414bb8c3b58d6abb"
+  },
+  "verification": {
+    "nodeTests": 84,
+    "gatewayTests": 94,
+    "nativeChromiumLoginAndManifestCases": 8,
+    "nativeManifestPositive": {
+      "fixtureHttpOnlyCookieIncluded": true,
+      "status": 200,
+      "recognized": true,
+      "parseErrors": 0
+    },
+    "nativeManifestWithoutAttributeBaseline": {
+      "cookieIncluded": false,
+      "status": 302,
+      "cspViolations": 1
+    },
+    "pageErrors": 0,
+    "unexpectedConsoleErrors": 0,
+    "expectedManifestConsoleErrors": 1,
+    "negativeConsoleClassifier": "BASELINE_STAGE_AND_KNOWN_MANIFEST_CSP_SIGNATURE_ONLY_EXACTLY_ONE",
+    "liveHttpNegativeCases": 10,
+    "connectorReady": 200,
+    "haConnections": 4
+  },
+  "exactImageScan": {
+    "artifact": "manifest-image-trivy.json",
+    "severityCounts": {
+      "LOW": 16,
+      "MEDIUM": 13
+    },
+    "fixedVersionRows": 0,
+    "cachedDatabaseUpdatedAt": "2026-10-02T12:48:00.080865328Z",
+    "onlineAdvisoryRefresh": false
+  },
+  "preservation": {
+    "keyAndStateVolumes": true,
+    "otherNineContainerIds": true,
+    "guacdImageAndContainer": true,
+    "dedicatedConnectorService": true,
+    "accessPolicy": true,
+    "strictSelfCsp": true,
+    "existingErpRule": true
+  },
+  "accessPolicyChanged": false,
+  "tunnelIngressOrDnsChanged": false,
+  "noTransformHeaderAdded": false,
+  "realOwnerCredentialReadOrEnteredByAgent": false,
+  "limits": {
+    "publicCredentialedManifest": false,
+    "publicAuthenticatedBeaconAbsence": false,
+    "realMacDesktop": false,
+    "realSafari": false,
+    "loginOnlyAccessMigration": "PENDING_EXISTING_ACTION_TIME_CONFIRMATION"
+  },
+  "evidence": {
+    "browser": "manifest-browser-results.json",
+    "live": "manifest-live-checks.json"
+  },
+  "recovery": "Previous exact gateway image retained; private environment rollback saved. Disable only this new hostname-specific rule if reverting it."
+}

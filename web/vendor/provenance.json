@@ -1,0 +1,11 @@
+{
+  "version": "1.6.0",
+  "source": "https://repo.maven.apache.org/maven2/org/apache/guacamole/guacamole-common-js/1.6.0/guacamole-common-js-1.6.0.zip",
+  "signature": "Verified with Apache Guacamole KEYS; no independent Web-of-Trust certification claimed",
+  "signerFingerprint": "F467E54ACC52F1D2778826865B2977AEE5E4518F",
+  "sha256": {
+    "guacamole-common.jar": "6ecfed5020bb1077370cf50f91ac08cc93bf6c729033ca091d883a348041da75",
+    "guacamole-common-js.zip": "718cde229cfa601c52ddc201afe3f3ed951b8b756957387776d0c460786f0448",
+    "all.min.js": "cc89f710ecc544477dbe6bfea453fab752dafa1b1ab9770f523676e7b744b44a"
+  }
+}

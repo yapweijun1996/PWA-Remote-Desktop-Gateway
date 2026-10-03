@@ -1,7 +1,7 @@
 # Scope and attribution
 
-This handoff contains newly authored specifications, small reference modules, a UI prototype and source links. It does not bundle Apache Guacamole, noVNC, Cloudflare software, browser binaries or font files. Third-party project names identify integration choices, not endorsement.
+This implementation includes the official Apache Guacamole 1.6.0 browser library, distributed under Apache License 2.0. Its upstream LICENSE/NOTICE and artifact/signature provenance are retained in `web/vendor/`. The Java build resolves official Guacamole and other dependencies listed with versions and digests in `gateway/dependencies.lock.json`; their upstream licenses remain applicable.
 
-The repository owner should choose the final project's license before publishing it, and retain the licenses/notices of any dependencies they later vendor or redistribute. No claim is made that third-party licenses have been replaced by this notice.
+Project names identify integrations, not endorsement. The owner should select the application's own license before public redistribution. No third-party license is replaced by this notice.
 
-The generated UI uses fictional example hostnames and unverified example device cards. No real remote desktop, credential, account email or private host configuration is embedded. Public project publishing and live infrastructure changes remain separate actions.
+Production artifacts exclude the disposable signed-identity/Guacamole test peers. Fixtures contain only fictional identities/credentials and are explicitly labelled. No real desktop, owner email, password, Access token, Tunnel credential or private host config is shipped. Local fixture screenshots are not real-Mac acceptance evidence. Publishing and infrastructure changes require their stated authorization.

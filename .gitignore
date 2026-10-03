@@ -1,7 +1,17 @@
+# Generated files
 .DS_Store
 __pycache__/
+*.pyc
+.tools/
 node_modules/
-# Secrets and credentials must never be committed; the example file stays tracked.
+gateway/target/
+web/dist/
+*.sqlite*
+*.log
+qa/implementation/runtime/
+.playwright-cli/
+output/playwright/
+# Secrets and credentials must never be committed; the example stays tracked.
 .env
 .env.*
 !.env.example

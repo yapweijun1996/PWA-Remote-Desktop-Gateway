@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/rdg/device.owner-setup.schema.json",
+  "title": "Server-owned RDG node configuration for explicit RDG_DESKTOP_POLICY=OWNER_SETUP",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "nodeId",
+    "publicOrigin",
+    "localDevice",
+    "bookmarks",
+    "keysyms"
+  ],
+  "properties": {
+    "nodeId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{2,39}$"
+    },
+    "publicOrigin": {
+      "type": "string",
+      "pattern": "^https://[a-z0-9.-]+$"
+    },
+    "localDevice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "targetOS",
+        "upstreamHost",
+        "upstreamPort"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{2,39}$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "targetOS": {
+          "const": "macOS"
+        },
+        "upstreamHost": {
+          "enum": [
+            "host.docker.internal",
+            "127.0.0.1"
+          ]
+        },
+        "upstreamPort": {
+          "const": 5900
+        }
+      }
+    },
+    "bookmarks": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "url",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 3
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://[a-z0-9.-]+/$"
+          },
+          "status": {
+            "const": "UNVERIFIED"
+          }
+        }
+      }
+    },
+    "keysyms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CommandLeft",
+        "CommandRight",
+        "OptionLeft",
+        "OptionRight",
+        "ControlLeft",
+        "ControlRight"
+      ],
+      "properties": {
+        "CommandLeft": {
+          "type": "integer",
+          "const": 65511
+        },
+        "CommandRight": {
+          "type": "integer",
+          "const": 65512
+        },
+        "OptionLeft": {
+          "type": "integer",
+          "const": 65513
+        },
+        "OptionRight": {
+          "type": "integer",
+          "const": 65514
+        },
+        "ControlLeft": {
+          "type": "integer",
+          "const": 65507
+        },
+        "ControlRight": {
+          "type": "integer",
+          "const": 65508
+        }
+      },
+      "description": "Unverified standard X11 test profile. Keyboard calibration remains UNVERIFIED_TEST_PROFILE."
+    }
+  },
+  "description": "Standard six-key self-test profile only; not evidence of target calibration. The owner supplies the VNC password through the authenticated encrypted credential store, never this configuration."
+}
