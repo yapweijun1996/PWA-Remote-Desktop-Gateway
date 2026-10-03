@@ -60,6 +60,13 @@ export class KeyboardState {
     if (this.#broken) return; // Sink failure already cleared all state; cleanup must stay safe on blur/hide.
     for (const source of [...this.#sources.keys()].reverse()) this.up(source);
   }
+  /** Re-strike a physical non-modifier key whose keyup was never delivered (macOS Command held). */
+  retrigger(source, logicalKey, opts = {}) {
+    this.#ready(); requireString(source, 'source');
+    const owned = this.#sources.get(source);
+    if (owned?.physical && !MODIFIER_KEY.test(owned.key)) this.up(source);
+    return this.down(source, logicalKey, opts);
+  }
   /** macOS fires no keyup for non-modifier keys while Command is held; call when Command is released. */
   releasePhysicalNonModifiers() {
     if (this.#broken) return;

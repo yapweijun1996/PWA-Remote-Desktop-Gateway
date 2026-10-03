@@ -72,6 +72,13 @@ with sync_playwright() as pw:
  passed('Tab can leave the keyboard tester')
  page.locator('#notice').evaluate('(el)=>el.hidden=true')
  page.screenshot(path=str(shots/'02-workspace-desktop.png'),full_page=True)
+ page.set_viewport_size({'width':390,'height':844})
+ for text in ['Local tester focused — no remote connection','Composition delegated — not implemented here']:
+  page.locator('#inputStatus').evaluate('(el,t)=>el.textContent=t',text)
+  dims=page.evaluate('({w:innerWidth,scroll:document.documentElement.scrollWidth})')
+  assert dims['scroll']<=dims['w'],(text,dims)
+  assert page.locator('#panelToggle').bounding_box()['x']+page.locator('#panelToggle').bounding_box()['width']<=dims['w']
+ passed('Long input status does not overflow or push controls off-screen at 390px')
  for width,height in [(390,844),(430,932),(768,1024),(1440,1024)]:
   page.set_viewport_size({'width':width,'height':height})
   for view in ['workspace','overview']:
