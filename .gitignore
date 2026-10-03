@@ -1,3 +1,10 @@
 .DS_Store
 __pycache__/
 node_modules/
+# Secrets and credentials must never be committed; the example file stays tracked.
+.env
+.env.*
+!.env.example
+*credentials*.json
+*.pem
+*.key

@@ -34,3 +34,11 @@ test('No ignored droppings are tracked by git', t => {
   const tracked = execFileSync('git', ['ls-files'], {cwd: root, encoding: 'utf8'}).split('\n');
   assert.deepEqual(tracked.filter(f => /(^|\/)\.DS_Store$|__pycache__\/|(^|\/)node_modules\//.test(f)), []);
 });
+test('.gitignore blocks secrets but keeps .env.example tracked', t => {
+  try { execFileSync('git', ['rev-parse', '--git-dir'], {cwd: root, stdio: 'ignore'}); } catch { return t.skip('not a git checkout'); }
+  const ignored = p => { try { execFileSync('git', ['check-ignore', '-q', p], {cwd: root}); return true; } catch { return false; } };
+  for (const p of ['.env', 'deployment/.env', 'deployment/.env.local', 'tunnel-credentials.json', 'protected/cloudflared-credentials.json', 'cert.pem', 'rdg.key'])
+    assert.equal(ignored(p), true, `${p} must be ignored`);
+  for (const p of ['deployment/.env.example', 'contracts/device.schema.json', 'deployment/cloudflared.config.example.yml'])
+    assert.equal(ignored(p), false, `${p} must stay trackable`);
+});
