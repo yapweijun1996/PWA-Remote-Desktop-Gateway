@@ -38,6 +38,8 @@ with sync_playwright() as pw:
  assert page.locator('#workspace').is_visible()
  assert page.get_by_text('Not connected',exact=True).is_visible()
  passed('Workspace navigation does not claim a live connection')
+ page.locator('#panelToggle').click()
+ assert page.locator('#keyboardPanel').is_visible()
  page.locator('#profile').select_option('windows-alt-command')
  assert 'Opt-in for left Alt' in page.locator('#profileDescription').inner_text()
  page.locator('#inputSurface').focus()
