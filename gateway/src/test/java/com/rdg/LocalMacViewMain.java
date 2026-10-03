@@ -37,10 +37,16 @@ public final class LocalMacViewMain {
         }
     }
 
+    static int pilotSeconds(String[] args) {
+        if (args.length == 3) return 60;
+        if (args.length == 4 && args[3].equals("900")) return 900;
+        throw new IllegalArgumentException("Only the bounded manual pilot duration is allowed");
+    }
+
     public static void main(String[] args) {
         java.util.logging.LogManager.getLogManager().reset();
         try {
-            if (args.length != 3) throw new IllegalArgumentException("Explicit pilot arguments required");
+            int pilotSeconds = pilotSeconds(args);
             String secretPath = System.getenv("RDG_LOCAL_VNC_SECRET_FILE");
             if (secretPath == null || secretPath.isBlank())
                 throw new IllegalArgumentException("Owner-provisioned credential file required");
@@ -61,8 +67,8 @@ public final class LocalMacViewMain {
                 timeout.shutdownNow();
                 try { runtime.close(); } catch (Exception ignored) {}
             }));
-            timeout.schedule(() -> System.exit(124), 60, TimeUnit.SECONDS);
-            String assertion = Fixtures.token(config, key, Instant.now(), 90,
+            timeout.schedule(() -> System.exit(124), pilotSeconds, TimeUnit.SECONDS);
+            String assertion = Fixtures.token(config, key, Instant.now(), pilotSeconds + 30,
                 Map.of("sub", config.ownerSubject()));
             Path proxy = directory.resolve("proxy.json");
             Path pending = directory.resolve("proxy.json.pending");

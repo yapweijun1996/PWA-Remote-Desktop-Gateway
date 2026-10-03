@@ -12,6 +12,11 @@ local_docker_host="unix://$local_docker_socket"
 unset DOCKER_CONTEXT DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH
 docker_local() { command docker --host "$local_docker_host" "$@"; }
 export RDG_LOCAL_DOCKER_ENDPOINT_PINNED=true
+manual_mode=${RDG_LOCAL_VIEW_MANUAL:-false}
+case "$manual_mode" in true|false) ;; *) printf '%s\n' 'LOCAL_VIEW_MANUAL_FLAG_REFUSED' >&2; exit 2 ;; esac
+pilot_seconds=60
+if [ "$manual_mode" = true ]; then pilot_seconds=900; fi
+export RDG_LOCAL_VIEW_MANUAL="$manual_mode"
 
 # Reject missing/unsafe credentials and browser dependencies before any service starts.
 node --input-type=module <<'JS'
@@ -27,10 +32,12 @@ try {
   if (!file.isFile() || file.isSymbolicLink() || file.size < 1 || file.size > 256
       || (file.mode & 0o077) !== 0 || file.uid !== process.getuid()
       || actual === repository || actual.startsWith(repository + sep)) throw new Error();
-  const require = createRequire(resolve('package.json'));
-  require.resolve(process.env.RDG_PLAYWRIGHT_MODULE ?? 'playwright');
-  if (!process.env.RDG_TEST_CHROMIUM || !isAbsolute(process.env.RDG_TEST_CHROMIUM)
-      || !statSync(process.env.RDG_TEST_CHROMIUM).isFile()) throw new Error();
+  if (process.env.RDG_LOCAL_VIEW_MANUAL !== 'true') {
+    const require = createRequire(resolve('package.json'));
+    require.resolve(process.env.RDG_PLAYWRIGHT_MODULE ?? 'playwright');
+    if (!process.env.RDG_TEST_CHROMIUM || !isAbsolute(process.env.RDG_TEST_CHROMIUM)
+        || !statSync(process.env.RDG_TEST_CHROMIUM).isFile()) throw new Error();
+  }
 } catch {
   console.error('LOCAL_VIEW_PREREQUISITE_MISSING: provide an owner-only absolute secret file outside Git and existing Playwright/Chromium paths. No services started.');
   process.exit(2);
@@ -85,8 +92,8 @@ PY
 trap cleanup EXIT
 trap 'exit 124' INT TERM
 openssl req -x509 -newkey rsa:2048 -nodes -keyout "$pilot_dir/key.pem" -out "$pilot_dir/cert.pem" -days 1 -subj /CN=127.0.0.1 -addext 'subjectAltName=IP:127.0.0.1' > "$pilot_dir/cert-build.log" 2>&1
-# One Node timer owns the 60-second runtime bound; no orphaned sleep subprocess.
-node -e 'setTimeout(() => process.kill(Number(process.argv[1]), "SIGTERM"), 60000)' "$$" &
+# One Node timer owns the bounded runtime; no orphaned sleep subprocess.
+node -e 'setTimeout(() => process.kill(Number(process.argv[1]), "SIGTERM"), Number(process.argv[2]) * 1000)' "$$" "$pilot_seconds" &
 deadline_pid=$!
 set -- --name "$container_name" --pull never --log-driver none --read-only --cap-drop ALL --security-opt no-new-privileges:true --pids-limit 64 --memory 256m --tmpfs /tmp:uid=10001,gid=10001,mode=0700,noexec,nosuid,size=32m -p 127.0.0.1::4822
 if [ "$native_diagnostics" = true ]; then
@@ -99,7 +106,9 @@ docker_local run -d "$@" "$actual_image" -f -b 0.0.0.0 -l 4822 -p /tmp/guacd.pid
 bind_ip=$(docker_local inspect "$container_name" --format '{{(index (index .NetworkSettings.Ports "4822/tcp") 0).HostIp}}')
 guacd_port=$(docker_local inspect "$container_name" --format '{{(index (index .NetworkSettings.Ports "4822/tcp") 0).HostPort}}')
 [ "$bind_ip" = 127.0.0.1 ] || { printf '%s\n' 'LOCAL_VIEW_BIND_REFUSED' >&2; exit 2; }
-java -cp "gateway/target/test-classes:gateway/target/classes:$(cat gateway/target/test-classpath.txt)" com.rdg.LocalMacViewMain "$pilot_dir" "$guacd_port" 32122 > "$pilot_dir/gateway.log" 2>&1 &
+set -- "$pilot_dir" "$guacd_port" 32122
+if [ "$manual_mode" = true ]; then set -- "$@" 900; fi
+java -cp "gateway/target/test-classes:gateway/target/classes:$(cat gateway/target/test-classpath.txt)" com.rdg.LocalMacViewMain "$@" > "$pilot_dir/gateway.log" 2>&1 &
 java_pid=$!
 attempt=0
 while [ ! -f "$pilot_dir/proxy.json" ]; do
@@ -139,6 +148,12 @@ if (!ready) {
 JS
 export RDG_LOCAL_VIEW_URL=https://127.0.0.1:32122
 export RDG_LOCAL_VIEW_GUACD_IMAGE_ID="$actual_image"
+if [ "$manual_mode" = true ]; then
+  printf '%s\n' 'LOCAL_MANUAL_VIEW_READY: https://127.0.0.1:32122 — bounded 15-minute signed test identity, View only, no automated desktop connection.'
+  if wait "$java_pid"; then manual_status=0; else manual_status=$?; fi
+  java_pid=
+  exit "$manual_status"
+fi
 node qa/local-mac-view.mjs &
 browser_pid=$!
 if wait "$browser_pid"; then browser_status=0; else browser_status=$?; fi

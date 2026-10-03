@@ -46,6 +46,21 @@ class LocalMacViewTest {
         return sessions.begin(app, sessions.intent(app, config.deviceId(), mode, "mac-native").id);
     }
 
+
+    @Test void automatedPilotRetainsItsSixtySecondDeadline() {
+        assertEquals(60, LocalMacViewMain.pilotSeconds(new String[]{"directory", "4822", "32122"}));
+    }
+
+    @Test void manualPilotRequiresTheExplicitBoundedDuration() {
+        assertEquals(900, LocalMacViewMain.pilotSeconds(new String[]{"directory", "4822", "32122", "900"}));
+        for (String duration : new String[]{"0", "-1", "60", "901", "3600", "not-seconds"}) {
+            assertThrows(IllegalArgumentException.class, () -> LocalMacViewMain.pilotSeconds(
+                new String[]{"directory", "4822", "32122", duration}));
+        }
+        assertThrows(IllegalArgumentException.class, () -> LocalMacViewMain.pilotSeconds(new String[2]));
+        assertThrows(IllegalArgumentException.class, () -> LocalMacViewMain.pilotSeconds(new String[5]));
+    }
+
     @Test void configHasOnlyTheFixedLocalTargetAndNoInventedCalibration() {
         assertEquals("host.docker.internal", config.targetHost());
         assertEquals(5900, config.targetPort());
