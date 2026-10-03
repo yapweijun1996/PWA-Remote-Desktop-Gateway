@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "recordedAt": "2026-10-03T10:25:19.906896+00:00",
-  "sourceCommit": "38b68354249cde5f79cc725cb8768fce227683b6",
+  "recordedAt": "2026-10-03T11:33:50.179700+00:00",
+  "sourceCommit": "4deb5fc3d7262ed6a8de813c4fc7a7c33d0b95ed",
   "branch": "codex/production-gateway",
-  "level": "OWNER_SETUP_WITH_DEPLOYED_NATIVE_LOGIN_FIX_ACCESS_MIGRATION_PENDING",
+  "level": "OWNER_SETUP_WITH_DEPLOYED_LOGIN_AND_MANIFEST_FIXES_ACCESS_MIGRATION_PENDING",
   "release": "BLOCKED_REAL_HARDWARE_ACCEPTANCE",
   "realMac": false,
-  "webBuild": "665e0cf1349fce23",
+  "webBuild": "e74a550dae75ff3d",
   "versions": {
     "developmentOS": "macOS 26.6.2 (25G83), Darwin ARM64",
     "javaBuild": "17.0.17",
@@ -25,14 +25,14 @@
   },
   "oci": {
     "gateway": {
-      "localTag": "rdg-gateway:login-return-reviewed",
-      "localId": "sha256:cbbfaadd12d4dce9dc8f15d3909d4b343ed91a01f546fc7c1afddba669e5bab3",
+      "localTag": "rdg-gateway:manifest-credentials-reviewed",
+      "localId": "sha256:3e854a62f4c3d8f5bcc629b66500902fa806a4cf1b207a3e5a739d896977519c",
       "platform": "linux/arm64",
       "published": false,
       "defaultPolicy": "FULL",
       "pilotPolicy": "OWNER_SETUP",
       "trustLifetimeDays": 365,
-      "observedJarSha256": "959e9856cb1f580eeae9c9f55ca76337c29e913fd5e654eef3c1ad3c627321a7"
+      "observedJarSha256": "eaf9d5b7639e3e20aa0fc67a56a9c76b90767203728f2a4d82df951a354f40f6"
     },
     "jre": {
       "index": "sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7",
@@ -98,6 +98,16 @@
       "pilotPolicy": "OWNER_SETUP",
       "trustLifetimeDays": 365,
       "observedJarSha256": "34b30d2b68735545435dd8081e2be6a225a8c3ae8f77e29c6bc24e13937dd53a"
+    },
+    "gatewayPriorToManifestCredentialsFix": {
+      "localTag": "rdg-gateway:login-return-reviewed",
+      "localId": "sha256:cbbfaadd12d4dce9dc8f15d3909d4b343ed91a01f546fc7c1afddba669e5bab3",
+      "platform": "linux/arm64",
+      "published": false,
+      "defaultPolicy": "FULL",
+      "pilotPolicy": "OWNER_SETUP",
+      "trustLifetimeDays": 365,
+      "observedJarSha256": "959e9856cb1f580eeae9c9f55ca76337c29e913fd5e654eef3c1ad3c627321a7"
     }
   },
   "sources": {
@@ -125,7 +135,7 @@
     "contracts/source-register.json": "d05253cf52d7029e2f92f9890ba3b555dfc51046d0954c48213b654380e6691a",
     "deployment/.env.example": "9777141153cc4beba686614c035a2a284246be02bcb632fe430a9df1da5342ba",
     "deployment/Guacd.Dockerfile": "3547a102285a747a560b3c56b3159798f52eacfcb7d7b77dd3537302a78b9ba7",
-    "deployment/README.md": "5b7b3d7de5bfd2aff5cf41c27631f291dbd74ee2c88aa6f90460051ebb05f620",
+    "deployment/README.md": "99f5a7789e27e122d990012660b27c4aa891fa1358c8e9ac149483b8e08e2a97",
     "deployment/apply-vnc-password-policy.py": "a00d0ea1a1f3ac9fe80a99d40809840e256b6a214df16aea5ca19bbb640299db",
     "deployment/cloudflared.config.example.yml": "34c9cadbafe3fbf96e9afc874d1e91bf8701d9cbe82110b3c03ee8b1411a5131",
     "deployment/compose.blocked-pilot.yaml": "a07968af3e7c5b01acd9e48dc76cc71cf08017a17f3fc7d91e22fec6aa21eef0",
@@ -161,7 +171,7 @@
     "docs/15_PREFLIGHT_AND_REUSE.md": "2e89a7f6a2780ffb78263de7184260e715825215df254feb431060fc9582682e",
     "docs/16_DELIVERY_SCOPE_MATRIX.md": "91fa2260bfa1833258a4fb3bb50c6a02286156e93744f8ce5e57b9aca0035f2c",
     "docs/17_IMPLEMENTATION_AND_OPERATIONS.md": "2a37dadaa8e6eea158c4467bb3d6e6049d329114e1fa8a673e051d9fa84bc761",
-    "docs/18_OWNER_SETUP_AND_TRUSTED_DEVICES.md": "11005f8719f6763a89f9dc100f5d9572081dc0df1928cf4be1068c8edb9c05de",
+    "docs/18_OWNER_SETUP_AND_TRUSTED_DEVICES.md": "9b856c1b888f801c33c9527e747b1b230daa1bc62d63b7d92284b629d4b6ab4d",
     "gateway/dependencies.lock.json": "6a230e65275a42d7069dd27273c768bbf6f23fbbaed1d3711d0e7f63f9ab946f",
     "gateway/pom.xml": "93823e3da028c1e2d2a14a455962f93512e5c2b2d6ecd35ea051eccff22a38c3",
     "gateway/src/main/java/com/rdg/AccessVerifier.java": "42f9ca7d839a7b2452f5646a4f9c43b8066362dc3f63683726650fe3b8ade170",
@@ -217,7 +227,7 @@
     "qa/build-native-vnc-diagnostics.sh": "ccf1b420b12f73a0043124d61ffc109d56885f34545967338883202f8111a617",
     "qa/fixture-proxy.mjs": "b0da90693ecccb28cbf5f14c7f7ba5b3cfe87b6d8e06897936fbd47ecb9430e9",
     "qa/local-mac-view.mjs": "bb6f298aa55dd72b1530d203dfd9c5e95358de83b7528c356e1a46403e60b674",
-    "qa/login-browser-checks.mjs": "b9e66a992e1596d961bc33828e7821fb4884c15109613794f69b300c5fdb3336",
+    "qa/login-browser-checks.mjs": "a1df340a520f7ff2a1f4ad83e850be841c5c1c6988d6ca15c6d08ec4af776127",
     "qa/native-vnc-diagnostics-builder.json": "c400f479c8ff7389a3a5326fc303edd185df361753f967a6822168e693e3e983",
     "qa/native-vnc-diagnostics-test.c": "3859defaf033b4154e02929e46e5aeb4816df2f6ce50ce0cbdcb3aabda5e93c4",
     "qa/native-vnc-diagnostics.c": "0a2f3179b5c4c151f8c07c02b622a173363bca46ed0a18f4b7bdb1579b0e35ea",
@@ -257,7 +267,7 @@
     "scripts/verify-artifacts.mjs": "1fb52f9fe41835822ce124f5efc1c5d9080860777c9fa579591aedc67f7033f4",
     "scripts/verify-dependencies.mjs": "75c0c3ae05949cd0c62eecc8efac1f57126fac1027fa5dd17e06e89af16319d0",
     "scripts/verify-pack.mjs": "87845420ecc7fd843fe99c1444defb4cbac39d76bcd50dfe2756363b43ee20ff",
-    "web/public/index.html": "16a5b1aa2750acd49fe79a4d48aaeb4ff9f5341569b621d0ee70162b1fabc838",
+    "web/public/index.html": "bd064e95f0abce73f91607b7bc8d6327a0672668268ee01f0f4daa796350d71a",
     "web/public/offline.html": "6a8c2fef52922ffa9ad43ef9fba16a3c9ab9af42e757568ed4e7c0b103b08e32",
     "web/public/styles.css": "6b3b00536d40209a07a87dbed93f1644461c8e9778aee9e2d33253f0d43cf154",
     "web/public/sw.template.js": "4f057f66d4201623077655e225851a62dcfcb4dd7b1dd8b22d0b7cb8fd4281b3",
@@ -274,7 +284,7 @@
     "deployment/cloudflared.current-mac-pilot.plist.example": "ddcf2e6e42d85abefa40519afd97f37800ad27cd652cd6c92b04360718cfadc9"
   },
   "outputs": {
-    "gateway/target/rdg-gateway.jar": "959e9856cb1f580eeae9c9f55ca76337c29e913fd5e654eef3c1ad3c627321a7",
+    "gateway/target/rdg-gateway.jar": "eaf9d5b7639e3e20aa0fc67a56a9c76b90767203728f2a4d82df951a354f40f6",
     "gateway/target/sqlite-native/org/sqlite/native/Linux/aarch64/libsqlitejdbc.so": "4e253e3f886f8da539e6d8fbd92c3a281f50e395bcba568ced953865e8bea5be",
     "gateway/target/sqlite-native/org/sqlite/native/Linux/x86_64/libsqlitejdbc.so": "aaad97362c429a34b47488c4a5a966ab090450edde70c2186d1a02c0e2d17cd0",
     "web/dist/asset-manifest.json": "eecc5177dea487d815903c3cbc820f3e8c58fe6562e10e3c25a0164327faecfc",
@@ -288,15 +298,15 @@
     "web/dist/assets/keyboard-state.8724c907beed53f3.js": "8724c907beed53f3b3f97908dd604942019f183bea67850ba647e265c979f25b",
     "web/dist/assets/pwa.928b14c36f67b81b.js": "928b14c36f67b81b2747cc3c3c30599c7f01d07bc8ca3ee77ca1b57a09549a0c",
     "web/dist/assets/styles.6b3b00536d40209a.css": "6b3b00536d40209a07a87dbed93f1644461c8e9778aee9e2d33253f0d43cf154",
-    "web/dist/build.json": "c1ce982e1c671a4d3a1b53277466404e0234f9b318a32caf7f592001e7fa9e66",
-    "web/dist/index.html": "ed89e38cbf0b0720a9ede14a6fede7398ff0cfc2dc31414a8658d84c9fce5e94",
+    "web/dist/build.json": "ed63a9871ae8fd99255e1e2fa7951aaf1c7152fbd77977c8479e8f36d565ba61",
+    "web/dist/index.html": "2be3eca4d532cde5371ba0aad6cda8f681556ba7005af10b89aaae6daa718f9d",
     "web/dist/manifest.webmanifest": "a90249e31469bead16b0878d9af1ae680b54bc36c2e59d0cb74c5f3a179ddcf8",
     "web/dist/offline.html": "6a8c2fef52922ffa9ad43ef9fba16a3c9ab9af42e757568ed4e7c0b103b08e32",
-    "web/dist/sw.js": "e9831b1815353ff0465bb50edba67667c91378c44fc0a14db2cfbd3a693c6e2a"
+    "web/dist/sw.js": "b35731456dde30f7d3c8f3532e4e6e70a84605264bba7d4df23ffd5c94f0074b"
   },
   "evidence": {
     "qa/implementation/LOCALHOST_TEST_REPORT.md": "9ace7f2486811ea00a5d874e03d6a0932ccbdc7c8f5b84c0ae65bfb8210d9456",
-    "qa/implementation/REPORT.md": "3a5b01d34e9f801010d826dccc80783a86d086196e06dffa5d88aaa91390aea6",
+    "qa/implementation/REPORT.md": "35cf866489dbfb548e70b44156b5ab381beb7efdc7db2adb304938a154f0e3ff",
     "qa/implementation/backup-tests.txt": "ce3c66c2fcf51d0d62979592893acf93fdcb6919c3ac84576712565ff55f54a7",
     "qa/implementation/blocked-container-results.json": "349a0cfc2e16b7d9e964e0dd2af702077000f33923acf30056e8091cf9d2cf67",
     "qa/implementation/blocked-pilot-cleanup.json": "f61a3ccebb3a73bd4a18f66e820ac1fbe2a07aae5a0dce1625748fedfaef638e",
@@ -347,7 +357,11 @@
     "qa/implementation/screenshots/protocol-fixture-mobile.png": "d15ecfd384327f5a802044235d08769a729c3d4df37a998bd33cfec2c90f02ba",
     "qa/implementation/vnc-security-results.json": "774bf48d68cdc4cd71504cfeeb781ec1ed24b47db1a1349015630b36f3339831",
     "qa/implementation/tunnel-supervision-recovery.json": "fa6861d75017954911ff0461e46a06b18e90384162ba12e724da3e459492965a",
-    "qa/implementation/tunnel-supervision-live-checks.json": "cc0f5bda68910e5160f51ae0159cb55e4ffedf3b1ce51e27b2edb1b49442a506"
+    "qa/implementation/tunnel-supervision-live-checks.json": "cc0f5bda68910e5160f51ae0159cb55e4ffedf3b1ce51e27b2edb1b49442a506",
+    "qa/implementation/manifest-browser-results.json": "b163f753ca34242b929304694ea24c8bcb46e1293518b0070305b498e85dbbcd",
+    "qa/implementation/manifest-image-trivy.json": "aa82e52551b883a61949125acd5b50517e914a35c7ea25640aa05ff16dd304e3",
+    "qa/implementation/manifest-live-checks.json": "59c155678848b77d76115ba43813a85c95accf595e23062229dc9db80b64dea4",
+    "qa/implementation/manifest-deployment.json": "8d8813dc29226cc7f0cc44f63f30fa1abb1acc8ea52ce7d633a97f35658f14e5"
   },
   "localMacTest": {
     "authorization": "BOUNDED_LOCALHOST_CURRENT_MAC",
@@ -411,15 +425,18 @@
     "publicPreMigration": 4,
     "loginChromium": 6,
     "loginProof": "qa/implementation/login-browser-results.json",
-    "deploymentProof": "qa/implementation/login-return-deployment.json"
+    "deploymentProof": "qa/implementation/manifest-deployment.json",
+    "manifestChromium": 8,
+    "manifestProof": "qa/implementation/manifest-browser-results.json",
+    "manifestOriginPublicNegative": 10
   },
   "currentOwnerSetup": {
     "desktopPolicy": "OWNER_SETUP",
     "trustLifetimeDays": 365,
-    "sourceCommit": "38b68354249cde5f79cc725cb8768fce227683b6",
+    "sourceCommit": "4deb5fc3d7262ed6a8de813c4fc7a7c33d0b95ed",
     "accessMigration": "PENDING_EXISTING_ACTION_TIME_CONFIRMATION",
-    "proof": "qa/implementation/login-return-deployment.json",
-    "liveChecks": "qa/implementation/login-return-live-checks.json",
+    "proof": "qa/implementation/manifest-deployment.json",
+    "liveChecks": "qa/implementation/manifest-live-checks.json",
     "realMac": false,
     "realAccessEnrollment": false
   },
@@ -433,6 +450,15 @@
     "processRecoveryVerified": true,
     "accessPolicyChanged": false,
     "realMac": false,
-    "sleepLogoutPreloginRebootVerified": false
+    "sleepLogoutPreloginRebootVerified": false,
+    "latestLiveProof": "qa/implementation/manifest-deployment.json"
+  },
+  "currentManifestDelivery": {
+    "productionCrossorigin": "use-credentials",
+    "browserProof": "qa/implementation/manifest-browser-results.json",
+    "cloudflareRumRuleId": "5b9cac04cdd544538f02f5f138e131fa",
+    "publicCredentialedManifestVerified": false,
+    "publicBeaconAbsenceVerified": false,
+    "realSafari": false
   }
 }

@@ -96,6 +96,8 @@ Rollback first isolates the owned route or restores a reviewed strict gateway/Ac
 
 Run `npm run test:login-browser` with the installed Playwright module and reviewed Chromium path (`RDG_PLAYWRIGHT_MODULE`, `RDG_TEST_CHROMIUM`). This launches private disposable loopback HTTPS origins and a test-classpath-only signed owner fixture, then removes its own processes and directory. The fixture cannot open a desktop. It checks provider POST/302 navigation, query cleanup, native same-origin enrollment and cookie attributes/lifetime, unauthorized HTML, and rejected foreign/opaque POSTs. A separately labelled synthetic null-Origin GET complements the natural browser return. It records only status, Origin categories and counts in `qa/implementation/login-browser-results.json`; no identity token, cookie, nonce, password or URL query values are recorded. Self-signed TLS is accepted only for these disposable fixtures. This proves Chromium fixture behavior, not real Access, Safari or Mac compatibility.
 
+The authenticated PWA manifest uses `crossorigin="use-credentials"` so the native browser fetch includes the existing HttpOnly login cookie. The [deployment runbook](../deployment/README.md#authenticated-pwa-assets-and-edge-script-injection) owns the hostname-specific beacon exclusion and regression procedure. [Eight current native Chromium cases](../qa/implementation/manifest-browser-results.json), including two manifest cases, supplement the historical six-case login receipt; they remain local fixtures, not real Access/Safari or desktop acceptance.
+
 ## Review sources
 
 - [Config and policy flags](../gateway/src/main/java/com/rdg/Config.java), [runtime wiring](../gateway/src/main/java/com/rdg/Main.java)
