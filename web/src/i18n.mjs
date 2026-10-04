@@ -1,5 +1,7 @@
 /** UI text only. Device labels, clipboard contents and diagnostic payloads stay untouched. */
 const entries = {
+  'workspace.controls': ['Remote controls', '远控工具'],
+  'workspace.controlsHelp': ['Opening controls pauses input. Close this panel and click the desktop to resume. Shift+Esc also pauses input.', '打开工具时会暂停输入。关闭面板后，点击桌面恢复控制；Shift+Esc 也可暂停输入。'],
   'app.title': ['Remote Desktop Gateway', '远程桌面网关'],
   'brand.label': ['Remote workspace', '远程工作空间'],
   'brand.homeLabel': ['Remote Desktop Gateway home', '远程桌面网关首页'],

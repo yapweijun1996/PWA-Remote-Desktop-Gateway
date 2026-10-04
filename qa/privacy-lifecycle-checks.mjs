@@ -1,3 +1,4 @@
+import {openWorkspaceControls,endWorkspace} from './workspace-controls-helper.mjs';
 /** Delayed synthetic responses on the local API/Guacamole fixture; no real private payloads. */
 export async function checkPrivacyLifecycle({page,base,check,pass}) {
   const origin=new URL(base).origin;
@@ -14,7 +15,7 @@ export async function checkPrivacyLifecycle({page,base,check,pass}) {
   };
   const diagnostics=async()=>{
     if(await page.locator('#workspace').isVisible()){
-      await page.locator('#moreBtn').click();await page.locator('#workspaceDiagnostics').click();
+      await openWorkspaceControls(page);await page.locator('#workspaceDiagnostics').click();
     }else await page.locator('#diagnosticsBtn').click();
     await page.locator('#diagnosticsDialog').waitFor({state:'visible'});
   };
@@ -40,7 +41,7 @@ export async function checkPrivacyLifecycle({page,base,check,pass}) {
       client.onclipboard({sendAck(){}},'text/plain');f.reader.ontext('VISIBLE_SYNTHETIC_CLIPBOARD_FIXTURE');f.reader.onend();
     });
     check(await page.locator('#remoteText').inputValue()==='VISIBLE_SYNTHETIC_CLIPBOARD_FIXTURE','PRIVACY_STREAM_FIXTURE_NOT_LIVE');
-    await page.locator('#clipboardBtn').click();await page.locator('#clipboardDialog').waitFor({state:'visible'});
+    await openWorkspaceControls(page);await page.locator('#clipboardBtn').click();await page.locator('#clipboardDialog').waitFor({state:'visible'});
     await page.locator('#localText').fill('SYNTHETIC_OUTGOING_FIXTURE');
     await page.locator('#sendText').click();await page.locator('#copyRemote').click();await page.locator('#readLocal').click();
     await page.waitForFunction(()=>globalThis.__rdgPrivacyFixture?.reads===1&&globalThis.__rdgPrivacyFixture?.writes===1&&globalThis.__rdgPrivacyFixture?.writer);
@@ -48,7 +49,7 @@ export async function checkPrivacyLifecycle({page,base,check,pass}) {
       const f=globalThis.__rdgPrivacyFixture,client=globalThis.__rdgConnectionFixture.clients.at(-1);
       client.onclipboard({sendAck(){}},'text/plain');f.reader.ontext('LATE_SYNTHETIC_STREAM_FIXTURE');f.pendingReader=f.reader;
     });
-    await page.locator('#clipboardDialog [data-close]').click();await page.locator('#end').click();await waitState('READY');
+    await page.locator('#clipboardDialog [data-close]').click();await endWorkspace(page);await waitState('READY');
     const cleared=await ensureCleared('PRIVACY_END_DID_NOT_CLEAR_CLIPBOARD');
     await page.evaluate(async()=>{globalThis.__rdgPrivacyFixture.readResolve('LATE_SYNTHETIC_LOCAL_FIXTURE');await new Promise(resolve=>setTimeout(resolve,0));});
     check(await ensureCleared('PRIVACY_LATE_LOCAL_READ_REPOPULATED')===cleared,'PRIVACY_LATE_LOCAL_READ_CHANGED_STATUS');
@@ -74,7 +75,7 @@ export async function checkPrivacyLifecycle({page,base,check,pass}) {
       try{
         await diagnostics();await Promise.race([reached,new Promise((resolve,reject)=>setTimeout(()=>reject(new Error('PRIVACY_DIAGNOSTICS_REQUEST_NOT_STARTED')),5000))]);
         await page.locator('#diagnosticsDialog [data-close]').click();
-        if(disconnect){await page.locator('#end').click();await waitState('READY');}
+        if(disconnect){await endWorkspace(page);await waitState('READY');}
         release();await page.waitForLoadState('networkidle');
         const text=await page.evaluate(()=>({diagnostics:document.getElementById('diagnostics').textContent,history:document.getElementById('history').textContent}));
         check(!text.diagnostics.includes(marker)&&!text.history.includes(marker),disconnect?'PRIVACY_LATE_DIAGNOSTICS_AFTER_END_RENDERED':'PRIVACY_LATE_DIAGNOSTICS_AFTER_CLOSE_RENDERED');

@@ -16,24 +16,29 @@
 <body>
 <header class="bar">
   <a class="brand" href="/" aria-label="Remote Desktop Gateway home" data-i18n-label="brand.homeLabel"><span class="brand-icon" aria-hidden="true">↗</span><span data-i18n="brand.label">Remote workspace</span></a>
-  <div class="workspace-identity viewer-only"><span class="brand-icon" aria-hidden="true">↗</span><div class="identity-copy"><strong id="workspaceName">Desktop</strong><span id="workspaceProfile">Mac · native</span></div></div>
-  <div class="connection-summary"><span id="status" role="status" aria-live="polite">STARTING</span><span id="inputStatus" class="viewer-only" role="status">Input paused</span></div>
-  <div class="workspace-actions viewer-only">
+<div id="launcherStatus">  <div id="connectionSummary" class="connection-summary"><span id="status" role="status" aria-live="polite">STARTING</span><span id="inputStatus" class="viewer-only" role="status">Input paused</span></div>
+</div><div id="launcherPreferences">  <button id="preferencesBtn" class="preferences-trigger" type="button" aria-label="Preferences" title="Preferences" aria-haspopup="dialog" aria-controls="preferencesDialog" data-i18n-label="actions.preferences" data-i18n-title="actions.preferences"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4l.8 3 2.8 1 2.5-.9 2 3.5-2.1 2.2v2.4l2.1 2.2-2 3.5-2.5-.9-2.8 1-.8 3h-4l-.8-3-2.8-1-2.5.9-2-3.5L4 13.2v-2.4L1.9 8.6l2-3.5 2.5.9 2.8-1z"/><circle cx="12" cy="12" r="3"/></svg><span class="preferences-label" data-i18n="actions.preferences">Preferences</span></button>
+</div>  <div id="launcherAccount"><button id="logout" hidden data-i18n="actions.logout">Sign out of node</button></div>
+</header>
+<button id="moreBtn" class="controls-trigger viewer-only" type="button" aria-label="Remote controls" title="Remote controls" aria-expanded="false" aria-haspopup="dialog" aria-controls="workspaceMenu" data-i18n-label="workspace.controls" data-i18n-title="workspace.controls"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/><path d="M20 5v14"/></svg></button>
+<dialog id="workspaceMenu" class="workspace-panel" aria-labelledby="workspacePanelTitle">
+<div class="dialog-heading"><div><h2 id="workspacePanelTitle" data-i18n="workspace.controls">Remote controls</h2>  <div class="workspace-identity"><span class="brand-icon" aria-hidden="true">↗</span><div class="identity-copy"><strong id="workspaceName">Desktop</strong><span id="workspaceProfile">Mac · native</span></div></div>
+</div><button id="closeWorkspacePanel" class="dialog-close" type="button" aria-label="Close" data-i18n-label="actions.close">×</button></div>
+<div class="workspace-panel-content"><div id="workspaceStatus"></div><p id="workspaceControlHint" data-i18n="workspace.controlsHelp">Opening controls pauses input. Close this panel and click the desktop to resume. Shift+Esc also pauses input.</p>  <div class="workspace-actions">
     <button id="keysBtn" aria-label="Remote keys" title="Remote keys" data-i18n-label="workspace.remoteKeys" data-i18n-title="workspace.remoteKeys"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h1m3 0h1m3 0h1m3 0h1M6 12h1m3 0h1m3 0h1m3 0h1M7 15h10"/></svg><span class="action-label" data-i18n="workspace.keys">Keys</span></button>
     <button id="clipboardBtn" aria-label="Text / Clipboard" title="Text / Clipboard" data-i18n-label="workspace.textClipboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H5v16h14V5h-4"/><rect x="9" y="2" width="6" height="5" rx="1"/></svg><span class="action-label" data-i18n="workspace.clipboard">Clipboard</span></button>
-    <button id="moreBtn" aria-label="More workspace options" title="More workspace options" aria-expanded="false" aria-controls="workspaceMenu" data-i18n-label="workspace.more" data-i18n-title="workspace.more"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+
     <button id="release" aria-label="Release all" title="Release all held keys and pause input" data-i18n-label="workspace.release" data-i18n-title="workspace.releaseTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10V4h6M4 4l7 7M20 14v6h-6m6 0-7-7"/></svg><span class="action-label" data-i18n="workspace.release">Release all</span></button>
-    <button id="end" class="danger" data-i18n="actions.end">End session</button>
+
   </div>
-  <button id="preferencesBtn" class="preferences-trigger" type="button" aria-label="Preferences" title="Preferences" aria-haspopup="dialog" aria-controls="preferencesDialog" data-i18n-label="actions.preferences" data-i18n-title="actions.preferences"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4l.8 3 2.8 1 2.5-.9 2 3.5-2.1 2.2v2.4l2.1 2.2-2 3.5-2.5-.9-2.8 1-.8 3h-4l-.8-3-2.8-1-2.5.9-2-3.5L4 13.2v-2.4L1.9 8.6l2-3.5 2.5.9 2.8-1z"/><circle cx="12" cy="12" r="3"/></svg><span class="preferences-label" data-i18n="actions.preferences">Preferences</span></button>
-  <div id="launcherAccount"><button id="logout" hidden data-i18n="actions.logout">Sign out of node</button></div>
-  <div id="workspaceMenu" class="workspace-menu" hidden aria-label="Workspace options" data-i18n-label="workspace.options">
     <label><span data-i18n="workspace.scale">Scale</span><select id="scale"><option value="fit" data-i18n="workspace.fit">Fit to window</option><option value="actual" data-i18n="workspace.actualSize">Actual size · 100%</option></select></label>
     <button id="fullscreen" data-i18n="workspace.fullscreen">Fullscreen</button><button id="pause" data-i18n="workspace.pause">Pause input</button>
     <div class="menu-divider"></div><button id="workspaceProfileBtn" data-i18n="fields.profile">Keyboard profile</button><button id="workspaceDiagnostics" data-i18n="actions.diagnostics">Diagnostics & session history</button><button id="workspaceTrustedDevices" hidden data-i18n="trusted.title">Trusted devices</button>
     <div class="menu-divider"></div><div id="workspaceAccount"></div>
-  </div>
-</header>
+<div class="menu-divider"></div><div id="workspacePreferences"></div><div id="workspaceUpdates"></div></div>
+<div class="workspace-panel-footer"><button id="end" class="danger" data-i18n="actions.end">End session</button></div>
+</dialog>
+
 <main id="launcher">
   <div class="intro"><p class="eyebrow" data-i18n="launch.eyebrow">PERSONAL REMOTE DESKTOP</p><h1 data-i18n="launch.title">Connect to your desktop</h1><p data-i18n="launch.subtitle">Choose your Mac, set your preferences, and open your workspace.</p></div>
   <div class="access-notice"><div id="notice" class="notice" role="status">Verifying access…</div><div class="access-actions"><button id="reauth" hidden data-i18n="actions.verify">Verify access again</button><button id="recoverConnection" type="button" hidden data-i18n="actions.recover">End this browser’s previous connection and retry</button></div></div>
@@ -55,7 +60,7 @@
   </div>
   <footer><div class="footer-actions"><button id="diagnosticsBtn" class="subtle" data-i18n="actions.diagnostics">Diagnostics & session history</button><button id="trustedDevicesBtn" class="subtle" type="button" hidden data-i18n="trusted.title">Trusted devices</button></div><div class="footer-meta"><span data-i18n="launch.offlineNotice">No offline remote control · no input replay</span><span id="versionLabel" class="version-label">Version loading…</span></div></footer>
 </main>
-<section id="workspace" hidden aria-label="Remote workspace" data-i18n-label="workspace.label"><p class="viewerHint" data-i18n="workspace.hint">Click desktop to control · Shift+Esc pauses · touch uses a trackpad</p><div id="surface" tabindex="0" role="application" aria-label="Remote desktop input. Shift Escape pauses input." data-i18n-label="workspace.surfaceLabel"></div></section>
+<section id="workspace" hidden aria-label="Remote workspace" data-i18n-label="workspace.label"><div id="surface" tabindex="0" role="application" aria-label="Remote desktop input. Shift Escape pauses input." data-i18n-label="workspace.surfaceLabel"></div></section>
 <dialog id="preferencesDialog" class="preferences-dialog" aria-labelledby="preferencesTitle">
   <div class="dialog-heading"><div><p class="eyebrow" data-i18n="brand.label">Remote workspace</p><h2 id="preferencesTitle" data-i18n="preferences.title">Preferences</h2></div><button class="dialog-close" type="button" data-close aria-label="Close" data-i18n-label="actions.close">×</button></div>
   <div class="preferences-content"><p data-i18n="preferences.help">Make this workspace feel at home on your device.</p>
@@ -69,6 +74,6 @@
 <dialog id="clipboardDialog"><h2 data-i18n="workspace.textClipboard">Text / Clipboard</h2><p data-i18n="clipboard.help">Remote Copy/Paste buttons act inside the Mac. Clipboard transfer is a separate explicit action. For local Chinese IME, compose here and send, then Remote Paste. Direct local IME is unverified.</p><label><span data-i18n="clipboard.localText">Local text to send</span><textarea id="localText" rows="4" maxlength="16384"></textarea></label><div class="actions"><button id="readLocal" data-i18n="clipboard.readLocal">Read local clipboard</button><button id="sendText" data-i18n="clipboard.send">Send to remote clipboard</button><button id="remotePaste" data-i18n="chords.paste">Remote Paste</button></div><label><span data-i18n="clipboard.remoteText">Received remote text</span><textarea id="remoteText" rows="4" readonly></textarea></label><button id="copyRemote" data-i18n="clipboard.copyRemote">Copy received text locally</button><p id="clipboardStatus" role="status">Clipboard off by default.</p><button data-close data-i18n="actions.close">Close</button></dialog>
 <dialog id="diagnosticsDialog"><h2 data-i18n="diagnostics.title">Diagnostics & history</h2><pre id="diagnostics"></pre><ol id="history"></ol><p data-i18n="diagnostics.accessibility">The desktop canvas has accessibility limits. The surrounding controls support keyboard focus and browser zoom.</p><button data-close data-i18n="actions.close">Close</button></dialog>
 <dialog id="trustedDevicesDialog" aria-labelledby="trustedDevicesTitle"><h2 id="trustedDevicesTitle" data-i18n="trusted.title">Trusted devices</h2><p data-i18n="trusted.help">Manage the browsers you have trusted for this gateway. Each entry shows its own expiry.</p><ul id="trustedDevicesList" class="trusted-devices"></ul><p id="trustedDevicesStatus" role="status" aria-live="polite"></p><button type="button" data-close data-i18n="actions.close">Close</button></dialog>
-<div id="updateBanner" class="update-banner" hidden role="status"><div class="update-copy"><strong id="updateVersion"></strong><span id="updateLabel">New version available. Updates wait until every node session ends.</span></div><button id="update">Update when idle</button></div><div id="loader" hidden role="status" aria-live="assertive">Updating…</div>
+<div id="launcherUpdates"><div id="updateBanner" class="update-banner" hidden role="status"><div class="update-copy"><strong id="updateVersion"></strong><span id="updateLabel">New version available. Updates wait until every node session ends.</span></div><button id="update">Update when idle</button></div></div><div id="loader" hidden role="status" aria-live="assertive">Updating…</div>
 </body>
 </html>

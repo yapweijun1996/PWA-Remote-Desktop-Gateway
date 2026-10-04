@@ -1,3 +1,5 @@
+import {release} from '../web/src/release.mjs';
+import {openWorkspaceControls} from './workspace-controls-helper.mjs';
 import {mkdir} from 'node:fs/promises';
 
 /** Local UI fixtures; neither generated screenshots nor installed mode prove real Mac/iOS acceptance. */
@@ -6,10 +8,10 @@ export async function checkPwaExperience({page,check,pass,connected=false}) {
   await mkdir('output/playwright',{recursive:true});
   if(!connected){
     check(await page.locator('#connect').isDisabled(),'PWA_CONSENT_NOT_REQUIRED_BY_UI');
-    check((await page.locator('#versionLabel').innerText()).includes('v1.1.0'),'PWA_CURRENT_VERSION_MISSING');
+    check((await page.locator('#versionLabel').innerText()).includes('v'+release.version),'PWA_CURRENT_VERSION_MISSING');
   }
   const initial=await page.evaluate(()=>({state:document.getElementById('status').dataset.state,canvas:document.querySelectorAll('#surface canvas').length,locale:document.documentElement.lang}));
-  await page.locator('#preferencesBtn').click();
+  await openWorkspaceControls(page);await page.locator('#preferencesBtn').click();
   await page.locator('#preferencesDialog').waitFor({state:'visible'});
   check(await page.locator('#themePreference').isVisible()&&await page.locator('#languagePreference').isVisible(),'PWA_PREFERENCES_NOT_VISIBLE');
   for(const theme of ['light','dark']){
@@ -35,7 +37,7 @@ export async function checkPwaExperience({page,check,pass,connected=false}) {
     await page.setViewportSize({width,height:850});
     const size=await page.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth}));
     check(size.width<=size.viewport+1,'PWA_CHINESE_HORIZONTAL_OVERFLOW_'+width);
-    await page.locator('#preferencesBtn').click();
+    await openWorkspaceControls(page);await page.locator('#preferencesBtn').click();
     const rect=await page.locator('#preferencesDialog').boundingBox();
     check(rect&&rect.x>=0&&rect.x+rect.width<=width+1,'PWA_DIALOG_OUTSIDE_VIEWPORT_'+width);
     await page.locator('#preferencesDialog .dialog-footer [data-close]').click();
@@ -46,11 +48,11 @@ export async function checkPwaExperience({page,check,pass,connected=false}) {
     await page.screenshot({path:'output/playwright/pwa-launcher-dark-zh.png',fullPage:true});
     await page.setViewportSize({width:390,height:850});
     await page.screenshot({path:'output/playwright/pwa-launcher-mobile-zh.png',fullPage:true});
-    await page.locator('#preferencesBtn').click();
+    await openWorkspaceControls(page);await page.locator('#preferencesBtn').click();
     await page.screenshot({path:'output/playwright/pwa-preferences-mobile-zh.png',fullPage:true});
     await page.keyboard.press('Escape');
     check(!await page.locator('#preferencesDialog').isVisible(),'PWA_PREFERENCES_ESCAPE_FAILED');
-    await page.locator('#preferencesBtn').click();await page.locator('#languagePreference').selectOption('en');await page.locator('#themePreference').selectOption('light');
+    await openWorkspaceControls(page);await page.locator('#preferencesBtn').click();await page.locator('#languagePreference').selectOption('en');await page.locator('#themePreference').selectOption('light');
     await page.locator('#preferencesDialog .dialog-footer [data-close]').click();await page.setViewportSize({width:1440,height:1000});
     await page.screenshot({path:'output/playwright/pwa-launcher-light-en.png',fullPage:true});
     await page.reload();
@@ -60,9 +62,10 @@ export async function checkPwaExperience({page,check,pass,connected=false}) {
     check(stored['rdg:theme']==='light'&&stored['rdg:locale']==='en','PWA_PREFERENCES_STORAGE_MISMATCH');
     record('Preferences persist only nonsecret theme/locale values and restore after reload');
   }else{
-    await page.locator('#preferencesBtn').click();await page.locator('#languagePreference').selectOption('en');await page.locator('#preferencesDialog .dialog-footer [data-close]').click();
+    await openWorkspaceControls(page);await page.locator('#preferencesBtn').click();await page.locator('#languagePreference').selectOption('en');await page.locator('#preferencesDialog .dialog-footer [data-close]').click();
     check(await page.locator('#workspace').isVisible()&&await page.locator('#surface canvas').count()===initial.canvas,'PWA_PREFERENCE_RESET_ENDED_DESKTOP');
     check(await page.locator('#status').innerText()==='CONNECTED','PWA_PREFERENCES_CHANGED_CONNECTION_STATE');
+    await page.locator('#closeWorkspacePanel').click();
     record('Theme and locale controls release input without terminating or recapturing the active fixture desktop');
   }
 }

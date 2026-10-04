@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 import {writeArtifact} from '../scripts/atomic-artifact.mjs';
+import {endWorkspace} from './workspace-controls-helper.mjs';
 import {checkWorkspaceUI} from './workspace-ui-checks.mjs';
 import {checkPwaExperience} from './pwa-experience-checks.mjs';
 import {checkPrivacyLifecycle} from './privacy-lifecycle-checks.mjs';
@@ -73,7 +74,7 @@ const server=http.createServer(async(request,response)=>{
     const key=pathname==='/'?'/index.html':pathname;
     if(!Object.hasOwn(assets,key)){response.writeHead(404);response.end();return;}
     let data=key===guacPath?fakeGuac:key===appPath&&priorApp?priorSource:await readFile('web/dist'+key);
-    if(key==='/index.html')data=String(data).replace('<body>','<body><aside aria-label="Test fixture">LOCAL SIMULATED CONNECTION FIXTURE — no real desktop or authentication</aside>');
+    if(key==='/index.html')data=String(data).replace('<body>','<body><aside aria-label="Test fixture" style="position:fixed;left:0;bottom:0;z-index:16;pointer-events:none;max-width:calc(100vw - 48px);background:#16343d;color:white;font:11px system-ui;padding:4px">LOCAL SIMULATED CONNECTION FIXTURE — no real desktop or authentication</aside>');
     response.writeHead(200,{'Content-Type':assets[key].type,'Cache-Control':'no-store'});response.end(data);
   }catch{totals.fixtureErrors++;respond(response,500,{code:'FIXTURE_REQUEST_REFUSED'});}
 });
@@ -110,7 +111,7 @@ try{
     if(sameAppActive){
       check(fixture.deletes.length===0,'RECOVERY_RAN_BEFORE_CLICK');await page.locator('#recoverConnection').click();await waitState(page,'CONNECTED');
       check(fixture.deletes.length===1&&fixture.deletes[0].onlyIntentField&&fixture.deletes[0].intentId===snapshot&&fixture.intentRequests===2,'RECOVERY_NOT_SNAPSHOT_SCOPED_THEN_RETRIED');
-      const owned=fixture.lease;await page.locator('#end').click();await wait(()=>fixture.deletes.length===2,'END_CLEANUP_MISSING');await waitState(page,'READY');
+      const owned=fixture.lease;await endWorkspace(page);await wait(()=>fixture.deletes.length===2,'END_CLEANUP_MISSING');await waitState(page,'READY');
       check(fixture.deletes[1].onlyIntentField&&fixture.deletes[1].intentId===owned&&fixture.lease===null,'END_NOT_OWN_INTENT_SCOPED');
     }
     pass(refusalStage+' '+refusalCode+' refusal preserves leases until explicit same-app snapshot recovery',{deletesBeforeClick:0,recoveryShown:sameAppActive,...(sameAppActive?{recoverySnapshotScoped:true,retryConnected:true,endScopedToOwnIntent:true}:{})});await context.close();
@@ -137,19 +138,19 @@ try{
     const before=fixture.deletes.length;await oldPage.evaluate(()=>globalThis.__rdgConnectionFixture.clients[0].savedFailure());await oldPage.evaluate(()=>new Promise(resolve=>setTimeout(resolve,100)));
     check(fixture.deletes.length===before,'STALE_TAB_FAILURE_SENT_NEW_CLEANUP');fixture.pendingDelete.reply();fixture.pendingDelete=null;fixture.holdDelete=false;await oldPage.waitForLoadState('networkidle');
     check(fixture.lease===newIntent&&await replacement.locator('#workspace').isVisible()&&await replacement.locator('#status').innerText()==='CONNECTED','OLD_CLEANUP_ENDED_REPLACEMENT');
-    await replacement.locator('#end').click();await wait(()=>fixture.deletes.length===2,'REPLACEMENT_END_MISSING');await waitState(replacement,'READY');
+    await endWorkspace(replacement);await wait(()=>fixture.deletes.length===2,'REPLACEMENT_END_MISSING');await waitState(replacement,'READY');
     check(fixture.deletes[1].onlyIntentField&&fixture.deletes[1].intentId===newIntent&&fixture.lease===null,'REPLACEMENT_END_NOT_SCOPED');
     pass('Delayed old scoped cleanup and a stale tab callback preserve a replacement simulated lease',{oldCleanupScoped:true,staleCallbackDeletes:0,replacementPreserved:true,realBackendLeaseIsolationTested:false});await context.close();
   }
   for(const denied of [false,true]){
     fixture=fresh();const context=await makeContext(),page=await context.newPage();await prepare(page);await open(page);await waitState(page,'CONNECTED');const oldIntent=fixture.lease;
     fixture.holdSession=true;fixture.sessionDenialExpected=denied;await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await wait(()=>fixture.pendingSession!==null,'OLD_VISIBILITY_STATUS_MISSING');
-    await page.locator('#end').click();await waitState(page,'READY');await wait(()=>fixture.deletes.length===1,'OLD_END_MISSING');
+    await endWorkspace(page);await waitState(page,'READY');await wait(()=>fixture.deletes.length===1,'OLD_END_MISSING');
     await open(page);await waitState(page,'CONNECTED');const replacementIntent=fixture.lease;
     check(replacementIntent!==oldIntent&&fixture.deletes[0].onlyIntentField&&fixture.deletes[0].intentId===oldIntent,'STATUS_REPLACEMENT_PRECONDITION_FAILED');
     fixture.pendingSession.reply(denied?401:200,denied?{code:'SESSION_EXPIRED'}:{activeDesktop:false});fixture.pendingSession=null;fixture.holdSession=false;await page.waitForLoadState('networkidle');
     check(fixture.deletes.length===1&&fixture.lease===replacementIntent&&await page.locator('#status').innerText()==='CONNECTED'&&await page.locator('#workspace').isVisible(),'LATE_OLD_STATUS_ENDED_REPLACEMENT');
-    await page.locator('#end').click();await waitState(page,'READY');await wait(()=>fixture.deletes.length===2,'STATUS_REPLACEMENT_END_MISSING');
+    await endWorkspace(page);await waitState(page,'READY');await wait(()=>fixture.deletes.length===2,'STATUS_REPLACEMENT_END_MISSING');
     check(fixture.deletes[1].onlyIntentField&&fixture.deletes[1].intentId===replacementIntent,'STATUS_REPLACEMENT_END_NOT_SCOPED');
     pass(denied?'Late old visibility status 401 is ignored after a replacement adapter':'Late old visibility activeDesktop:false is ignored after a replacement adapter',{syntheticVisibilityEvent:true,lateStatus:denied?401:200,replacementPreserved:true,staleStatusDeletes:0});await context.close();
   }
@@ -160,7 +161,7 @@ try{
     const replacement=await context.newPage();await prepare(replacement);await open(replacement);await waitState(replacement,'CONNECTED');const replacementIntent=fixture.lease;fixture.enforceBusy=true;
     fixture.pendingDelete.reply();fixture.pendingDelete=null;fixture.holdDelete=false;await waitState(oldPage,'CONTROL_BUSY');await oldPage.waitForLoadState('networkidle');
     check(snapshot==='R'.repeat(43)&&fixture.deletes.length===1&&fixture.deletes[0].onlyIntentField&&fixture.lease===replacementIntent&&await replacement.locator('#status').innerText()==='CONNECTED','DELAYED_RECOVERY_ENDED_REPLACEMENT');
-    await replacement.locator('#end').click();await waitState(replacement,'READY');await wait(()=>fixture.deletes.length===2,'RECOVERY_REPLACEMENT_END_MISSING');
+    await endWorkspace(replacement);await waitState(replacement,'READY');await wait(()=>fixture.deletes.length===2,'RECOVERY_REPLACEMENT_END_MISSING');
     pass('Delayed explicit recovery remains scoped to its status snapshot and preserves a replacement simulated lease',{recoverySnapshotScoped:true,replacementPreserved:true,unscopedDeletes:0});await context.close();
   }
   fixture=fresh();{

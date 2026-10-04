@@ -9,7 +9,7 @@ A small utility, not an enterprise monitoring console. Default screen: device na
 | Access login | Provider-hosted Cloudflare page | OTP/error/denied; not imitated by our app |
 | Devices | Target name/type, last checked time, open action | Unverified, checking, reachable, offline, permission denied |
 | Connection preparation | Selected target, control/view, keyboard profile | Verifying access, connecting, failed, cancelled |
-| Desktop workspace | Display, capture status, compact sticky toolbar | Connected, view only, input paused, reconnect required |
+| Desktop workspace | Display, capture status, full viewport display with an on-demand controls drawer | Connected, view only, input paused, reconnect required |
 | Keyboard drawer | Client platform, explicit profile, virtual keys, help | Alt→Command warning, keyboard lock unsupported/denied |
 | Clipboard panel | Explicit send/copy text actions and direction | Permission denied, too large, unsupported, cleared |
 | Session end | Reason and reconnect or return | User ended, idle, absolute expiry, revoked, network lost |
@@ -25,14 +25,16 @@ App preferences is available from the launcher and viewer. It provides System/Li
 Installation is offered only after a real `beforeinstallprompt`; installed status comes from standalone display or `appinstalled`. Safari receives its own installation instructions. Unsupported browsers receive an explanation, never a fake install action. Native platform acceptance remains required.
 
 ## Workspace geometry
-Desktop/tablet: single opaque top bar, display fills remaining viewport, side drawer overlay only when requested. Avoid persistent oversized sidebars. The viewer does not auto-hide its safety controls with scroll; this is a documented PWA smart-topbar exception. Mobile: safe-area-aware top bar, explicit touch mode, bottom key tray above the home indicator. Use `100dvh` with tested fallbacks rather than brittle full-height assumptions.
+Web release 1.1.1 uses the whole viewport for the connected desktop. The launcher header and inline viewer hint are hidden while connected. A fixed 44×56 CSS-pixel entry at the right edge opens Remote controls; it respects the right safe area and stays available in native fullscreen. This replaces the prior persistent safety header at the owner's explicit request. The viewer is still exempt from smart-hide-on-scroll; its only persistent overlay is the small controls entry.
 
-The production workspace uses one shared header: target and keyboard profile, connection/input status, Keys, Clipboard, More, Release all and End session. More contains scale, fullscreen, pause, keyboard profile, diagnostics, optional trusted browsers and node sign-out. Opening More pauses input; Escape returns focus to its trigger. Fullscreen includes the header so safety controls remain visible. Narrow screens use two compact rows and labelled icon buttons while End session keeps its text. The mobile bottom key tray remains a future layout enhancement; current virtual keys open in the existing accessible dialog.
+The native modal right drawer overlays the display without changing its size, fit or pointer geometry. Its heading/close action and End session footer stay fixed; only middle controls scroll. It holds target/profile, connection/input state, Keys, Clipboard, Release all, scale, fullscreen, pause, diagnostics, optional trusted devices, sign-out and App preferences. Themes/languages and capability-dependent disabled states are retained. Update notices move inside the drawer while connected, with a small entry indicator when an update needs attention, so they do not cover the desktop.
+
+Opening the drawer pauses and releases remote input. Enter/Space, Tab focus confinement, Escape, close and backdrop dismissal are supported. Closing returns focus to the local entry, never automatically to remote capture; click the desktop to resume. Nested configuration/clipboard/key dialogs retain the parent drawer, close independently and restore focus to their original control. End, sign-out, expiry and offline cleanup close all modal surfaces and restore launcher controls. Shift+Esc remains the independent pause/release escape while remote capture has focus. The desktop's original aspect ratio may still require letterboxing; full page refers to viewer space rather than stretching remote pixels.
 
 Provide fit-to-window and 100% display modes. Local scaling and remote resolution are distinct controls; disable remote resizing when not supported. Pointer coordinates must account for displayed scale/letterboxing exactly once. Do not zoom the entire UI to fit the desktop. Browser page zoom remains available outside the viewer.
 
 ## Keyboard safety UX
-Show the current mode next to the device, for example `Windows · Left Alt → Command`. Changing it pauses input and releases held keys. Include a warning that OS shortcuts may remain local. Display a small persistent `Input active` or `Click desktop to control` state, never capture document-wide.
+Show the current mode next to the device, for example `Windows · Left Alt → Command`. Changing it pauses input and releases held keys. Include a warning that OS shortcuts may remain local. Show input status in Remote controls. Its always-reachable entry and Shift+Esc pause path remain available; input is owned only by the focused remote surface.
 
 Always offer End session and Release all. Remote modifier buttons indicate latched state; opening a text box releases them. A dedicated remote app-switch button sends a remote combination; Alt+Tab on the physical keyboard is not guaranteed to do so. The keyboard tester is a development-only, local, ephemeral diagnostic; never attach key logging to the production audit stream.
 

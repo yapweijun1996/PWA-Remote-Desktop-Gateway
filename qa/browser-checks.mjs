@@ -1,3 +1,5 @@
+import {release} from '../web/src/release.mjs';
+import {openWorkspaceControls,endWorkspace} from './workspace-controls-helper.mjs';
 /** Production UI against disposable signed-identity/Guacamole peers, never real-Mac evidence. */
 import {createRequire} from 'node:module';import {writeArtifact} from '../scripts/atomic-artifact.mjs';import {readFile,writeFile,mkdir} from 'node:fs/promises';
 const require=createRequire(import.meta.url);
@@ -247,19 +249,20 @@ try{
   check(await page.getByText('Gateway reachable — desktop not tested',{exact:true}).isVisible(),'Truthful readiness');
   check(!await page.locator('#updateBanner').isVisible(),'Initial install must not produce update prompt');pass('Signed bootstrap, truthful readiness and clean first worker activation');
   await page.screenshot({path:'output/playwright/production-fixture-desktop.png',fullPage:true});
-  await connect(page);for(const viewport of [{width:390,height:850},{width:850,height:390},{width:862,height:844},{width:1440,height:1000}]){await page.setViewportSize(viewport);check(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'Workspace fits viewport');check(await page.getByRole('button',{name:'End session',exact:true}).isVisible(),'Visible safety control');}pass('Workspace fits mobile portrait/landscape and desktop without page overflow');await page.locator('.capture').focus();await page.keyboard.down('Control');
-  await page.getByRole('button',{name:'Release all',exact:true}).click();await page.keyboard.up('Control');
+  await connect(page);for(const viewport of [{width:390,height:850},{width:850,height:390},{width:862,height:844},{width:1440,height:1000}]){await page.setViewportSize(viewport);check(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'Workspace fits viewport');check(await page.locator('#moreBtn').isVisible(),'Visible controls entry');}pass('Workspace fits mobile portrait/landscape and desktop without page overflow');await page.locator('.capture').focus();await page.keyboard.down('Control');
+  await page.locator('#moreBtn').focus();check((await page.locator('#inputStatus').innerText()).includes('paused'),'Held Control is released when focus leaves the remote surface');await page.keyboard.up('Control');
+  await openWorkspaceControls(page);await page.getByRole('button',{name:'Release all',exact:true}).click();
   check((await page.locator('#inputStatus').innerText()).includes('paused'),'Focus release');pass('Official Guacamole display and browser focus-loss input pause');
   const second=await context.newPage();await second.goto(url);await waitState(second,'READY');
   check(await page.locator('#workspace').isVisible(),'Second tab preserves desktop');pass('Second tab bootstrap preserves existing shared node session');
-  await writeFile(workerPath,originalWorker.replace('"version":"1.1.0"','"version":"1.1.1"')+'\n/* Disposable browser update exercise. */\n');
+  await writeFile(workerPath,originalWorker.replace(JSON.stringify(release.version),JSON.stringify(release.version+'-fixture'))+'\n/* Disposable browser update exercise. */\n');
   await second.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
-  await second.waitForFunction(async()=>Boolean((await navigator.serviceWorker.getRegistration())?.waiting));await second.waitForFunction(()=>document.getElementById('updateVersion').textContent.includes('1.1.1'));check((await second.locator('#update').innerText()).includes('1.1.1'),'Waiting worker supplies actual target version');
+  await second.waitForFunction(async()=>Boolean((await navigator.serviceWorker.getRegistration())?.waiting));await second.waitForFunction(version=>document.getElementById('updateVersion').textContent.includes(version),release.version+'-fixture');check((await second.locator('#update').innerText()).includes(release.version+'-fixture'),'Waiting worker supplies actual target version');
   await second.locator('#update').click();await second.waitForFunction(()=>document.getElementById('updateBanner').dataset.state==='UPDATE_DEFERRED');
   check(await page.locator('#workspace').isVisible(),'Active tab must remain connected');
   const safe=await second.evaluate(async()=>{const b=await fetch('/api/session/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(r=>r.json());const r=await fetch('/api/update-boundary',{method:'POST',headers:{'Content-Type':'application/json','X-RDG-CSRF':b.csrfToken},body:'{}'});return r.status;});
   check(safe===409,'Server reservation rejects suspended/other desktop');pass('Waiting-worker update defers for another tab and authoritative server lease');
-  await page.getByRole('button',{name:'End session',exact:true}).click();await waitState(page,'READY');
+  await endWorkspace(page);await waitState(page,'READY');
   check(await page.locator('#surface canvas').count()===0,'Display cleared on disconnect');pass('Disconnect clears display and clipboard state');
   await second.locator('#update').click();await second.waitForEvent('load');await waitState(second,'READY');
   check(await page.locator('#status').innerText()==='READY','Other tab does not auto reload');pass('Explicit idle update activates, reloads accepting tab and preserves other tab');
