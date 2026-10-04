@@ -5,6 +5,8 @@ import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 import {writeArtifact} from '../scripts/atomic-artifact.mjs';
 import {checkWorkspaceUI} from './workspace-ui-checks.mjs';
+import {checkPwaExperience} from './pwa-experience-checks.mjs';
+import {checkPrivacyLifecycle} from './privacy-lifecycle-checks.mjs';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.RDG_PLAYWRIGHT_MODULE??'playwright');
 const scope='LOCAL_BROWSER_CONNECTION_LIFECYCLE_FIXTURE',priorApp=process.env.RDG_CONNECT_BROWSER_PRIOR_APP==='true';
 const baselineSourceCommit='4deb5fc3d7262ed6a8de813c4fc7a7c33d0b95ed';
@@ -91,7 +93,7 @@ const makeContext=async()=>{
     });page.on('websocket',()=>totals.webSockets++);
   });return context;
 };
-const prepare=async(page)=>{await page.goto(origin);await waitState(page,'READY');await page.getByRole('button',{name:'Prepare connection',exact:true}).click();await page.getByLabel('I agree to control or view this shared desktop.').check();};
+const prepare=async(page)=>{await page.goto(origin);await waitState(page,'READY');if(await page.getByRole('button',{name:'Prepare connection',exact:true}).isVisible())await page.getByRole('button',{name:'Prepare connection',exact:true}).click();await page.getByLabel('I agree to control or view this shared desktop.').check();};
 const open=page=>page.getByRole('button',{name:'Open desktop',exact:true}).click();
 const cleanup=async()=>{if(closed)return;closed=true;if(fixture?.pendingSession)fixture.pendingSession.reply(200,{activeDesktop:false});if(fixture?.pendingIntent)fixture.pendingIntent.reply();if(fixture?.pendingDelete)fixture.pendingDelete.reply();if(browser)await browser.close().catch(()=>{});server.closeAllConnections();await new Promise(resolve=>server.close(resolve));};
 const deadline=setTimeout(()=>{console.error(JSON.stringify({status:'FAIL',scope,reason:'CONNECT_BROWSER_DEADLINE',results,totals}));void cleanup().finally(()=>process.exit(1));},120000);
@@ -163,8 +165,10 @@ try{
   }
   fixture=fresh();{
     const context=await makeContext(),page=await context.newPage();await prepare(page);await open(page);await waitState(page,'CONNECTED');
-    await checkWorkspaceUI({page,check,pass});await context.close();
+    await checkPwaExperience({page,check,pass,connected:true});await checkWorkspaceUI({page,check,pass});await context.close();
   }
+  fixture=fresh();{const context=await makeContext(),page=await context.newPage();await page.goto(origin);await waitState(page,'READY');await checkPwaExperience({page,check,pass});await context.close();}
+  fixture=fresh();{const context=await makeContext(),page=await context.newPage();await page.goto(origin);await waitState(page,'READY');await checkPrivacyLifecycle({page,base:origin,check,pass});await context.close();}
   check(totals.pageErrors===0&&totals.unexpectedConsoleErrors===0&&totals.fixtureErrors===0&&totals.webSockets===0&&totals.unscopedDeletes===0,'UNEXPECTED_FIXTURE_ERROR');
   check(!priorApp,'PRIOR_APP_UNEXPECTEDLY_PASSED');
   const evidence={status:'PASS',scope,browser:browser.version(),build,fixture:true,simulatedAPI:true,simulatedGuacamole:true,recoveryDesign:'SCOPED_SESSION_STATUS_SNAPSHOT',priorGlobalRecoveryDesign:'ABANDONED_BEFORE_DEPLOYMENT',realAccess:false,realMac:false,realSafari:false,realBackendLeaseIsolationTested:false,inputOrClipboardPayloadTested:false,results,totals};

@@ -14,6 +14,13 @@ Multiple tabs make this nontrivial: coordinate same-origin clients and server-kn
 
 Version caches and worker bytes by build. Keep old assets required by active clients until the accepted transition; clean obsolete caches after a safe activation. Provide update-failed state and retry; do not leave an overlay forever. Register no worker in the included offline UI prototype.
 
+## Versioned update experience (web release 1.1.0)
+`web/src/release.mjs` owns the web release version. `scripts/build-web.mjs` derives a reproducible 16-hex build identity from source bytes and injects it into the application, worker and generic `/build.json`. The launcher and preferences show the current version/build. A waiting worker reports the actual target version/build over MessageChannel; older workers without this interface still show a generic explicit update action rather than invented target metadata. Build metadata is no-store and outside the offline cache. The Java package version remains independent.
+
+Check for updates uses worker registration discovery and a bounded wait. Checking, available, up-to-date, deferred, updating, reloading, failed and unavailable states are visible. An active connection keeps its own status. Activation requires zero server-known active desktops, successful local cleanup, and the existing server reservation from the waiting worker. Duplicate update/check requests are guarded. Discovery cannot overwrite an in-progress loader. Another or suspended tab with a changed controller receives an explicit refresh action and never silently reloads. A pending connection invalidated during preparation is scoped-cancelled; uncertain cleanup prevents activation.
+
+The generic offline shell has the same appearance/language controls and cached self-hosted assets, with no session, device list, desktop or clipboard. Dialog/request generation and session epoch guards discard late clipboard/diagnostic callbacks after closing, disconnecting or losing authorization; detached translation nodes are pruned when private lists clear.
+
 ## Install and mobile contract
 Manifest: stable application id/name, start URL/scope, standalone display, intentional opaque theme/background, icons including appropriate maskable artwork. Production requires HTTPS. Light/dark themes must use matching solid safe-area/system-chrome surfaces. `viewport-fit=cover`, safe-area inset CSS, mobile form font at least 16px and adequate touch targets. Do not disable browser zoom globally.
 

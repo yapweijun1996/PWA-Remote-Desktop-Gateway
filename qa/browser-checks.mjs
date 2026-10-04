@@ -13,7 +13,7 @@ page.on('pageerror',e=>errors.push(e.message));
 const pass=(name,level='LOCAL_PROTOCOL_FIXTURE')=>results.push({test:name,status:'PASS',level});
 const check=(condition,name)=>{if(!condition)throw new Error(name);};
 async function waitState(p,value){await p.waitForFunction(value=>document.getElementById('status')?.textContent===value,value);}
-async function connect(p){await p.getByRole('button',{name:'Prepare connection',exact:true}).click();await p.getByLabel('I agree to control or view this shared desktop.').check();await p.getByRole('button',{name:'Open desktop',exact:true}).click();await waitState(p,'CONNECTED');}
+async function connect(p){if(await p.getByRole('button',{name:'Prepare connection',exact:true}).isVisible())await p.getByRole('button',{name:'Prepare connection',exact:true}).click();await p.getByLabel('I agree to control or view this shared desktop.').check();await p.getByRole('button',{name:'Open desktop',exact:true}).click();await waitState(p,'CONNECTED');}
 async function checkBlockedDesktopUI(){
   // Only UI response fixtures change; bootstrap still uses the signed loopback gateway.
   const blockedContext=await browser.newContext({ignoreHTTPSErrors:true,serviceWorkers:'block'});
@@ -179,7 +179,7 @@ async function checkOwnerSetupUI(){
     check(await noPasswordStorage()&&credentialRequests===5&&credentialShapeValid&&credentialCsrfPresent,'UI credential requests keep expected JSON and CSRF shape without password storage');
     releaseCredentialResponse();await waitState(uiPage,'READY');
     check(!await uiPage.locator('#credentialSetup').isVisible()&&await uiPage.locator('#prepare').isVisible(),'Configured OWNER_SETUP directly displays connection settings');
-    check(!await uiPage.getByRole('button',{name:'Prepare connection',exact:true}).isDisabled(),'Configured desktop preparation enabled');
+    check(!await uiPage.locator('#profile').isDisabled(),'Configured desktop preparation enabled');
     check(await uiPage.locator('#mode option').evaluateAll(options=>options.map(option=>option.value).join(','))==='control,view','Control and view options available together');
     check(await uiPage.getByLabel('Enable explicit plain text clipboard for this connection (up to 16 KiB).').isVisible()&&!await uiPage.getByLabel('I agree to control or view this shared desktop.').isChecked(),'Clipboard available while shared-desktop consent remains explicit');
     check((await uiPage.locator('#profileHelp').innerText()).includes('Standard profile — shortcuts awaiting your test.'),'Unverified standard keyboard profile remains truthful');
@@ -198,7 +198,7 @@ async function checkOwnerSetupUI(){
     check(!expireSessionOnce&&desktopCleanupCalls===0&&await uiPage.locator('#reauth').isVisible(),'Expiry without a tab-owned intent stops locally without ending another tab and offers retry');
     await uiPage.locator('#reauth').click();await waitState(uiPage,'READY');await uiPage.waitForLoadState('networkidle');
     check(bootstrapRequests===bootstrapBeforeExpiry+1&&loginNavigations===0&&uiPage.url()===new URL('/',url).href,'Still-trusted UI uses a fresh application bootstrap without returning to login');
-    check(await uiPage.locator('#prepare').isVisible()&&!await uiPage.getByRole('button',{name:'Prepare connection',exact:true}).isDisabled(),'Fresh application session restores owner desktop preparation');
+    check(await uiPage.locator('#prepare').isVisible()&&!await uiPage.locator('#profile').isDisabled(),'Fresh application session restores owner desktop preparation');
     check(!await uiPage.locator('#workspace').isVisible()&&await uiPage.locator('#surface canvas').count()===0&&connectIntents===0&&webSockets===0,'Expired desktop is never automatically reconnected');
     pass('OWNER_SETUP short session expiry bootstraps again with valid trust without login or automatic desktop reconnect','LOCAL_UI_ROUTE_FIXTURE');
     await uiPage.getByRole('button',{name:'Trusted devices',exact:true}).click();
@@ -252,16 +252,16 @@ try{
   check((await page.locator('#inputStatus').innerText()).includes('paused'),'Focus release');pass('Official Guacamole display and browser focus-loss input pause');
   const second=await context.newPage();await second.goto(url);await waitState(second,'READY');
   check(await page.locator('#workspace').isVisible(),'Second tab preserves desktop');pass('Second tab bootstrap preserves existing shared node session');
-  await writeFile(workerPath,originalWorker+'\n/* Disposable browser update exercise. */\n');
+  await writeFile(workerPath,originalWorker.replace('"version":"1.1.0"','"version":"1.1.1"')+'\n/* Disposable browser update exercise. */\n');
   await second.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
-  await second.waitForFunction(async()=>Boolean((await navigator.serviceWorker.getRegistration())?.waiting));
-  await second.getByRole('button',{name:'Update when idle',exact:true}).click();await waitState(second,'UPDATE_DEFERRED');
+  await second.waitForFunction(async()=>Boolean((await navigator.serviceWorker.getRegistration())?.waiting));await second.waitForFunction(()=>document.getElementById('updateVersion').textContent.includes('1.1.1'));check((await second.locator('#update').innerText()).includes('1.1.1'),'Waiting worker supplies actual target version');
+  await second.locator('#update').click();await second.waitForFunction(()=>document.getElementById('updateBanner').dataset.state==='UPDATE_DEFERRED');
   check(await page.locator('#workspace').isVisible(),'Active tab must remain connected');
   const safe=await second.evaluate(async()=>{const b=await fetch('/api/session/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(r=>r.json());const r=await fetch('/api/update-boundary',{method:'POST',headers:{'Content-Type':'application/json','X-RDG-CSRF':b.csrfToken},body:'{}'});return r.status;});
   check(safe===409,'Server reservation rejects suspended/other desktop');pass('Waiting-worker update defers for another tab and authoritative server lease');
   await page.getByRole('button',{name:'End session',exact:true}).click();await waitState(page,'READY');
   check(await page.locator('#surface canvas').count()===0,'Display cleared on disconnect');pass('Disconnect clears display and clipboard state');
-  await second.getByRole('button',{name:'Update when idle',exact:true}).click();await second.waitForEvent('load');await waitState(second,'READY');
+  await second.locator('#update').click();await second.waitForEvent('load');await waitState(second,'READY');
   check(await page.locator('#status').innerText()==='READY','Other tab does not auto reload');pass('Explicit idle update activates, reloads accepting tab and preserves other tab');
   for(const width of [390,430,768,1024,1440]){
     await second.setViewportSize({width,height:850});await second.evaluate(()=>document.fonts.ready);

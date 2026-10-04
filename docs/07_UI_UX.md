@@ -1,7 +1,7 @@
 # 07 · UI/UX specification
 
 ## Design intent
-A small utility, not an enterprise monitoring console. Default screen: device name, truthful status, one Open desktop action, keyboard mode and a clear End session action. Hide diagnostics behind a drawer. Use plain English labels with optional Mandarin descriptions. The offline prototype is a design reference and has **no remote-control connection**.
+A small utility, not an enterprise monitoring console. Default screen: device name, truthful status, one Open desktop action, keyboard mode and a clear End session action. Hide diagnostics behind a drawer. Use complete English and Simplified Chinese catalogs, selected through App preferences. Device labels, clipboard text and diagnostic codes remain source data. The offline prototype is a design reference and has **no remote-control connection**.
 
 ## Screens
 | Screen | Required content | Important states |
@@ -16,6 +16,13 @@ A small utility, not an enterprise monitoring console. Default screen: device na
 | Settings/diagnostics | Build/version, nonsecret compatibility facts | No credentials shown, no global dangerous controls |
 
 Device reachability is not the same as a working desktop. Show `Gateway reachable — desktop not tested` when only health is known. Do not label a bookmarked cross-origin node Online based on a locally configured string. Distinguish permission denial from offline.
+
+## Launcher and preferences
+The enabled local target is selected automatically in one compact device/connection panel. Shared-desktop consent is unchecked on preparation and remains required before Open desktop. Diagnostics and trusted-device management remain secondary actions. Truthful readiness wording is retained; no fixture data is included in the deployed launcher.
+
+App preferences is available from the launcher and viewer. It provides System/Light/Dark appearance, English/Simplified Chinese language, capability-aware installation help and explicit update checking. Only `rdg:theme` and `rdg:locale` are added to localStorage; existing keyboard-profile storage is retained. Defaults follow browser language and system appearance. System appearance responds to OS changes; explicit themes also update opaque browser chrome. Language changes update titles, status, accessible labels and dates without translating device names, clipboard text or diagnostic event/reason codes. Opening preferences or changing these controls releases remote input without ending the session.
+
+Installation is offered only after a real `beforeinstallprompt`; installed status comes from standalone display or `appinstalled`. Safari receives its own installation instructions. Unsupported browsers receive an explanation, never a fake install action. Native platform acceptance remains required.
 
 ## Workspace geometry
 Desktop/tablet: single opaque top bar, display fills remaining viewport, side drawer overlay only when requested. Avoid persistent oversized sidebars. The viewer does not auto-hide its safety controls with scroll; this is a documented PWA smart-topbar exception. Mobile: safe-area-aware top bar, explicit touch mode, bottom key tray above the home indicator. Use `100dvh` with tested fallbacks rather than brittle full-height assumptions.

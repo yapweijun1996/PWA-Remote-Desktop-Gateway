@@ -1,5 +1,6 @@
 /* Generic immutable assets only; never store APIs, identity, frames or clipboard. */
 const BUILD='__BUILD__',CACHE=`rdg-static-${BUILD}`;
+const RELEASE=__RELEASE__;
 const SAFE=__SAFE_ASSETS__;
 function safeResponse(request,response){
   const url=new URL(request.url);
@@ -32,6 +33,11 @@ self.addEventListener('fetch',event=>{
   })());
 });
 self.addEventListener('message',event=>{
+  if(event.data?.type==='GET_VERSION'){
+    const source=event.source,port=event.ports[0];
+    if(port && source?.url && new URL(source.url).origin===self.location.origin)port.postMessage(RELEASE);
+    return;
+  }
   if(event.data?.type!=='ACCEPT_UPDATE')return;
   event.waitUntil((async()=>{
     const port=event.ports[0];

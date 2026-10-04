@@ -1,0 +1,328 @@
+/** UI text only. Device labels, clipboard contents and diagnostic payloads stay untouched. */
+const entries = {
+  'app.title': ['Remote Desktop Gateway', '远程桌面网关'],
+  'brand.label': ['Remote workspace', '远程工作空间'],
+  'brand.homeLabel': ['Remote Desktop Gateway home', '远程桌面网关首页'],
+  'launch.eyebrow': ['PERSONAL REMOTE DESKTOP', '个人远程桌面'],
+  'launch.title': ['Connect to your desktop', '连接你的桌面'],
+  'launch.subtitle': ['Choose your Mac, set your preferences, and open your workspace.', '选择你的 Mac，调整偏好，然后打开工作空间。'],
+  'launch.devices': ['Configured devices', '已配置的设备'],
+  'launch.connection': ['Connection settings', '连接设置'],
+  'launch.sharedNotice': ['The remote display is shared with people at the Mac. Email OTP does not unlock a locked macOS account.', '远程画面与 Mac 前的用户共享。邮件验证码不会解锁已锁定的 macOS 账户。'],
+  'launch.consent': ['I agree to control or view this shared desktop.', '我同意控制或查看此共享桌面。'],
+  'launch.clipboardConsent': ['Enable explicit plain text clipboard for this connection (up to 16 KiB).', '为本次连接启用手动纯文本剪贴板传输（最多 16 KiB）。'],
+  'launch.offlineNotice': ['No offline remote control · no input replay', '离线时无法远程控制 · 不重放输入'],
+  'launch.node': ['Private gateway', '专属网关'],
+  'launch.chooseDevice': ['Choose a desktop', '选择桌面'],
+  'launch.settings': ['Connection preferences', '连接偏好'],
+  'launch.security': ['Shared desktop consent', '共享桌面授权'],
+  'launch.pwa': ['App preferences', '应用偏好'],
+  'actions.connect': ['Open desktop', '打开桌面'],
+  'actions.prepare': ['Prepare connection', '准备连接'],
+  'actions.verify': ['Verify access again', '重新验证访问'],
+  'actions.recover': ['End this browser’s previous connection and retry', '结束此浏览器之前的连接并重试'],
+  'actions.changeCredential': ['Change desktop password', '更改桌面密码'],
+  'actions.saveCredential': ['Save desktop password', '保存桌面密码'],
+  'actions.cancel': ['Cancel', '取消'],
+  'actions.close': ['Close', '关闭'],
+  'actions.logout': ['Sign out of node', '退出此节点'],
+  'actions.end': ['End session', '结束会话'],
+  'actions.preferences': ['App preferences', '应用偏好'],
+  'actions.diagnostics': ['Diagnostics & session history', '诊断与会话历史'],
+  'actions.trustedDevices': ['Trusted devices', '可信设备'],
+  'actions.openNode': ['Open independent node', '打开独立节点'],
+  'fields.profile': ['Keyboard profile', '键盘配置'],
+  'fields.profileShort': ['Profile', '配置'],
+  'fields.mode': ['Session mode', '会话模式'],
+  'fields.password': ['Screen Sharing VNC password', '屏幕共享 VNC 密码'],
+  'profile.macNative': ['Mac · native', 'Mac · 原生'],
+  'profile.windowsNative': ['Windows · native', 'Windows · 原生'],
+  'profile.windowsAltCommand': ['Windows · Left Alt → Command', 'Windows · 左 Alt → Command'],
+  'profile.standard': ['Standard profile — shortcuts awaiting your test. ', '标准配置 — 快捷键待你验证。'],
+  'profile.nativeHelp': ['Control remains Control. Browser and OS shortcuts may stay local; use remote buttons.', 'Control 保持原有语义。浏览器和系统快捷键可能在本机执行；请使用远程按键。'],
+  'profile.altHelp': ['Opt-in: only physical Left Alt becomes Command. Right Alt / AltGr and Control stay native.', '可选：仅将实体左 Alt 映射为 Command。右 Alt / AltGr 和 Control 保持原有语义。'],
+  'mode.control': ['Control desktop', '控制桌面'],
+  'mode.view': ['View only', '仅查看'],
+  'credential.setupTitle': ['Set up desktop access', '设置桌面访问'],
+  'credential.changeTitle': ['Change desktop password', '更改桌面密码'],
+  'credential.help': ['Enter this Mac’s Screen Sharing VNC password once. It is stored on the gateway, never in browser storage. It does not unlock a locked macOS account.', '输入一次此 Mac 的屏幕共享 VNC 密码。密码保存在网关，不保存在浏览器中，也不会解锁已锁定的 macOS 账户。'],
+  'credential.invalid': ['Enter a valid Screen Sharing VNC password.', '请输入有效的屏幕共享 VNC 密码。'],
+  'credential.saving': ['Saving desktop password…', '正在保存桌面密码…'],
+  'credential.busy': ['End the active desktop session before changing its password.', '更改密码前请先结束当前桌面会话。'],
+  'credential.storeUnavailable': ['The desktop password could not be saved. Try again.', '无法保存桌面密码。请重试。'],
+  'credential.storeFailed': ['The desktop password could not be saved. Verify access and try again.', '无法保存桌面密码。请验证访问后重试。'],
+  'device.passwordNeeded': ['Password needed — desktop not connected', '需要密码 — 桌面尚未连接'],
+  'device.blocked': ['BLOCKED — desktop connection not verified', '受阻 — 桌面连接尚未验证'],
+  'device.reachable': ['Gateway reachable — desktop not tested', '网关可访问 — 桌面尚未测试'],
+  'device.unknown': ['UNKNOWN — check by opening this node', '未知 — 打开此节点以检查'],
+  'device.checked': ['Checked {date}', '检查时间：{date}'],
+  'device.blockedPasswordTitle': ['Enter the Screen Sharing VNC password below.', '请在下方输入屏幕共享 VNC 密码。'],
+  'device.blockedPassword': ['Enter the Screen Sharing VNC password below to use control, viewing and optional clipboard.', '在下方输入屏幕共享 VNC 密码，即可控制、查看桌面及按需使用剪贴板。'],
+  'device.blockedReason': ['Cloudflare Access login and gateway status are available. Remote viewing, input and clipboard are disabled.', 'Cloudflare Access 登录和网关状态可用。远程查看、输入及剪贴板已停用。'],
+  'trusted.title': ['Trusted devices', '可信设备'],
+  'trusted.help': ['Manage the browsers you have trusted for this gateway. Each entry shows its own expiry.', '管理你为此网关授权的浏览器。每项都会显示到期时间。'],
+  'trusted.loading': ['Loading trusted devices…', '正在加载可信设备…'],
+  'trusted.current': [' · This browser', ' · 此浏览器'],
+  'trusted.entry': ['{id}{current}', '{id}{current}'],
+  'trusted.expires': ['Expires {date}', '到期时间：{date}'],
+  'trusted.revoke': ['Revoke', '撤销'],
+  'trusted.revokeLabel': ['Revoke trusted device {id}', '撤销可信设备 {id}'],
+  'trusted.hint': ['Revoking this browser returns it to sign-in.', '撤销此浏览器后，将返回登录页面。'],
+  'trusted.empty': ['No trusted devices.', '暂无可信设备。'],
+  'trusted.unavailable': ['Trusted devices are unavailable. Verify access and try again.', '无法获取可信设备。请验证访问后重试。'],
+  'trusted.revoking': ['Revoking trusted device…', '正在撤销可信设备…'],
+  'trusted.revokeFailed': ['The trusted device could not be revoked. Verify access and try again.', '无法撤销可信设备。请验证访问后重试。'],
+  'workspace.desktop': ['Desktop', '桌面'],
+  'workspace.label': ['Remote workspace', '远程工作空间'],
+  'workspace.hint': ['Click desktop to control · Shift+Esc pauses · touch uses a trackpad', '点击桌面开始控制 · Shift+Esc 暂停 · 触摸使用触控板模式'],
+  'workspace.surfaceLabel': ['Remote desktop input. Shift Escape pauses input.', '远程桌面输入。Shift+Escape 暂停输入。'],
+  'workspace.keys': ['Keys', '按键'],
+  'workspace.remoteKeys': ['Remote keys', '远程按键'],
+  'workspace.clipboard': ['Clipboard', '剪贴板'],
+  'workspace.textClipboard': ['Text / Clipboard', '文本／剪贴板'],
+  'workspace.more': ['More workspace options', '更多工作空间选项'],
+  'workspace.options': ['Workspace options', '工作空间选项'],
+  'workspace.release': ['Release all', '释放全部'],
+  'workspace.releaseTitle': ['Release all held keys and pause input', '释放所有按住的按键并暂停输入'],
+  'workspace.scale': ['Scale', '缩放'],
+  'workspace.fit': ['Fit to window', '适应窗口'],
+  'workspace.actualSize': ['Actual size · 100%', '原始大小 · 100%'],
+  'workspace.fullscreen': ['Fullscreen', '全屏'],
+  'workspace.pause': ['Pause input', '暂停输入'],
+  'workspace.keysHelp': ['Control+C remains Terminal interrupt. System-reserved shortcuts require these buttons.', 'Control+C 保持终端中断语义。系统保留的快捷键请通过这些按钮发送。'],
+  'workspace.fullscreenUnavailable': ['Fullscreen unavailable. All remote controls remain available.', '全屏不可用。所有远程控制仍可使用。'],
+  'workspace.viewInputUnavailable': ['View-only sessions cannot send input', '仅查看会话无法发送输入'],
+  'input.initial': ['Input paused', '输入已暂停'],
+  'input.active': ['Input active · Shift+Esc pauses', '输入已启用 · Shift+Esc 暂停'],
+  'input.paused': ['Input paused · click desktop to resume', '输入已暂停 · 点击桌面继续'],
+  'input.clickToControl': ['Click desktop to control', '点击桌面开始控制'],
+  'input.viewOnly': ['View only', '仅查看'],
+  'input.composedText': ['Use the Text / Clipboard panel for composed text.', '请在文本／剪贴板面板中输入组合文本。'],
+  'input.localIme': ['Local IME: use the Text / Clipboard panel.', '本机输入法：请使用文本／剪贴板面板。'],
+  'input.releasePhysical': ['Release physical keys before a virtual chord.', '发送虚拟组合键前，请松开实体按键。'],
+  'keys.command': ['Command', 'Command'],
+  'keys.option': ['Option', 'Option'],
+  'keys.control': ['Control', 'Control'],
+  'keys.shift': ['Shift', 'Shift'],
+  'keys.escape': ['Esc', 'Esc'],
+  'keys.tab': ['Tab', 'Tab'],
+  'keys.backspace': ['Backspace', '退格'],
+  'keys.delete': ['Delete', '删除'],
+  'keys.enter': ['Enter', '回车'],
+  'keys.left': ['Left arrow', '左方向键'],
+  'keys.up': ['Up arrow', '上方向键'],
+  'keys.right': ['Right arrow', '右方向键'],
+  'keys.down': ['Down arrow', '下方向键'],
+  'chords.copy': ['Remote Copy', '远程复制'],
+  'chords.paste': ['Remote Paste', '远程粘贴'],
+  'chords.cut': ['Remote Cut', '远程剪切'],
+  'chords.undo': ['Undo', '撤销'],
+  'chords.select': ['Select all', '全选'],
+  'chords.save': ['Save', '保存'],
+  'chords.switch': ['Remote app switch', '远程切换应用'],
+  'chords.search': ['Remote search', '远程搜索'],
+  'clipboard.help': ['Remote Copy/Paste buttons act inside the Mac. Clipboard transfer is a separate explicit action. For local Chinese IME, compose here and send, then Remote Paste. Direct local IME is unverified.', '远程复制／粘贴按钮在 Mac 内执行操作。剪贴板传输需要单独手动操作。使用本机中文输入法时，请在此输入并发送，再点击远程粘贴。直接使用本机输入法尚未验证。'],
+  'clipboard.localText': ['Local text to send', '待发送的本机文本'],
+  'clipboard.remoteText': ['Received remote text', '收到的远程文本'],
+  'clipboard.readLocal': ['Read local clipboard', '读取本机剪贴板'],
+  'clipboard.send': ['Send to remote clipboard', '发送至远程剪贴板'],
+  'clipboard.copyRemote': ['Copy received text locally', '将收到的文本复制到本机'],
+  'clipboard.defaultOff': ['Clipboard off by default.', '剪贴板默认关闭。'],
+  'clipboard.cleared': ['Clipboard cleared.', '剪贴板已清空。'],
+  'clipboard.received': ['Received text held in memory. Copy locally only with an explicit click.', '收到的文本仅保存在内存中。点击按钮后才会复制到本机。'],
+  'clipboard.transferTitle': ['Explicit plain text transfer', '手动纯文本传输'],
+  'clipboard.enableTitle': ['Enable clipboard before starting a control session', '开始控制会话前，请启用剪贴板'],
+  'clipboard.enabled': ['Explicit clipboard enabled. Use native paste here if permission is denied.', '手动剪贴板已启用。如权限被拒绝，可在此直接粘贴文本。'],
+  'clipboard.disabled': ['Clipboard not enabled for this connection.', '此连接未启用剪贴板。'],
+  'clipboard.localReady': ['Local text ready. Click Send to transfer.', '本机文本已就绪。点击发送以传输。'],
+  'clipboard.readDenied': ['Clipboard permission unavailable. Paste manually into the text field.', '剪贴板权限不可用。请手动粘贴到文本框。'],
+  'clipboard.acknowledged': ['Clipboard stream acknowledged. Verify the remote text before using Remote Paste.', '剪贴板传输已确认。使用远程粘贴前，请确认远程文本。'],
+  'clipboard.copied': ['Copied received text locally.', '已将收到的文本复制到本机。'],
+  'clipboard.copyDenied': ['Permission unavailable. Copy the selected text manually.', '权限不可用。请手动复制选中的文本。'],
+  'clipboard.notEnabled': ['Clipboard not enabled', '剪贴板未启用'],
+  'clipboard.tooLarge': ['Text exceeds 16 KiB', '文本超过 16 KiB'],
+  'clipboard.timedOut': ['Clipboard transfer timed out', '剪贴板传输超时'],
+  'clipboard.unavailable': ['Clipboard unavailable', '剪贴板不可用'],
+  'diagnostics.title': ['Diagnostics & history', '诊断与历史'],
+  'diagnostics.historyEntry': ['{date} · {event} · {reason}', '{date} · {event} · {reason}'],
+  'diagnostics.accessibility': ['The desktop canvas has accessibility limits. The surrounding controls support keyboard focus and browser zoom.', '桌面画布的无障碍功能有限。外围控件支持键盘焦点和浏览器缩放。'],
+  'diagnostics.unavailable': ['Diagnostics unavailable; verify access.', '诊断不可用；请验证访问。'],
+  'notice.verifying': ['Verifying access…', '正在验证访问…'],
+  'notice.desktopBlocked': ['Access verified. Desktop connections are disabled on this node until the Mac connection and keyboard calibration are verified.', '访问已验证。在 Mac 连接和键盘校准完成验证前，此节点的桌面连接保持停用。'],
+  'notice.signIn': ['Sign in to trust this browser and continue.', '请登录并信任此浏览器以继续。'],
+  'notice.passwordRequired': ['Enter the Screen Sharing VNC password once to open your desktop.', '输入一次屏幕共享 VNC 密码，即可打开桌面。'],
+  'notice.ownerReady': ['Choose control or view, confirm consent, and open your desktop.', '选择控制或查看，确认授权后打开桌面。'],
+  'notice.ready': ['Access verified. Choose the configured local desktop.', '访问已验证。请选择已配置的本机桌面。'],
+  'notice.accessFailed': ['Access verification failed. Reopen this node through Cloudflare Access.', '访问验证失败。请通过 Cloudflare Access 重新打开此节点。'],
+  'notice.offline': ['No offline remote control.', '离线时无法远程控制。'],
+  'notice.cleanupFailed': ['Local input stopped. Server cleanup could not be confirmed; retry access.', '本机输入已停止。无法确认服务端已清理；请重新验证访问。'],
+  'notice.confirmConsent': ['Confirm shared desktop consent before connecting.', '连接前请确认共享桌面授权。'],
+  'notice.logoutFailed': ['Sign out could not be confirmed. Verify access and try again.', '无法确认已退出。请验证访问后重试。'],
+  'notice.signedOut': ['Node signed out. Access sign-out is separate.', '已退出此节点。Cloudflare Access 需要单独退出。'],
+  'connection.busy': ['A desktop connection is already open. End the previous connection before trying again.', '已有桌面连接打开。请结束之前的连接后重试。'],
+  'connection.updateInProgress': ['A page update is finishing. Wait 20 seconds, then click Open desktop again.', '页面更新正在完成。请等待 20 秒后，再点击打开桌面。'],
+  'connection.previous': ['This browser has a previous connection. Ending it here also closes it in any other tab.', '此浏览器存在之前的连接。在此结束连接，也会关闭其他标签页中的该连接。'],
+  'connection.recoveryFailed': ['The previous connection could not be ended. Try again.', '无法结束之前的连接。请重试。'],
+  'preferences.title': ['App preferences', '应用偏好'],
+  'preferences.help': ['Appearance and language are saved on this browser only.', '外观和语言仅保存在此浏览器中。'],
+  'preferences.theme': ['Appearance', '外观'],
+  'preferences.language': ['Language', '语言'],
+  'preferences.system': ['Follow system', '跟随系统'],
+  'preferences.light': ['Light', '浅色'],
+  'preferences.dark': ['Dark', '深色'],
+  'preferences.english': ['English', 'English'],
+  'preferences.chinese': ['简体中文', '简体中文'],
+  'preferences.install': ['Install app', '安装应用'],
+  'preferences.installed': ['App installed', '应用已安装'],
+  'preferences.installAvailable': ['Install this private gateway as an app on this device.', '将此专属网关安装为设备上的应用。'],
+  'preferences.installUnavailable': ['If your browser supports installation, use its app or install menu.', '如果浏览器支持安装，请使用其应用或安装菜单。'],
+  'preferences.installSafari': ['In Safari, use Share → Add to Home Screen on iPhone or iPad, or File → Add to Dock on a supported Mac.', '在 iPhone 或 iPad 的 Safari 中，选择分享 → 添加到主屏幕；在支持的 Mac 上，选择文件 → 添加到程序坞。'],
+  'preferences.installPrompt': ['Choose Install in your browser to add the app.', '请在浏览器提示中选择安装以添加应用。'],
+  'preferences.installDismissed': ['Installation cancelled. You can try again when your browser offers it.', '安装已取消。浏览器再次提供安装时，你可以重试。'],
+  'preferences.installFailed': ['Installation could not start. Use your browser’s app or install menu.', '无法开始安装。请使用浏览器的应用或安装菜单。'],
+  'preferences.installedHint': ['This gateway is running as an installed app.', '此网关正以已安装应用的方式运行。'],
+  'preferences.installComplete': ['The app is installed. Open it from your device’s apps.', '应用已安装。请从设备的应用中打开。'],
+  'preferences.installAccepted': ['Installation accepted. Your browser will finish installing.', '已同意安装。浏览器将完成安装。'],
+  'version.current': ['Version {version}', '版本 {version}'],
+  'version.full': ['v{version} · Build {build}', 'v{version} · 构建 {build}'],
+  'version.transition': ['v{version} → v{target} · {build}', 'v{version} → v{target} · {build}'],
+  'version.target': ['Available {version}', '可更新至 {version}'],
+  'version.label': ['App version', '应用版本'],
+  'version.unknown': ['Unavailable', '不可用'],
+  'update.available': ['New version available. Updates wait until every node session ends.', '新版本可用。所有节点会话结束后才能更新。'],
+  'update.button': ['Update when idle', '空闲时更新'],
+  'update.buttonVersion': ['Update to {version}', '更新至 {version}'],
+  'update.deferred': ['Another node session or pending connection is active. End it and retry.', '其他节点会话或待连接请求仍在进行。请结束后重试。'],
+  'update.updating': ['Updating…', '正在更新…'],
+  'update.reloading': ['Reloading…', '正在重新加载…'],
+  'update.failed': ['Update failed. Try again when all sessions have ended.', '更新失败。请在所有会话结束后重试。'],
+  'update.checking': ['Checking for updates…', '正在检查更新…'],
+  'update.upToDate': ['You are up to date.', '已是最新版本。'],
+  'update.unavailable': ['Update checks are unavailable. Reopen when connected.', '暂时无法检查更新。联网后重新打开。'],
+  'date.unavailable': ['Unavailable', '不可用'],
+  'status.STARTING': ['Starting', '正在启动'],
+  'status.AUTH_CHECK': ['Verifying access', '正在验证访问'],
+  'status.AUTH_REQUIRED': ['Sign-in required', '需要登录'],
+  'status.REAUTH_REQUIRED': ['Verify access again', '请重新验证访问'],
+  'status.CREDENTIAL_REQUIRED': ['Desktop password needed', '需要桌面密码'],
+  'status.BLOCKED': ['Blocked', '受阻'],
+  'status.UNKNOWN': ['Unknown', '未知'],
+  'status.READY': ['Ready', '就绪'],
+  'status.CONNECTING': ['Connecting', '正在连接'],
+  'status.CONNECTED': ['Connected', '已连接'],
+  'status.DISCONNECTED': ['Disconnected', '连接已断开'],
+  'status.OFFLINE': ['Offline', '离线'],
+  'status.SESSION_EXPIRED': ['Session expired', '会话已过期'],
+  'status.CONTROL_BUSY': ['Connection already active', '连接已在进行'],
+  'status.UPDATE_IN_PROGRESS': ['Update in progress', '更新进行中'],
+  'status.UPDATE_DEFERRED': ['Update deferred', '更新已暂缓'],
+  'status.UPDATING': ['Updating', '正在更新'],
+  'status.RELOADING': ['Reloading', '正在重新加载'],
+  'status.UPDATE_FAILED': ['Update failed', '更新失败'],
+  'status.TARGET_UNAVAILABLE': ['Desktop unavailable', '桌面不可用'],
+  'status.TRANSPORT_ERROR': ['Connection error', '连接错误'],
+  'status.INPUT_FAILURE': ['Input stopped', '输入已停止'],
+  'status.ERROR': ['Error', '错误'],
+  'error.unavailable': ['The request could not be completed. Verify access and try again.', '无法完成请求。请验证访问后重试。'],
+  'launch.safety': ['Shared desktop consent', '共享桌面授权'],
+  'preferences.update': ['App updates', '应用更新'],
+  'preferences.updateHelp': ['Updates wait until all desktop sessions and pending connections on this node have ended.', '此节点的所有桌面会话及待连接请求结束后，才能更新。'],
+  'pwa.versionLoading': ['Checking version…', '正在检查版本…'],
+  'pwa.checkUpdates': ['Check for updates', '检查更新'],
+  'offline.eyebrow': ['NETWORK REQUIRED', '需要网络连接'],
+  'offline.title': ['You are offline.', '你已离线。'],
+  'offline.pageTitle': ['Remote gateway · Offline', '远程网关 · 离线'],
+  'offline.description': ['A network connection and verified access are required to control your desktop. Reconnect, then reopen this gateway. No desktop content or credentials are stored offline, and input is never queued or replayed.', '控制桌面需要网络连接和已验证的访问权限。请恢复网络后重新打开此网关。离线时不保存桌面内容或凭据，输入也不会排队或重放。'],
+  'offline.retry': ['Retry when connected', '联网后重试'],
+};
+
+// Aliases keep a single source for wording shared by separate UI surfaces.
+const aliases = {
+  'brand.name': 'brand.label',
+  'preferences.appearance': 'preferences.theme',
+  'preferences.description': 'preferences.help',
+  'theme.system': 'preferences.system',
+  'theme.light': 'preferences.light',
+  'theme.dark': 'preferences.dark',
+  'update.whenIdle': 'update.button',
+  'actions.checkUpdates': 'pwa.checkUpdates',
+  'app.clipboardStatus.clipboard_cleared': 'clipboard.cleared',
+  'app.credentialStatus.enter_a_valid_screen_sharing_vnc': 'credential.invalid',
+  'app.credentialStatus.saving_desktop_password': 'credential.saving',
+  'app.trustedDevicesStatus.loading_trusted_devices': 'trusted.loading',
+  'app.trustedDevicesStatus.trusted_devices_are_unavailable_verify_access': 'trusted.unavailable',
+  'app.trustedDevicesStatus.revoking_trusted_device': 'trusted.revoking',
+  'app.trustedDevicesStatus.the_trusted_device_could_not_be': 'trusted.revokeFailed',
+  'app.notice.this_browser_has_a_previous_connection': 'connection.previous',
+  'app.notice.confirm_shared_desktop_consent_before_connecting': 'notice.confirmConsent',
+  'app.clipboardStatus.received_text_held_in_memory_copy': 'clipboard.received',
+  'app.inputStatus.fullscreen_unavailable_all_remote_controls_remain': 'workspace.fullscreenUnavailable',
+  'app.clipboardStatus.local_text_ready_click_send_to': 'clipboard.localReady',
+  'app.clipboardStatus.clipboard_permission_unavailable_paste_manually_into': 'clipboard.readDenied',
+  'app.clipboardStatus.clipboard_stream_acknowledged_verify_the_remote': 'clipboard.acknowledged',
+  'app.clipboardStatus.copied_received_text_locally': 'clipboard.copied',
+  'app.clipboardStatus.permission_unavailable_copy_the_selected_text': 'clipboard.copyDenied',
+  'app.diagnostics.diagnostics_unavailable_verify_access': 'diagnostics.unavailable',
+  'app.notice.sign_in_to_trust_this_browser': 'notice.signIn',
+  'app.notice.the_previous_connection_could_not_be': 'connection.recoveryFailed',
+  'app.notice.sign_out_could_not_be_confirmed': 'notice.logoutFailed',
+  'app.notice.node_signed_out_access_sign_out': 'notice.signedOut',
+};
+for (const [alias, key] of Object.entries(aliases)) entries[alias] = entries[key];
+for (const [key, text] of Object.entries(entries)) if (key.startsWith('status.')) text[0] = key.slice(7);
+
+export const SUPPORTED_LOCALES = Object.freeze(['en', 'zh-CN']);
+export const TRANSLATIONS = Object.freeze(Object.fromEntries(SUPPORTED_LOCALES.map((locale, index) =>
+  [locale, Object.freeze(Object.fromEntries(Object.entries(entries).map(([key, text]) => [key, text[index]])))])));
+let locale = 'en';
+const listeners = new Set();
+
+/** Chinese browser locales use the available Simplified Chinese catalog. */
+export function resolveLocale(value) {
+  return typeof value === 'string' && /^zh(?:-|$)/i.test(value) ? 'zh-CN' : 'en';
+}
+
+export function getLocale() { return locale; }
+
+export function setLocale(value) {
+  const next = resolveLocale(value);
+  if (next === locale) return locale;
+  locale = next;
+  for (const listener of [...listeners]) listener(locale);
+  return locale;
+}
+
+/** Subscribe without global events or retaining private UI content. */
+export function onLocaleChange(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function t(key, params = {}) {
+  const text = TRANSLATIONS[locale][key] ?? TRANSLATIONS.en[key] ?? key;
+  return text.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (placeholder, name) =>
+    Object.hasOwn(params, name) ? String(params[name]) : placeholder);
+}
+
+/** Attribute annotations are explicit; translations never interpret HTML. */
+export function applyTranslations(root = globalThis.document) {
+  if (!root) return;
+  const selector = '[data-i18n],[data-i18n-label],[data-i18n-title],[data-i18n-placeholder]';
+  const nodes = [...(root.querySelectorAll?.(selector) ?? [])];
+  if (root.matches?.(selector)) nodes.unshift(root);
+  for (const node of nodes) {
+    if (node.hasAttribute('data-i18n')) node.textContent = t(node.getAttribute('data-i18n'));
+    for (const [annotation, attribute] of [['label', 'aria-label'], ['title', 'title'], ['placeholder', 'placeholder']]) {
+      if (node.hasAttribute(`data-i18n-${annotation}`)) node.setAttribute(attribute, t(node.getAttribute(`data-i18n-${annotation}`)));
+    }
+  }
+  const document = root.nodeType === 9 ? root : root.ownerDocument;
+  if (document?.documentElement) document.documentElement.lang = locale;
+}
+
+export function formatDate(value, options) {
+  if (value === null || value === undefined || value === '') return t('date.unavailable');
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return t('date.unavailable');
+  return new Intl.DateTimeFormat(locale, options ?? {dateStyle: 'medium', timeStyle: 'short'}).format(date);
+}

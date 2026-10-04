@@ -1,3 +1,4 @@
+import {t} from './i18n.mjs';
 import {KeyboardState} from '../../reference/keyboard-state.mjs';
 
 export function logicalKey(keysym) {
@@ -41,7 +42,7 @@ export class RemoteInput {
       if(!this.active())return true;
       if(this.altGraph && [0xffe3,0xffe4,0xffe9,0xffea,0xfe03].includes(keysym))return false;
       // Classic VNC Unicode/local composition is unverified. Text panel is the explicit fallback.
-      if(keysym>=0x01000000){onPause('Use the Text / Clipboard panel for composed text.');return false;}
+      if(keysym>=0x01000000){onPause(t('input.composedText'));return false;}
       this.run(()=>this.keys.down(`physical:${keysym}`,logicalKey(keysym),
         {code:keysym===0xffe9&&this.leftAltPhysical?'AltLeft':'',physical:true}));
       return false;
@@ -56,10 +57,10 @@ export class RemoteInput {
     this.touch.onEach(['mousedown','mouseup','mousemove'],event=>{
       if(!this.active())return;this.sendPointer(event.state);
     });
-    listen(surface,'pointerdown',()=>{if(this.mode==='control'){surface.focus({preventScroll:true});this.enabled=true;onPause('Input active · Shift+Esc pauses');}});
-    listen(surface,'focus',()=>{if(this.mode==='control'){this.enabled=true;onPause('Input active · Shift+Esc pauses');}});
+    listen(surface,'pointerdown',()=>{if(this.mode==='control'){surface.focus({preventScroll:true});this.enabled=true;onPause(t('input.active'));}});
+    listen(surface,'focus',()=>{if(this.mode==='control'){this.enabled=true;onPause(t('input.active'));}});
     listen(surface,'blur',()=>this.pause());
-    listen(surface,'compositionstart',()=>this.pause('Local IME: use the Text / Clipboard panel.'),true);
+    listen(surface,'compositionstart',()=>this.pause(t('input.localIme')),true);
     listen(window,'blur',()=>this.pause());
     listen(document,'visibilitychange',()=>{if(document.hidden)this.pause();});
     listen(window,'pagehide',()=>this.pause());
@@ -67,7 +68,7 @@ export class RemoteInput {
   active(){return this.enabled&&this.mode==='control'&&document.activeElement===this.surface&&!document.hidden;}
   run(fn){if(this.failed)return;try{fn();}catch{this.failed=true;this.protocolCounts.clear();this.enabled=false;this.onFailure('INPUT_FAILURE');}}
   sendPointer(state){const display=this.client.getDisplay(),scale=display.getScale();const x=Math.max(0,Math.min(state.x,Math.max(0,display.getWidth()*scale-1))),y=Math.max(0,Math.min(state.y,Math.max(0,display.getHeight()*scale-1)));this.pointer=new this.Guacamole.Mouse.State(x,y,state.left,state.middle,state.right,state.up,state.down);this.run(()=>this.client.sendMouseState(this.pointer,true));}
-  start(mode){this.mode=mode;this.enabled=false;this.onPause(mode==='view'?'View only':'Click desktop to control');}
+  start(mode){this.mode=mode;this.enabled=false;this.onPause(mode==='view'?t('input.viewOnly'):t('input.clickToControl'));}
   release(){
     this.run(()=>this.keys.releaseAll());this.latches.clear();this.leftAltPhysical=false;this.altGraph=false;this.keyboard.reset();
     if(this.mode==='control')this.run(()=>{
@@ -75,14 +76,14 @@ export class RemoteInput {
     });
     this.pointer=new this.Guacamole.Mouse.State(0,0,false,false,false,false,false);
   }
-  pause(message=this.mode==='view'?'View only':'Input paused · click desktop to resume'){this.release();this.enabled=false;this.onPause(message);}
+  pause(message=this.mode==='view'?t('input.viewOnly'):t('input.paused')){this.release();this.enabled=false;this.onPause(message);}
   setProfile(profile){this.pause();this.run(()=>this.keys.setProfile(profile));}
   toggle(key){
     if(this.mode!=='control')return;
     this.run(()=>{const source=`latch:${key}`;if(this.latches.has(key)){this.keys.up(source);this.latches.delete(key);}else{this.keys.down(source,key,{physical:false});this.latches.add(key);}});
   }
   chord(name){if(this.mode!=='control'||!Object.hasOwn(CHORDS,name))return;
-    if(this.keys.snapshot().sources.some(e=>e.physical)){this.onPause('Release physical keys before a virtual chord.');return;}
+    if(this.keys.snapshot().sources.some(e=>e.physical)){this.onPause(t('input.releasePhysical'));return;}
     this.run(()=>this.keys.virtualChord(CHORDS[name]));this.release();}
   virtual(key){if(this.mode!=='control')return;this.run(()=>this.keys.virtualChord([key]));this.release();}
   dispose(){this.pause();this.keyboard.onkeydown=null;this.keyboard.onkeyup=null;for(const fn of this.disposers)fn();}

@@ -1,3 +1,4 @@
+import {t} from './i18n.mjs';
 import {RemoteInput} from './input.mjs';
 
 /** Official Guacamole display, keyboard, pointer, tunnel and clipboard objects. */
@@ -12,7 +13,7 @@ export class DesktopAdapter {
     this.tunnel=new G.WebSocketTunnel(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/sessions/${intentId}`);
     this.client=new G.Client(this.tunnel);
     this.display=this.client.getDisplay();
-    const capture=document.createElement('div');capture.className='capture';capture.tabIndex=0;capture.setAttribute('role','application');capture.setAttribute('aria-label','Remote desktop input. Shift Escape pauses input.');
+    const capture=document.createElement('div');capture.className='capture';capture.tabIndex=0;capture.setAttribute('role','application');capture.setAttribute('aria-label',t('workspace.surfaceLabel'));
     capture.append(this.display.getElement());this.surface.replaceChildren(capture);
     this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:this.display.getElement(),client:this.client,Guacamole:G});
     this.client.onerror=()=>this.onFailure('TARGET_UNAVAILABLE');
@@ -37,12 +38,12 @@ export class DesktopAdapter {
     if(width&&height)this.display.scale(mode==='actual'?1:Math.min(this.surface.clientWidth/width,this.surface.clientHeight/height));
   }
   sendClipboard(text){
-    if(!this.clipboard||!this.client||this.input.mode!=='control')throw new Error('Clipboard not enabled');
-    if(new TextEncoder().encode(text).length>16384)throw new Error('Text exceeds 16 KiB');
+    if(!this.clipboard||!this.client||this.input.mode!=='control')throw new Error('CLIPBOARD_DISABLED');
+    if(new TextEncoder().encode(text).length>16384)throw new Error('CLIPBOARD_TOO_LARGE');
     const writer=new globalThis.Guacamole.StringWriter(this.client.createClipboardStream('text/plain'));
     return new Promise((resolve,reject)=>{
-      let timer=setTimeout(()=>{reject(new Error('Clipboard transfer timed out'));},5000);
-      writer.onack=status=>{if(status.isError()){clearTimeout(timer);reject(new Error('Clipboard unavailable'));}else{clearTimeout(timer);resolve();}};
+      let timer=setTimeout(()=>{reject(new Error('CLIPBOARD_TIMEOUT'));},5000);
+      writer.onack=status=>{if(status.isError()){clearTimeout(timer);reject(new Error('CLIPBOARD_UNAVAILABLE'));}else{clearTimeout(timer);resolve();}};
       writer.sendText(text);writer.sendEnd();
     });
   }
