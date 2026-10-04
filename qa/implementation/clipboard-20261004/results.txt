@@ -1,0 +1,29 @@
+# Official guacd 1.6.0 clipboard behavior (isolated network, fake RFB server, no real desktop)
+# guacd ack/error/disconnect lines received for clipboard, blob and end: 0
+
+== clipboard-encoding=UTF-8 ==
+-- ASCII (11 UTF-8 bytes) sent at 720 ms
+   [  726 ms] RFB server got ClientCutText: 11 bytes, hex=68656c6c6f20776f726c64, as UTF-8="hello world", as Latin-1="hello world"
+-- Chinese (15 UTF-8 bytes) sent at 2243 ms
+   [ 2243 ms] RFB server got ClientCutText: 15 bytes, hex=e4bda0e5a5bdefbc8ce4b896e7958c, as UTF-8="你好，世界", as Latin-1="ä½ å¥½ï¼ä¸ç"
+-- Latin-1 accent (5 UTF-8 bytes) sent at 3757 ms
+   [ 3758 ms] RFB server got ClientCutText: 5 bytes, hex=636166c3a9, as UTF-8="café", as Latin-1="cafÃ©"
+-- emoji (12 UTF-8 bytes) sent at 5272 ms
+   [ 5273 ms] RFB server got ClientCutText: 12 bytes, hex=6f6b20f09f998220646f6e65, as UTF-8="ok 🙂 done", as Latin-1="ok ð done"
+-- 10 KB ASCII (3 blobs) (10240 UTF-8 bytes) sent at 6792 ms
+   [ 6793 ms] RFB server got ClientCutText: 10240 bytes, hex=787878787878787878787878787878787878787878787878, as UTF-8="xxx...", as Latin-1="xxx..."
+-- empty (0 UTF-8 bytes) sent at 8309 ms
+   [ 8310 ms] RFB server got ClientCutText: 0 bytes, hex=, as UTF-8="", as Latin-1=""
+== clipboard-encoding=ISO8859-1 ==
+-- ASCII (11 UTF-8 bytes) sent at 652 ms
+   [  655 ms] RFB server got ClientCutText: 11 bytes, hex=68656c6c6f20776f726c64, as UTF-8="hello world", as Latin-1="hello world"
+-- Chinese (15 UTF-8 bytes) sent at 2170 ms
+   [ 2171 ms] RFB server got ClientCutText: 5 bytes, hex=3f3f3f3f3f, as UTF-8="?????", as Latin-1="?????"
+-- Latin-1 accent (5 UTF-8 bytes) sent at 3688 ms
+   [ 3688 ms] RFB server got ClientCutText: 4 bytes, hex=636166e9, as UTF-8="caf�", as Latin-1="café"
+-- emoji (12 UTF-8 bytes) sent at 5203 ms
+   [ 5203 ms] RFB server got ClientCutText: 9 bytes, hex=6f6b203f20646f6e65, as UTF-8="ok ? done", as Latin-1="ok ? done"
+-- 10 KB ASCII (3 blobs) (10240 UTF-8 bytes) sent at 6718 ms
+   [ 6720 ms] RFB server got ClientCutText: 10240 bytes, hex=787878787878787878787878787878787878787878787878, as UTF-8="xxx...", as Latin-1="xxx..."
+-- empty (0 UTF-8 bytes) sent at 8241 ms
+   [ 8242 ms] RFB server got ClientCutText: 0 bytes, hex=, as UTF-8="", as Latin-1=""
