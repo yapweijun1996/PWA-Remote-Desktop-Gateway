@@ -1,0 +1,66 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.51kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/eclipse-temurin:17-jre-jammy@sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7
+#2 DONE 1.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 119B 0.0s done
+#3 DONE 0.1s
+
+#4 [internal] load build context
+#4 ...
+
+#5 [ 1/10] FROM docker.io/library/eclipse-temurin:17-jre-jammy@sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7
+#5 resolve docker.io/library/eclipse-temurin:17-jre-jammy@sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7 0.2s done
+#5 DONE 0.2s
+
+#4 [internal] load build context
+#4 transferring context: 19.72MB 1.9s done
+#4 DONE 1.9s
+
+#6 [ 2/10] COPY deployment/install-locked-debs.sh /install-locked-debs.sh
+#6 CACHED
+
+#7 [ 7/10] COPY gateway/target/sqlite-native/org/sqlite/native/Linux/ /app/native/
+#7 CACHED
+
+#8 [ 3/10] COPY deployment/deb-locks/ /locks/
+#8 CACHED
+
+#9 [ 5/10] RUN groupadd --gid 10001 rdg && useradd --uid 10001 --gid rdg --no-create-home rdg && mkdir -p /app /var/lib/rdg /var/lib/rdg-key && chown 10001:10001 /var/lib/rdg /var/lib/rdg-key && chmod 0700 /var/lib/rdg /var/lib/rdg-key
+#9 CACHED
+
+#10 [ 6/10] WORKDIR /app
+#10 CACHED
+
+#11 [ 4/10] RUN sh /install-locked-debs.sh "/locks/gateway-arm64.lock" && cp "/locks/gateway-arm64.lock" /opt/rdg-os-packages.lock && rm /install-locked-debs.sh && rm -r /locks
+#11 CACHED
+
+#12 [ 8/10] RUN case "arm64" in arm64) sqlite_arch=aarch64 ;; amd64) sqlite_arch=x86_64 ;; *) exit 1 ;; esac && mkdir /app/lib && cp "/app/native/$sqlite_arch/libsqlitejdbc.so" /app/lib/ && chmod 0555 /app/lib/libsqlitejdbc.so && rm -rf /app/native
+#12 CACHED
+
+#13 [ 9/10] COPY --chown=10001:10001 gateway/target/rdg-gateway.jar /app/rdg-gateway.jar
+#13 DONE 0.1s
+
+#14 [10/10] COPY --chown=10001:10001 web/dist/ /app/web/
+#14 DONE 0.1s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 1.5s done
+#15 exporting manifest sha256:73772b125e239d21bf548b8ad0e8d1b48baaba191de0d7c1f6e8b2fde8ccb0d4 0.0s done
+#15 exporting config sha256:5b643ee50e96e5b66545859752be611beb98cbe8906a0268f9644065edf05932 0.1s done
+#15 exporting attestation manifest sha256:d36d0232a349354b94206b9f7a0b2ce70a05c34959482f937b0b2804a2acb9bd
+#15 exporting attestation manifest sha256:d36d0232a349354b94206b9f7a0b2ce70a05c34959482f937b0b2804a2acb9bd 0.1s done
+#15 exporting manifest list sha256:0e832e1d7709125d4358791e172b2f81aea173f3e02be2912f5fd8d49d38f4cf 0.1s done
+#15 naming to docker.io/library/rdg-gateway:sidebar-1.1.1-f240110b80d1b587
+#15 naming to docker.io/library/rdg-gateway:sidebar-1.1.1-f240110b80d1b587 done
+#15 unpacking to docker.io/library/rdg-gateway:sidebar-1.1.1-f240110b80d1b587
+#15 unpacking to docker.io/library/rdg-gateway:sidebar-1.1.1-f240110b80d1b587 0.7s done
+#15 DONE 2.7s
+
+View build details: docker-desktop://dashboard/build/default/default/qr3ag8mlh64y1z7k1hwm47v9t

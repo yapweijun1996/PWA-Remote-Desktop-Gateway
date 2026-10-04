@@ -1,0 +1,230 @@
+
+> pwa-remote-desktop-gateway@1.0.0 build
+> npm run build:web && ./scripts/maven.sh -B -f gateway/pom.xml package dependency:list -DoutputAbsoluteArtifactFilename=true -DoutputFile=target/dependencies.txt -DincludeScope=runtime && node scripts/verify-dependencies.mjs
+
+
+> pwa-remote-desktop-gateway@1.0.0 build:web
+> node scripts/build-web.mjs
+
+Production assets built: 1.1.1 (f240110b80d1b587)
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------------< com.rdg:gateway >---------------------------
+[INFO] Building gateway 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- dependency:3.9.0:unpack (readonly-container-sqlite) @ gateway ---
+[INFO] sqlite-jdbc-3.53.4.0.jar already unpacked.
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ gateway ---
+[INFO] skip non existing resourceDirectory /Users/yapweijun/Documents/GitHub/PWA-Remote-Desktop-Gateway/gateway/src/main/resources
+[INFO]
+[INFO] --- compiler:3.14.1:compile (default-compile) @ gateway ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ gateway ---
+[INFO] skip non existing resourceDirectory /Users/yapweijun/Documents/GitHub/PWA-Remote-Desktop-Gateway/gateway/src/test/resources
+[INFO]
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ gateway ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.5.4:test (default-test) @ gateway ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.rdg.AuditTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.930 s -- in com.rdg.AuditTest
+[INFO] Running com.rdg.OwnerSetupGatewayIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.207 s -- in com.rdg.OwnerSetupGatewayIntegrationTest
+[INFO] Running com.rdg.SessionsTest
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.461 s -- in com.rdg.SessionsTest
+[INFO] Running com.rdg.OwnerSetupConnectorTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.237 s -- in com.rdg.OwnerSetupConnectorTest
+[INFO] Running com.rdg.LocalMacViewTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.592 s -- in com.rdg.LocalMacViewTest
+[INFO] Running com.rdg.ConfigTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.284 s -- in com.rdg.ConfigTest
+[INFO] Running com.rdg.BoundedReaderTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.rdg.BoundedReaderTest
+[INFO] Running com.rdg.GatewayIntegrationTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.674 s -- in com.rdg.GatewayIntegrationTest
+[INFO] Running com.rdg.TrustedDeviceStoreTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.069 s -- in com.rdg.TrustedDeviceStoreTest
+[INFO] Running com.rdg.BlockedGatewayIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.615 s -- in com.rdg.BlockedGatewayIntegrationTest
+[INFO] Running com.rdg.AccessVerifierTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.799 s -- in com.rdg.AccessVerifierTest
+[INFO] Running com.rdg.TrustedGatewayIntegrationTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.847 s -- in com.rdg.TrustedGatewayIntegrationTest
+[INFO] Running com.rdg.DesktopCredentialStoreTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.501 s -- in com.rdg.DesktopCredentialStoreTest
+[INFO] Running com.rdg.BlockedDesktopPolicyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.045 s -- in com.rdg.BlockedDesktopPolicyTest
+[INFO] Running com.rdg.OwnerSetupSessionsTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.565 s -- in com.rdg.OwnerSetupSessionsTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 104, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- jar:3.4.2:jar (default-jar) @ gateway ---
+[INFO]
+[INFO] --- shade:3.6.1:shade (default) @ gateway ---
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] rdg-gateway.jar, slf4j-api-2.0.17.jar define 57 overlapping classes and resources:
+[WARNING]   - META-INF/maven/org.slf4j/slf4j-api/pom.properties
+[WARNING]   - META-INF/maven/org.slf4j/slf4j-api/pom.xml
+[WARNING]   - org.slf4j.ILoggerFactory
+[WARNING]   - org.slf4j.IMarkerFactory
+[WARNING]   - org.slf4j.Logger
+[WARNING]   - org.slf4j.LoggerFactory
+[WARNING]   - org.slf4j.LoggerFactoryFriend
+[WARNING]   - org.slf4j.MDC
+[WARNING]   - org.slf4j.MDC$1
+[WARNING]   - org.slf4j.MDC$MDCCloseable
+[WARNING]   - 47 more...
+[WARNING] jackson-core-2.22.3.jar, jackson-databind-2.22.3.jar, nimbus-jose-jwt-10.10.jar, rdg-gateway.jar, slf4j-api-2.0.17.jar, slf4j-nop-2.0.17.jar, sqlite-jdbc-3.53.4.0.jar define 1 overlapping classes:
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] jackson-annotations-2.22.jar, jackson-core-2.22.3.jar, jackson-databind-2.22.3.jar, rdg-gateway.jar, tomcat-annotations-api-9.0.122.jar, tomcat-embed-core-9.0.122.jar, tomcat-embed-websocket-9.0.122.jar define 2 overlapping resources:
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] jackson-core-2.22.3.jar, rdg-gateway.jar define 225 overlapping classes and resources:
+[WARNING]   - META-INF.versions.11.com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_3.BigSignificand
+[WARNING]   - META-INF.versions.11.com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_3.FastDoubleSwar
+[WARNING]   - META-INF.versions.11.com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_3.FastIntegerMath
+[WARNING]   - META-INF.versions.17.com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_3.FastDoubleSwar
+[WARNING]   - META-INF.versions.17.com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_3.FastIntegerMath
+[WARNING]   - META-INF.versions.21.com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_3.FastDoubleSwar
+[WARNING]   - META-INF.versions.21.com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_3.FastIntegerMath
+[WARNING]   - META-INF/FastDoubleParser-LICENSE
+[WARNING]   - META-INF/FastDoubleParser-ThirdParty-LICENSE
+[WARNING]   - META-INF/Schubfach-LICENSE
+[WARNING]   - 215 more...
+[WARNING] rdg-gateway.jar, tomcat-annotations-api-9.0.122.jar define 15 overlapping classes:
+[WARNING]   - javax.annotation.Generated
+[WARNING]   - javax.annotation.ManagedBean
+[WARNING]   - javax.annotation.PostConstruct
+[WARNING]   - javax.annotation.PreDestroy
+[WARNING]   - javax.annotation.Priority
+[WARNING]   - javax.annotation.Resource
+[WARNING]   - javax.annotation.Resource$AuthenticationType
+[WARNING]   - javax.annotation.Resources
+[WARNING]   - javax.annotation.security.DeclareRoles
+[WARNING]   - javax.annotation.security.DenyAll
+[WARNING]   - 5 more...
+[WARNING] guacamole-common-1.6.0.jar, rdg-gateway.jar define 81 overlapping classes and resources:
+[WARNING]   - META-INF/maven/org.apache.guacamole/guacamole-common/pom.properties
+[WARNING]   - META-INF/maven/org.apache.guacamole/guacamole-common/pom.xml
+[WARNING]   - org.apache.guacamole.GuacamoleClientBadTypeException
+[WARNING]   - org.apache.guacamole.GuacamoleClientException
+[WARNING]   - org.apache.guacamole.GuacamoleClientOverrunException
+[WARNING]   - org.apache.guacamole.GuacamoleClientTimeoutException
+[WARNING]   - org.apache.guacamole.GuacamoleClientTooManyException
+[WARNING]   - org.apache.guacamole.GuacamoleConnectionClosedException
+[WARNING]   - org.apache.guacamole.GuacamoleException
+[WARNING]   - org.apache.guacamole.GuacamoleResourceClosedException
+[WARNING]   - 71 more...
+[WARNING] jackson-databind-2.22.3.jar, rdg-gateway.jar define 814 overlapping classes and resources:
+[WARNING]   - META-INF/maven/com.fasterxml.jackson.core/jackson-databind/pom.properties
+[WARNING]   - META-INF/maven/com.fasterxml.jackson.core/jackson-databind/pom.xml
+[WARNING]   - com.fasterxml.jackson.databind.AbstractTypeResolver
+[WARNING]   - com.fasterxml.jackson.databind.AnnotationIntrospector
+[WARNING]   - com.fasterxml.jackson.databind.AnnotationIntrospector$ReferenceProperty
+[WARNING]   - com.fasterxml.jackson.databind.AnnotationIntrospector$ReferenceProperty$Type
+[WARNING]   - com.fasterxml.jackson.databind.AnnotationIntrospector$XmlExtensions
+[WARNING]   - com.fasterxml.jackson.databind.BeanDescription
+[WARNING]   - com.fasterxml.jackson.databind.BeanProperty
+[WARNING]   - com.fasterxml.jackson.databind.BeanProperty$Bogus
+[WARNING]   - 804 more...
+[WARNING] nimbus-jose-jwt-10.10.jar, rdg-gateway.jar define 586 overlapping classes and resources:
+[WARNING]   - META-INF/maven/com.github.stephenc.jcip/jcip-annotations/pom.properties
+[WARNING]   - META-INF/maven/com.github.stephenc.jcip/jcip-annotations/pom.xml
+[WARNING]   - META-INF/maven/com.google.code.gson/gson/pom.properties
+[WARNING]   - META-INF/maven/com.google.code.gson/gson/pom.xml
+[WARNING]   - META-INF/maven/com.nimbusds/nimbus-jose-jwt/pom.properties
+[WARNING]   - META-INF/maven/com.nimbusds/nimbus-jose-jwt/pom.xml
+[WARNING]   - META-INF/proguard/gson.pro
+[WARNING]   - com.nimbusds.jose.ActionRequiredForJWSCompletionException
+[WARNING]   - com.nimbusds.jose.Algorithm
+[WARNING]   - com.nimbusds.jose.AlgorithmFamily
+[WARNING]   - 576 more...
+[WARNING] rdg-gateway.jar, tomcat-embed-core-9.0.122.jar define 1748 overlapping classes and resources:
+[WARNING]   - META-INF/native-image/org.apache.tomcat.embed/tomcat-embed-core/reflect-config.json
+[WARNING]   - META-INF/native-image/org.apache.tomcat.embed/tomcat-embed-core/resource-config.json
+[WARNING]   - META-INF/native-image/org.apache.tomcat.embed/tomcat-embed-core/tomcat-jni.json
+[WARNING]   - javax.security.auth.message.AuthException
+[WARNING]   - javax.security.auth.message.AuthStatus
+[WARNING]   - javax.security.auth.message.ClientAuth
+[WARNING]   - javax.security.auth.message.MessageInfo
+[WARNING]   - javax.security.auth.message.MessagePolicy
+[WARNING]   - javax.security.auth.message.MessagePolicy$ProtectionPolicy
+[WARNING]   - javax.security.auth.message.MessagePolicy$Target
+[WARNING]   - 1738 more...
+[WARNING] rdg-gateway.jar, tomcat-embed-websocket-9.0.122.jar define 189 overlapping classes and resources:
+[WARNING]   - META-INF/native-image/org.apache.tomcat.embed/tomcat-embed-websocket/reflect-config.json
+[WARNING]   - META-INF/native-image/org.apache.tomcat.embed/tomcat-embed-websocket/resource-config.json
+[WARNING]   - META-INF/web-fragment.xml
+[WARNING]   - javax.websocket.ClientEndpoint
+[WARNING]   - javax.websocket.ClientEndpointConfig
+[WARNING]   - javax.websocket.ClientEndpointConfig$Builder
+[WARNING]   - javax.websocket.ClientEndpointConfig$Builder$1
+[WARNING]   - javax.websocket.ClientEndpointConfig$Configurator
+[WARNING]   - javax.websocket.CloseReason
+[WARNING]   - javax.websocket.CloseReason$CloseCode
+[WARNING]   - 179 more...
+[WARNING] guacamole-common-1.6.0.jar, jackson-annotations-2.22.jar, jackson-core-2.22.3.jar, jackson-databind-2.22.3.jar, nimbus-jose-jwt-10.10.jar, rdg-gateway.jar, slf4j-api-2.0.17.jar, slf4j-nop-2.0.17.jar, sqlite-jdbc-3.53.4.0.jar, tomcat-annotations-api-9.0.122.jar, tomcat-embed-core-9.0.122.jar, tomcat-embed-websocket-9.0.122.jar define 1 overlapping resource:
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] rdg-gateway.jar, sqlite-jdbc-3.53.4.0.jar define 156 overlapping classes and resources:
+[WARNING]   - META-INF.versions.9.org.sqlite.nativeimage.SqliteJdbcFeature
+[WARNING]   - META-INF.versions.9.org.sqlite.nativeimage.SqliteJdbcFeature$1
+[WARNING]   - META-INF.versions.9.org.sqlite.nativeimage.SqliteJdbcFeature$SqliteJdbcFeatureException
+[WARNING]   - META-INF/maven/org.xerial/sqlite-jdbc/LICENSE
+[WARNING]   - META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus
+[WARNING]   - META-INF/maven/org.xerial/sqlite-jdbc/VERSION
+[WARNING]   - META-INF/maven/org.xerial/sqlite-jdbc/pom.properties
+[WARNING]   - META-INF/maven/org.xerial/sqlite-jdbc/pom.xml
+[WARNING]   - META-INF/native-image/org.xerial/sqlite-jdbc/native-image.properties
+[WARNING]   - org.sqlite.BusyHandler
+[WARNING]   - 146 more...
+[WARNING] jackson-annotations-2.22.jar, rdg-gateway.jar define 79 overlapping classes and resources:
+[WARNING]   - META-INF/maven/com.fasterxml.jackson.core/jackson-annotations/pom.properties
+[WARNING]   - META-INF/maven/com.fasterxml.jackson.core/jackson-annotations/pom.xml
+[WARNING]   - com.fasterxml.jackson.annotation.JacksonAnnotation
+[WARNING]   - com.fasterxml.jackson.annotation.JacksonAnnotationValue
+[WARNING]   - com.fasterxml.jackson.annotation.JacksonAnnotationsInside
+[WARNING]   - com.fasterxml.jackson.annotation.JacksonInject
+[WARNING]   - com.fasterxml.jackson.annotation.JacksonInject$Value
+[WARNING]   - com.fasterxml.jackson.annotation.JsonAlias
+[WARNING]   - com.fasterxml.jackson.annotation.JsonAnyGetter
+[WARNING]   - com.fasterxml.jackson.annotation.JsonAnySetter
+[WARNING]   - 69 more...
+[WARNING] rdg-gateway.jar, slf4j-api-2.0.17.jar, slf4j-nop-2.0.17.jar define 1 overlapping resource:
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] rdg-gateway.jar, slf4j-nop-2.0.17.jar define 3 overlapping classes and resources:
+[WARNING]   - META-INF/maven/org.slf4j/slf4j-nop/pom.properties
+[WARNING]   - META-INF/maven/org.slf4j/slf4j-nop/pom.xml
+[WARNING]   - org.slf4j.nop.NOPServiceProvider
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO]
+[INFO] --- dependency:3.9.0:list (default-cli) @ gateway ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  40.873 s
+[INFO] Finished at: 2026-10-04T17:12:09+08:00
+[INFO] ------------------------------------------------------------------------
+Verified 11 runtime JAR digests, extracted SQLite natives, official browser artifact and 393 pinned Ubuntu package records in six locks. Image installation hashes are checked during Docker builds.

@@ -1,0 +1,22 @@
+{
+  "scope": "DEPLOYED_UNSIGNED_LOGIN_STABILITY",
+  "statuses": [
+    401,
+    401,
+    401,
+    401,
+    401,
+    401,
+    401,
+    401,
+    401,
+    401
+  ],
+  "status": "PASS",
+  "initialLiveCheckObservation": {
+    "unsignedLoginStatus": 400,
+    "identityGranted": false,
+    "rootCause": "NOT_REPRODUCED"
+  },
+  "recordedAt": "2026-10-04T10:13:30.921Z"
+}

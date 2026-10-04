@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "scope": "ISOLATED_OFFICIAL_GUACD_SYNTHETIC_BYTE_BENCHMARK",
+  "recordedAt": "2026-10-04T10:00:27.999690675Z",
+  "officialGuacamoleVersion": "1.6.0",
+  "resolution": {
+    "width": 640,
+    "height": 360
+  },
+  "pattern": "DETERMINISTIC_SYNTHETIC_ANIMATED_GRADIENT_WITH_NOISE",
+  "repeatsPerProfile": 1,
+  "mode": "candidate16lossless",
+  "framesPerRepeatExcludingInitial": 12,
+  "results": [
+    {
+      "profile": "low",
+      "targetCapabilities": "ZLIB_RAW",
+      "repeat": 1,
+      "status": "PASS",
+      "settings": {
+        "color-depth": "16",
+        "force-lossless": "true"
+      },
+      "requestedEncodings": [
+        16,
+        9,
+        -65527,
+        1,
+        5,
+        6,
+        4,
+        2,
+        0,
+        -253,
+        -240,
+        -239,
+        -232,
+        -131072,
+        -223,
+        -308,
+        -131071,
+        -131070,
+        -131069,
+        -309,
+        -258
+      ],
+      "negotiatedEncoding": "ZLIB",
+      "negotiatedPixelBits": 16,
+      "negotiatedColorDepth": 16,
+      "observedCompressionLevel": 3,
+      "observedJpegQualityPseudoEncoding": null,
+      "framesReceived": 12,
+      "rfbFramesIncludingInitial": 13,
+      "rfbDownloadBytesIncludingInitialAndHandshake": 3392387,
+      "rfbUploadBytesIncludingInitialAndHandshake": 161,
+      "rfbImagePayloadBytesIncludingInitial": 3392069,
+      "guacamoleDownloadBytesAfterInitial": 1819622,
+      "guacamoleUploadBytesAfterInitial": 5007,
+      "encodedImageBytesAfterInitial": 1360078,
+      "base64ImageBytesAfterInitial": 1813468,
+      "guacamoleImageTypes": {
+        "image/png": 3,
+        "image/webp": 24
+      },
+      "measuredDurationSeconds": 0.950922792,
+      "measuredPayloadKibPerSecond": 1868.6844235141648,
+      "connectHandshakeMs": 14,
+      "firstFrameMs": 81,
+      "syntheticPointerToFrameSyncMs": {
+        "samples": [
+          70.975417,
+          88.626083,
+          82.528416,
+          73.755166,
+          69.054042,
+          84.966042,
+          75.09425,
+          75.962209,
+          93.690541,
+          83.9755,
+          81.095458,
+          68.348291
+        ],
+        "median": 75.962209,
+        "p95": 93.690541
+      }
+    }
+  ],
+  "limits": [
+    "No real Mac, browser rendering, Cloudflare, WAN or host input latency is measured.",
+    "Guacamole byte counts are actual TCP payload bytes before WebSocket/TLS/HTTP framing; they are not internet wire bytes.",
+    "Raw-only target ignores requested compression and JPEG quality; low color depth remains negotiated.",
+    "The production defaults exclude Tight, and this fixture does not send Tight rectangles or JPEG VNC data.",
+    "Zlib compression level is honored only when selected; frame workload and target encoding materially affect savings.",
+    "force-lossless governs daemon-to-client graphical encoding; it does not restore upstream JPEG detail.",
+    "Pointer timings include fixture frame generation/encoding and guacd processing, without real input events or screen capture."
+  ],
+  "artifacts": {
+    "guacdImage": "sha256:3cbaad3b2d040ddfe1905a99b94c5b61448f2f7358e24bb1e4a2838f38daf06f",
+    "javaImage": "sha256:9b81c30a0fae9f77a8fe2a26612376935a627a2a91c15088070a9ba35d47b806",
+    "fixtureSourceSha256": "dc0cf12e1d34ed62aa183c76eb8ad7abad5170709eba7fda0f3f1aa1bdc1ce41",
+    "immutableCompileSnapshot": true
+  },
+  "summary": []
+}
