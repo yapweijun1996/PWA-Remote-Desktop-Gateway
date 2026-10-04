@@ -1,0 +1,16 @@
+{
+  "scope": "LOCAL_REAL_CHROMIUM_DISPLAY_DECODE",
+  "browser": "Chrome for Testing 153 (Playwright 1.58.2), Apple silicon Mac",
+  "realGuacamoleDisplay": true, "distinctFrames": "1280x800 PNG, about 511 KB each, 40 per run, 3 runs", "realMac": false, "realWindowsBrowser": false,
+  "msPerFrameMedian": {
+    "v1.2.3 library ImageDecoder (leaks VideoFrame)": 1.78,
+    "v1.2.4-1.2.5 Image + data URI": 5.25,
+    "BlobReader -> drawBlob (rejected)": 10.75,
+    "v1.2.6 ArrayBufferReader -> Blob -> drawBlob (native Uint8Array.fromBase64)": 1.04,
+    "v1.2.6 fallback without native base64 (data URI)": 5.33
+  },
+  "correctness": "A later fill covers the image, the final frame is correct, 0 VideoFrame warnings, 0 page errors, for the library, data-URI and new paths",
+  "stress": {"frames": 480, "msPerFrameByRound": [0.95,1.15,1.11,1.9,0.99,1.06,1.41,1.05], "jsHeapMBByRound": [78,69,71,98,71,101,127,71]},
+  "note": "An earlier timing run reused one frame and was invalid because Chrome caches decoded data URIs; the table above uses distinct frames.",
+  "serverInputPathCorrection": "The first review's 1.6-3.3 ms per instruction was measured while Maven/Docker were running; idle measurements are 0.14 ms (1 device) to 0.45 ms (32 devices), so the server input path is not a scroll bottleneck."
+}

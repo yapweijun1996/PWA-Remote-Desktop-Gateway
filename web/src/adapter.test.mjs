@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
-import {DesktopAdapter} from './adapter.mjs';
+import {DesktopAdapter,useFastImageStreams} from './adapter.mjs';
 
 /** Actual pinned Client/WebSocketTunnel, minimal DOM and socket boundary doubles. */
 function fixture(){
@@ -15,7 +15,7 @@ function fixture(){
     send(data){if(this.readyState!==1){closedSends++;throw new Error('SEND_ON_CLOSED_SOCKET');}sent.push(data);}
     close(){this.readyState=3;disconnects++;}
   }
-  const context=vm.createContext({window,WebSocket:Socket});
+  const context=vm.createContext({window,WebSocket:Socket,Blob});window.atob=atob;
   vm.runInContext(readFileSync(new URL('../vendor/all.min.js',import.meta.url),'utf8'),context);
   const G=context.Guacamole;
   G.Display=class {getElement(){return new Node();}getWidth(){return 640;}getHeight(){return 480;}getScale(){return 1;}scale(){}moveCursor(){}};
@@ -55,15 +55,22 @@ test('Manual close sends official disconnect once and ignores a queued failure a
   assert.equal(f.timers.size,0);
 });
 
-test('Image streams use the Image/data-URI path so no WebCodecs VideoFrame is left unclosed',()=>{
-  const f=fixture(),G=globalThis.Guacamole,drawn=[];
+test('Image streams never reach ImageDecoder: native base64 draws one Blob, otherwise a data URI',async()=>{
+  const f=fixture(),G=globalThis.Guacamole;
   globalThis.ImageDecoder=class{constructor(){throw new Error('IMAGE_DECODER_USED');}};
   try {
-    f.adapter.display.draw=(layer,x,y,uri)=>drawn.push([layer,x,y,uri]);
-    const stream=new G.InputStream({},7);
-    f.adapter.display.drawStream('layer',3,4,stream,'image/png');
-    stream.onblob('QUJD');stream.onblob('REVG');stream.onend();
-    assert.deepEqual(drawn,[['layer',3,4,'data:image/png;base64,QUJDREVG']]);
+    // The adapter installs the fast path on its own display.
+    assert.equal(typeof f.adapter.display.drawStream,'function');
+    for(const native of [true,false]) {
+      const drawn=[],display={drawBlob:(...a)=>drawn.push(['blob',...a]),draw:(...a)=>drawn.push(['uri',...a])};
+      useFastImageStreams(display,G,native);
+      const stream=new G.InputStream({sendAck(){}},7);
+      display.drawStream('layer',3,4,stream,'image/png');
+      stream.onblob(btoa('ABC'));stream.onblob(btoa('DEF'));assert.equal(drawn.length,0,'nothing is drawn before the stream ends');
+      stream.onend();assert.equal(drawn.length,1);
+      if(native){assert.deepEqual(drawn[0].slice(0,4),['blob','layer',3,4]);assert.equal(drawn[0][4].type,'image/png');assert.equal(await drawn[0][4].text(),'ABCDEF');}
+      else assert.deepEqual(drawn[0],['uri','layer',3,4,'data:image/png;base64,QUJDREVG']);
+    }
   } finally {delete globalThis.ImageDecoder;}
 });
 test('An empty clipboard send is refused locally so it cannot clear the remote clipboard',()=>{
