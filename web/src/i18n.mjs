@@ -39,7 +39,7 @@ const entries = {
   'connection.TARGET_UNAVAILABLE': ['Remote desktop reported an upstream error. Try Balanced picture mode and reconnect, then check Screen Sharing and gateway diagnostics.', '远程桌面报告上游错误。请尝试平衡画面模式并重连，再检查屏幕共享和网关诊断。'],
   'connection.DISCONNECTED': ['Desktop connection ended. Reconnect when ready.', '桌面连接已结束，可重新连接。'],
   'connection.INPUT_FAILURE': ['Remote input failed; this connection has ended safely. Reconnect to try again.', '远程输入失败，已安全结束此连接。可重连后再试。'],
-  'network.transfer': ['Download {down} KiB/s · Upload {up} KiB/s (last {window}s)\nReceived {received} MiB · Sent {sent} KiB · Connected {elapsed}s\nFirst display {first} ms · Client processing lag {lag} ms', '下载 {down} KiB/s · 上传 {up} KiB/s（最近 {window} 秒）\n已接收 {received} MiB · 已发送 {sent} KiB · 连接已持续 {elapsed} 秒\n首个画面 {first} ms · 客户端处理延迟 {lag} ms'],
+  'network.transfer': ['Download {down} KiB/s · Upload {up} KiB/s (last {window}s)\nReceived {received} MiB · Sent {sent} KiB · Connected {elapsed}s\nFirst display {first} ms · Client processing lag {lag} ms\nPeak download {peak} KiB/s (any 1 s since connecting)', '下载 {down} KiB/s · 上传 {up} KiB/s（最近 {window} 秒）\n已接收 {received} MiB · 已发送 {sent} KiB · 连接已持续 {elapsed} 秒\n首个画面 {first} ms · 客户端处理延迟 {lag} ms\n峰值下载 {peak} KiB/s（连接以来任意 1 秒）'],
   'network.unavailable': ['Not measured', '未测量'],
   'network.latency': ['Latest HTTP round trip: {ms} ms', '最近 HTTP 往返耗时：{ms} ms'],
   'network.measure': ['Measure HTTP round trip', '测量 HTTP 往返耗时'],

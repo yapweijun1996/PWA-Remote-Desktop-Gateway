@@ -31,7 +31,7 @@ function renderNetworkMeasurements(){
   setMessage('activeDisplayQuality','network.active',()=>({mode:t(activeDisplayQuality?'network.'+activeDisplayQuality:'network.unavailable')}));
   if(!stats){setMessage('transportMetrics','network.unavailable');return;}
   const number=(value,divisor=1)=>Number.isFinite(value)?(value/divisor).toFixed(1):t('network.unavailable');
-  setMessage('transportMetrics','network.transfer',{down:number(stats.inboundBytesPerSecond,1024),up:number(stats.outboundBytesPerSecond,1024),window:number(stats.rateWindowMs,1000),elapsed:number(stats.elapsedMs,1000),received:number(stats.inboundBytes,1048576),sent:number(stats.outboundBytes,1024),first:number(stats.firstDisplayMs),lag:number(stats.processingLagMs)});
+  setMessage('transportMetrics','network.transfer',{down:number(stats.inboundBytesPerSecond,1024),up:number(stats.outboundBytesPerSecond,1024),window:number(stats.rateWindowMs,1000),elapsed:number(stats.elapsedMs,1000),received:number(stats.inboundBytes,1048576),sent:number(stats.outboundBytes,1024),peak:number(stats.peakInboundBytesPerSecond,1024),first:number(stats.firstDisplayMs),lag:number(stats.processingLagMs)});
   const fps=value=>Number.isFinite(value)?value.toFixed(1):'—',network=networkHealth.snapshot();
   // Expired samples must not leave an old RTT labeled as the latest measurement.
   if(network.state==='unknown'&&!$('measureNetwork').disabled)setMessage('networkLatency','network.unavailable');
