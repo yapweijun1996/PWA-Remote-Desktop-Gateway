@@ -1,0 +1,103 @@
+{
+  "status": "PASS",
+  "version": "154.0.8037.93",
+  "build": "083af71ae2cdaf38",
+  "fixture": true,
+  "realMac": false,
+  "results": [
+    {
+      "test": "BLOCKED policy disables desktop preparation, display, connect intents and clipboard while diagnostics remain available",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP missing-credential form clears on blur and hide without browser password storage",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP maps credential failures to fixed messages without echoing password or server detail",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP credential success opens control, view and explicit clipboard settings without auto-connecting",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "OWNER_SETUP short session expiry bootstraps again with valid trust without login or automatic desktop reconnect",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "Trusted-device UI lists expiry/current metadata, maps failures and returns current revocation to login",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "Trusted signout keeps generic failures visible and refreshes an expired application before successful revocation and login",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "Signed bootstrap, truthful readiness and clean first worker activation",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Workspace fits mobile portrait/landscape and desktop without page overflow",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Official Guacamole display and browser focus-loss input pause",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Second tab bootstrap preserves existing shared node session",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Waiting-worker update defers for another tab and authoritative server lease",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Disconnect clears display and clipboard state",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Explicit idle update activates, reloads accepting tab and preserves other tab",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Responsive launcher at 390/430/768/1024/1440 widths",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Dark theme, reduced motion and 200% text zoom",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Cache Storage contains only explicit generic static assets",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Offline navigation exposes no device, identity or desktop",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    }
+  ],
+  "errors": [],
+  "unexpectedConsoleErrors": 0,
+  "expectedOfflineErrors": 0,
+  "expectedUiErrors": 8
+}

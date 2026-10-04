@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "scope": "UNSIGNED_FRESH_HTTP_CLIENTS",
+  "attempts": 5,
+  "httpStatuses": [
+    401,
+    401,
+    401,
+    401,
+    401
+  ],
+  "ownerCredentialsUsed": false,
+  "firstCombinedAttemptStatus": 400,
+  "firstCombinedDiscrepancyCause": "UNKNOWN",
+  "authorizationNeverGranted": true
+}

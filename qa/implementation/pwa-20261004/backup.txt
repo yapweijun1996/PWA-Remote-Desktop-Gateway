@@ -1,0 +1,9 @@
+
+> pwa-remote-desktop-gateway@1.0.0 test:backup
+> python3 qa/test-metadata-backup.py
+
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.007s
+
+OK

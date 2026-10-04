@@ -1,0 +1,6 @@
+
+> pwa-remote-desktop-gateway@1.0.0 test:browser
+> ./scripts/test-browser.sh
+
+Production assets built: 1.1.0 (083af71ae2cdaf38)
+{"browser":"154.0.8037.93","passed":18,"errors":0}

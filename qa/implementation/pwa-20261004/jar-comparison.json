@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "scope": "EXACT_PRIOR_IMAGE_VS_REBUILT_ARCHIVE_CONTENT",
+  "previousImage": "sha256:513fe8ebfbd6c71dd4578e8e7919d7fdf386138b74217f321448c9f401ab7c7b",
+  "previousJarDigest": "6e614867afc693108337fd6ac9b051494b03c60e2656f52ed22ccc89080836f5",
+  "currentJarDigest": "24da6166314e60656dd9cba66c021b3d6bdb029dde16c9c273719a0b70081c5d",
+  "addedEntries": 0,
+  "removedEntries": 0,
+  "contentChangedEntries": [],
+  "entryTimestampMetadataChanges": 1,
+  "productionClassFilesCompared": 33,
+  "packagedClassesMatchBuild": true,
+  "testFixtureClassesInJar": []
+}
