@@ -1,5 +1,13 @@
 # Implementation progress
 
+## Workspace layout refinement — 2026-10-04
+
+The owner requested implementation of the approved compact workspace image, followed by a commit and merge into local `main`. Work is prepared on `codex/compact-workspace-ui` from `f9a069b`. One shared header replaces the connected brand/toolbars; secondary controls move into an accessible disclosure. Release all and End session remain visible, and fullscreen includes the header. Windows keyboard profiles, optional clipboard consent, server session cleanup and authentication contracts are preserved. View-only status now survives resize/focus pause.
+
+109 Node tests, the web build and 19 local Chromium browser scenarios PASS. The requested 862×844 header measures 65px; 320–1440px, the 840/841px breakpoint, long labels, landscape, menu focus, native Chromium fullscreen, view-only and sign-out were checked. Browser APIs/Guacamole are simulated and explicitly labelled; they do not prove real Mac input, scaling or revocation. Full Java/official-protocol fixtures were not rerun because this host has no Java runtime. Independent source review found no P0/P1; its narrow-window concern was reproduced at 761px and fixed. No deployment, push, host or Access/Tunnel change is included. See `qa/implementation/WORKSPACE_LAYOUT.md` and its scoped artifact ledger for current UI evidence; prior implementation receipts remain historical for their recorded builds.
+
+## Previous local implementation restoration
+
 Current branch: `codex/real-local-gateway`. Original `main` is preserved at `96bc1331015ff5c8e3aae6049e35f10ee3c812d1`.
 
 The owner's selected option A authorizes local implementation and verification. This checkout restores the already implemented `codex/production-gateway` at `f815571b2427551d34fbf7e85abb639bcef19069`; it does not replace or restart the existing local pilot. The prior managed checkout is absent, but its branch and running containers remain.

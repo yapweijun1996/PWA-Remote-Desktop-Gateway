@@ -247,8 +247,8 @@ try{
   check(await page.getByText('Gateway reachable — desktop not tested',{exact:true}).isVisible(),'Truthful readiness');
   check(!await page.locator('#updateBanner').isVisible(),'Initial install must not produce update prompt');pass('Signed bootstrap, truthful readiness and clean first worker activation');
   await page.screenshot({path:'output/playwright/production-fixture-desktop.png',fullPage:true});
-  await connect(page);for(const viewport of [{width:390,height:850},{width:850,height:390},{width:1440,height:1000}]){await page.setViewportSize(viewport);check(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'Workspace fits viewport');check(await page.getByRole('button',{name:'End session',exact:true}).isVisible(),'Visible safety control');}pass('Workspace fits mobile portrait/landscape and desktop without page overflow');await page.locator('.capture').focus();await page.keyboard.down('Control');
-  await page.getByRole('button',{name:'Pause input',exact:true}).click();await page.keyboard.up('Control');
+  await connect(page);for(const viewport of [{width:390,height:850},{width:850,height:390},{width:862,height:844},{width:1440,height:1000}]){await page.setViewportSize(viewport);check(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'Workspace fits viewport');check(await page.getByRole('button',{name:'End session',exact:true}).isVisible(),'Visible safety control');}pass('Workspace fits mobile portrait/landscape and desktop without page overflow');await page.locator('.capture').focus();await page.keyboard.down('Control');
+  await page.getByRole('button',{name:'Release all',exact:true}).click();await page.keyboard.up('Control');
   check((await page.locator('#inputStatus').innerText()).includes('paused'),'Focus release');pass('Official Guacamole display and browser focus-loss input pause');
   const second=await context.newPage();await second.goto(url);await waitState(second,'READY');
   check(await page.locator('#workspace').isVisible(),'Second tab preserves desktop');pass('Second tab bootstrap preserves existing shared node session');

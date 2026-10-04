@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 import {writeArtifact} from '../scripts/atomic-artifact.mjs';
+import {checkWorkspaceUI} from './workspace-ui-checks.mjs';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.RDG_PLAYWRIGHT_MODULE??'playwright');
 const scope='LOCAL_BROWSER_CONNECTION_LIFECYCLE_FIXTURE',priorApp=process.env.RDG_CONNECT_BROWSER_PRIOR_APP==='true';
 const baselineSourceCommit='4deb5fc3d7262ed6a8de813c4fc7a7c33d0b95ed';
@@ -93,7 +94,7 @@ const makeContext=async()=>{
 const prepare=async(page)=>{await page.goto(origin);await waitState(page,'READY');await page.getByRole('button',{name:'Prepare connection',exact:true}).click();await page.getByLabel('I agree to control or view this shared desktop.').check();};
 const open=page=>page.getByRole('button',{name:'Open desktop',exact:true}).click();
 const cleanup=async()=>{if(closed)return;closed=true;if(fixture?.pendingSession)fixture.pendingSession.reply(200,{activeDesktop:false});if(fixture?.pendingIntent)fixture.pendingIntent.reply();if(fixture?.pendingDelete)fixture.pendingDelete.reply();if(browser)await browser.close().catch(()=>{});server.closeAllConnections();await new Promise(resolve=>server.close(resolve));};
-const deadline=setTimeout(()=>{console.error(JSON.stringify({status:'FAIL',scope,reason:'CONNECT_BROWSER_DEADLINE',results,totals}));void cleanup().finally(()=>process.exit(1));},60000);
+const deadline=setTimeout(()=>{console.error(JSON.stringify({status:'FAIL',scope,reason:'CONNECT_BROWSER_DEADLINE',results,totals}));void cleanup().finally(()=>process.exit(1));},120000);
 try{
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});origin='http://127.0.0.1:'+server.address().port;
   browser=await chromium.launch({headless:true,executablePath:process.env.RDG_TEST_CHROMIUM});
@@ -159,6 +160,10 @@ try{
     check(snapshot==='R'.repeat(43)&&fixture.deletes.length===1&&fixture.deletes[0].onlyIntentField&&fixture.lease===replacementIntent&&await replacement.locator('#status').innerText()==='CONNECTED','DELAYED_RECOVERY_ENDED_REPLACEMENT');
     await replacement.locator('#end').click();await waitState(replacement,'READY');await wait(()=>fixture.deletes.length===2,'RECOVERY_REPLACEMENT_END_MISSING');
     pass('Delayed explicit recovery remains scoped to its status snapshot and preserves a replacement simulated lease',{recoverySnapshotScoped:true,replacementPreserved:true,unscopedDeletes:0});await context.close();
+  }
+  fixture=fresh();{
+    const context=await makeContext(),page=await context.newPage();await prepare(page);await open(page);await waitState(page,'CONNECTED');
+    await checkWorkspaceUI({page,check,pass});await context.close();
   }
   check(totals.pageErrors===0&&totals.unexpectedConsoleErrors===0&&totals.fixtureErrors===0&&totals.webSockets===0&&totals.unscopedDeletes===0,'UNEXPECTED_FIXTURE_ERROR');
   check(!priorApp,'PRIOR_APP_UNEXPECTEDLY_PASSED');

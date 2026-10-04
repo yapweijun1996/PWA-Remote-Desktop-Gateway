@@ -75,7 +75,7 @@ export class RemoteInput {
     });
     this.pointer=new this.Guacamole.Mouse.State(0,0,false,false,false,false,false);
   }
-  pause(message='Input paused · click desktop to resume'){this.release();this.enabled=false;this.onPause(message);}
+  pause(message=this.mode==='view'?'View only':'Input paused · click desktop to resume'){this.release();this.enabled=false;this.onPause(message);}
   setProfile(profile){this.pause();this.run(()=>this.keys.setProfile(profile));}
   toggle(key){
     if(this.mode!=='control')return;

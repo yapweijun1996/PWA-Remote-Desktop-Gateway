@@ -20,6 +20,8 @@ Device reachability is not the same as a working desktop. Show `Gateway reachabl
 ## Workspace geometry
 Desktop/tablet: single opaque top bar, display fills remaining viewport, side drawer overlay only when requested. Avoid persistent oversized sidebars. The viewer does not auto-hide its safety controls with scroll; this is a documented PWA smart-topbar exception. Mobile: safe-area-aware top bar, explicit touch mode, bottom key tray above the home indicator. Use `100dvh` with tested fallbacks rather than brittle full-height assumptions.
 
+The production workspace uses one shared header: target and keyboard profile, connection/input status, Keys, Clipboard, More, Release all and End session. More contains scale, fullscreen, pause, keyboard profile, diagnostics, optional trusted browsers and node sign-out. Opening More pauses input; Escape returns focus to its trigger. Fullscreen includes the header so safety controls remain visible. Narrow screens use two compact rows and labelled icon buttons while End session keeps its text. The mobile bottom key tray remains a future layout enhancement; current virtual keys open in the existing accessible dialog.
+
 Provide fit-to-window and 100% display modes. Local scaling and remote resolution are distinct controls; disable remote resizing when not supported. Pointer coordinates must account for displayed scale/letterboxing exactly once. Do not zoom the entire UI to fit the desktop. Browser page zoom remains available outside the viewer.
 
 ## Keyboard safety UX

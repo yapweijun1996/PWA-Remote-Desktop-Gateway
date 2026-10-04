@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-10-04",
+  "implementationBranch": "codex/compact-workspace-ui",
+  "baseCommit": "f9a069b",
+  "scope": "LOCAL_WORKSPACE_UI_REFINEMENT",
+  "releaseAcceptance": "UNCHANGED_REAL_DEVICE_GATES",
+  "webBuild": "d3d201de7cabda02",
+  "nodeTests": 109,
+  "browserTests": 19,
+  "browser": "154.0.8037.97",
+  "deployed": false,
+  "pushed": false,
+  "sources": {
+    "web/public/index.html": "a27950934ccbac0b29badef6152ca32ffdbaacda3963cf4db3b00620434d534e",
+    "web/public/styles.css": "eaca3ea5443c810dfc3c713fce7f1744f828ccce12aa66b8339eef36cf7c4800",
+    "web/src/app.mjs": "1bab580f403f5a09b1a2385fbed6515699efb31c6a5b6c9beaaf27d9dc783ac4",
+    "web/src/input.mjs": "d705b50844c48ed854f15dd3ea8f2cf6db71f6f82dca36c99c774e1d2a6f2387",
+    "web/src/input.test.mjs": "8497ef1c6d5757ac78cbd7491b5fe5dbec6aee5a3431b50a8f393fd44ea58ef9",
+    "qa/workspace-ui-checks.mjs": "83fa00f5339e56cc349a63cfa75a5e18ab1250f531ae0c6810db276c9aeba88e",
+    "qa/connect-browser-checks.mjs": "0628348406b4d9985ddb4c1d9a1b0feee68e0613375114f265a80cf45458a9d7",
+    "qa/browser-checks.mjs": "fd9fde3ead04fd91bcd9cd9f97c16ac9d02b4b6209280c6e1fca341422f8e9d9",
+    "docs/07_UI_UX.md": "0cb619e690a04dedac7001d74a3bd5bfe710df784fbfcca6502eb833720f8a87",
+    "PROGRESS.md": "6a31faa43fffc032d9de757689bf4e60f063ab6ca1c2e2b94e47e39dc904003b"
+  },
+  "outputs": {
+    "web/dist/build.json": "5f0fedadbd7808e8e0116c3e9610a6c00cedfa45357ca79adc52e96247b1332f",
+    "web/dist/asset-manifest.json": "72ce11a67f138305bc76ed8d154d211371f219d2f579a9e4d5f03b17550b3dce",
+    "web/dist/assets/api.8a6407576e976241.js": "8a6407576e976241f8da37aa4ecf22a9261cc106ef0a1d6a31742332022b5c8c",
+    "web/dist/assets/keyboard-state.5141911694f7fa7e.js": "5141911694f7fa7e287d3aa0284655e3b0629afc0ef4b099d1b9f06d2e09233f",
+    "web/dist/assets/input.498929bf0eccd511.js": "498929bf0eccd51110b11a8bacab86d6abf1b05dc4b05ba9b8e7c5137888cbd5",
+    "web/dist/assets/adapter.1d22feee3b3663ba.js": "1d22feee3b3663ba93988d99eb69da3984df5dcdca120a02d87727fad3ef249e",
+    "web/dist/assets/pwa.928b14c36f67b81b.js": "928b14c36f67b81b2747cc3c3c30599c7f01d07bc8ca3ee77ca1b57a09549a0c",
+    "web/dist/assets/app.8c9416c247bf2b2c.js": "8c9416c247bf2b2cfea992e32127f08dee8214aa302440987b9f65a5086e4f29",
+    "web/dist/assets/styles.eaca3ea5443c810d.css": "eaca3ea5443c810dfc3c713fce7f1744f828ccce12aa66b8339eef36cf7c4800",
+    "web/dist/assets/all.min.cc89f710ecc54447.js": "cc89f710ecc544477dbe6bfea453fab752dafa1b1ab9770f523676e7b744b44a",
+    "web/dist/assets/icon-192.87d6fe96221e834f.png": "87d6fe96221e834fa69e2f10504e0be848f60c4fa5478fc5d7ab00ea0cfc8e7c",
+    "web/dist/assets/icon-512.98f69f3d707deb59.png": "98f69f3d707deb59dd531c3bdeada7ece04f0b0d61e8146079b3b9940de08f48",
+    "web/dist/favicon.ico": "c0123bc77c8ca887a62972118dc3b8117d291159c3a103408afa4e7ad552b735",
+    "web/dist/index.html": "0215cf8d54553a600bb7fff21b34c8bec80526c9f69de4b05acb95996c42d738",
+    "web/dist/manifest.webmanifest": "a90249e31469bead16b0878d9af1ae680b54bc36c2e59d0cb74c5f3a179ddcf8",
+    "web/dist/offline.html": "6a8c2fef52922ffa9ad43ef9fba16a3c9ab9af42e757568ed4e7c0b103b08e32",
+    "web/dist/sw.js": "281f3e4705220d3eab7867c5a6cd1c94b521cbb198ac778b88851298315ead91"
+  },
+  "evidence": {
+    "qa/implementation/WORKSPACE_LAYOUT.md": "e4381f9f4adca9922c6ae6e867bd47cb4bb63af3ef8dd97d531495f60812b3eb",
+    "qa/implementation/connect-browser-results.json": "d1d897cad8ea95efe9b9f77c89b813dbb7895b35a370081e72b8a5d2a9c96fe4",
+    "output/playwright/workspace-refined-862.png": "99867a99795a2c599c5f6efce0a6569980070fe329e429bbe9f65351a8b36c71",
+    "output/playwright/workspace-refined-menu.png": "72770b8575b141d9fe87b57a9f8ab07ba2636950f3af9537d06c312e89916e7d",
+    "output/playwright/workspace-refined-mobile.png": "59ef8fe967015ebcabb671a78bb39708d40675deb0cb1e05c3e311dd6bd29a3e"
+  }
+}
