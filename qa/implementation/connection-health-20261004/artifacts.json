@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "85f2d782bf3b8465d0c3e9cadf85686e0ae4c18d",
+  "artifacts": [
+    {
+      "file": "REPORT.md",
+      "bytes": 7027,
+      "sha256": "d01356ab7e5f6adade9ee0b22e100534154b0c963bd020d2defad1f9e074d89b"
+    },
+    {
+      "file": "browser-log.txt",
+      "bytes": 179,
+      "sha256": "d14425ba491d01015801e6188ca91ca77193dbd34c1b05113ca6261a242271fc"
+    },
+    {
+      "file": "browser-results.json",
+      "bytes": 3374,
+      "sha256": "98221285bffa54b2ffe57e04358dfbaa3088143ee334adf0fd666991a2d22ce2"
+    },
+    {
+      "file": "build.txt",
+      "bytes": 7020,
+      "sha256": "5d81f7fbdf8ad4a2ce32fccc9e9ae171f908080e9bb06c79cfa685fe8775829b"
+    },
+    {
+      "file": "check-health-live.mjs",
+      "bytes": 5486,
+      "sha256": "e8aa7d9570c896a496106102602dc0fd9dcad556fd37ad267ce7c342a5ed7f41"
+    },
+    {
+      "file": "connect-browser-results.json",
+      "bytes": 10502,
+      "sha256": "d6d801c755766234fdd9432399b7fc310a6e8ee086157af88fae103bd31fadc7"
+    },
+    {
+      "file": "connect-log.txt",
+      "bytes": 8120,
+      "sha256": "e3259dd1a58114b25c8e7819bdce0ff78391970f98b2cb0289360b0339fa6b9f"
+    },
+    {
+      "file": "container.txt",
+      "bytes": 400,
+      "sha256": "7f58bcdecaed19cd74e0e1375aeb15f5ac7eaa7ab99bc7091eb1dffc27c7c8af"
+    },
+    {
+      "file": "deploy-health.mjs",
+      "bytes": 8278,
+      "sha256": "1ad6d0777208af74007c3c88efc49d27ce95c6ad0fa91a84adb11e4a73dbddb6"
+    },
+    {
+      "file": "deployment.json",
+      "bytes": 1560,
+      "sha256": "74577861a5ab95d4ec40f67c9fb9a036747ff00da39b5a1df0131626abf27a79"
+    },
+    {
+      "file": "image-build.txt",
+      "bytes": 2668,
+      "sha256": "4e6a8d0dadd9efd164ae2ce5941ca90845b60970a81d65162151144dca4d62fb"
+    },
+    {
+      "file": "live-checks.json",
+      "bytes": 2793,
+      "sha256": "c2b6ecfcd0d0ffa4c35ffed37be77a01b90ba73b338d7059461110a50cf14047"
+    },
+    {
+      "file": "login-browser-log.txt",
+      "bytes": 4617,
+      "sha256": "2793e75de7f68dcb37149da002b7f4e8b1010042faf933fda1f67ea384d19662"
+    },
+    {
+      "file": "login-browser-results.json",
+      "bytes": 5721,
+      "sha256": "c3b047799dac27a2ff12ecf75dece6c0fda564086204d890144f5854ff82d811"
+    },
+    {
+      "file": "node-tests.txt",
+      "bytes": 11350,
+      "sha256": "5aa15775a1a3881d1bc1a8d86be4394711daad1e3e887c67c6e95f3a33225a42"
+    },
+    {
+      "file": "preview-desktop.png",
+      "bytes": 88790,
+      "sha256": "9aec9f3967f9bb4919ce7c70d14f70f55096636b2ad40d3894ba56157d3277c0"
+    },
+    {
+      "file": "preview-mobile.png",
+      "bytes": 62766,
+      "sha256": "1838b33ed4bd537f00129462323cc9490a4801e6b23eb8fd4d67cf1ce2732fc5"
+    }
+  ]
+}

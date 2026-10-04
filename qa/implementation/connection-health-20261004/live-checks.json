@@ -1,0 +1,110 @@
+{
+  "status": "PASS",
+  "scope": "LOCAL_DEPLOYED_NEGATIVE_SECURITY_AND_ARTIFACT_CHECKS",
+  "recordedAt": "2026-10-04T10:38:05.718Z",
+  "userAgent": "Mozilla/5.0",
+  "webVersion": "1.2.1",
+  "webBuild": "0ebbd94b65f916a1",
+  "realOwnerPositiveLoginTested": false,
+  "realDesktopTested": false,
+  "results": [
+    {
+      "test": "Unsigned WebSocket upgrade",
+      "status": "PASS",
+      "httpStatus": 401,
+      "expectedStatus": 401
+    },
+    {
+      "test": "Wrong Origin bootstrap",
+      "status": "PASS",
+      "httpStatus": 403,
+      "expectedStatus": 403
+    },
+    {
+      "test": "Missing identity protected API",
+      "status": "PASS",
+      "httpStatus": 401,
+      "expectedStatus": 401
+    },
+    {
+      "test": "Forged JWT and email header protected API",
+      "status": "PASS",
+      "httpStatus": 401,
+      "expectedStatus": 401
+    },
+    {
+      "test": "Absent Origin bootstrap",
+      "status": "PASS",
+      "httpStatus": 403,
+      "expectedStatus": 403
+    },
+    {
+      "test": "Unsigned scoped cleanup",
+      "status": "PASS",
+      "httpStatus": 401,
+      "expectedStatus": 401
+    },
+    {
+      "test": "Wrong Origin scoped cleanup",
+      "status": "PASS",
+      "httpStatus": 403,
+      "expectedStatus": 403
+    },
+    {
+      "test": "Wrong Host protected API",
+      "status": "PASS",
+      "httpStatus": 403,
+      "expectedStatus": 403
+    },
+    {
+      "test": "Unsigned login friendly HTML with no enrollment form",
+      "status": "PASS",
+      "httpStatus": 401
+    },
+    {
+      "test": "Deployed service worker matches reviewed source artifact",
+      "status": "PASS",
+      "httpStatus": 200,
+      "workerDigest": "c0a1ef4c92baeb3010f315708a6568e6ad7b7dbd48529594307e494af54e70ff"
+    },
+    {
+      "test": "Deployed generic version metadata is no-store",
+      "status": "PASS",
+      "httpStatus": 200,
+      "version": "1.2.1",
+      "build": "0ebbd94b65f916a1",
+      "noStore": true
+    },
+    {
+      "test": "Public anonymous / retains Access redirect",
+      "status": "PASS",
+      "httpStatus": 302,
+      "accessRedirect": true
+    },
+    {
+      "test": "Public anonymous /api/devices retains Access redirect",
+      "status": "PASS",
+      "httpStatus": 302,
+      "accessRedirect": true
+    },
+    {
+      "test": "Public anonymous WebSocket retains Access redirect",
+      "status": "PASS",
+      "httpStatus": 302,
+      "accessRedirect": true
+    },
+    {
+      "test": "Public anonymous /manifest.webmanifest retains Access redirect",
+      "status": "PASS",
+      "httpStatus": 302,
+      "accessRedirect": true
+    },
+    {
+      "test": "Gateway and dedicated unchanged Tunnel are healthy",
+      "status": "PASS",
+      "gatewayHealth": 200,
+      "tunnelReady": 200,
+      "healthyEdgeConnections": 4
+    }
+  ]
+}

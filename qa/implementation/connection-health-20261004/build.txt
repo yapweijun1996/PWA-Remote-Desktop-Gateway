@@ -1,0 +1,107 @@
+
+> pwa-remote-desktop-gateway@1.0.0 build
+> npm run build:web && ./scripts/maven.sh -B -f gateway/pom.xml package dependency:list -DoutputAbsoluteArtifactFilename=true -DoutputFile=target/dependencies.txt -DincludeScope=runtime && node scripts/verify-dependencies.mjs
+
+
+> pwa-remote-desktop-gateway@1.0.0 build:web
+> node scripts/build-web.mjs
+
+Production assets built: 1.2.1 (d4ebbc757da1d99b)
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------------< com.rdg:gateway >---------------------------
+[INFO] Building gateway 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- dependency:3.9.0:unpack (readonly-container-sqlite) @ gateway ---
+[INFO] sqlite-jdbc-3.53.4.0.jar already unpacked.
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ gateway ---
+[INFO] skip non existing resourceDirectory /Users/yapweijun/Documents/GitHub/PWA-Remote-Desktop-Gateway/gateway/src/main/resources
+[INFO]
+[INFO] --- compiler:3.14.1:compile (default-compile) @ gateway ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ gateway ---
+[INFO] skip non existing resourceDirectory /Users/yapweijun/Documents/GitHub/PWA-Remote-Desktop-Gateway/gateway/src/test/resources
+[INFO]
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ gateway ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.5.4:test (default-test) @ gateway ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.rdg.AuditTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.405 s -- in com.rdg.AuditTest
+[INFO] Running com.rdg.OwnerSetupGatewayIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.409 s -- in com.rdg.OwnerSetupGatewayIntegrationTest
+[INFO] Running com.rdg.SessionsTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.169 s -- in com.rdg.SessionsTest
+[INFO] Running com.rdg.OwnerSetupConnectorTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 s -- in com.rdg.OwnerSetupConnectorTest
+[INFO] Running com.rdg.LocalMacViewTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.176 s -- in com.rdg.LocalMacViewTest
+[INFO] Running com.rdg.ConfigTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.058 s -- in com.rdg.ConfigTest
+[INFO] Running com.rdg.BoundedReaderTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.rdg.BoundedReaderTest
+[INFO] Running com.rdg.GatewayIntegrationTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.691 s -- in com.rdg.GatewayIntegrationTest
+[INFO] Running com.rdg.TrustedDeviceStoreTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.429 s -- in com.rdg.TrustedDeviceStoreTest
+[INFO] Running com.rdg.BlockedGatewayIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.311 s -- in com.rdg.BlockedGatewayIntegrationTest
+[INFO] Running com.rdg.AccessVerifierTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.844 s -- in com.rdg.AccessVerifierTest
+[INFO] Running com.rdg.TrustedGatewayIntegrationTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.679 s -- in com.rdg.TrustedGatewayIntegrationTest
+[INFO] Running com.rdg.DesktopCredentialStoreTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.234 s -- in com.rdg.DesktopCredentialStoreTest
+[INFO] Running com.rdg.BlockedDesktopPolicyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.rdg.BlockedDesktopPolicyTest
+[INFO] Running com.rdg.OwnerSetupSessionsTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.222 s -- in com.rdg.OwnerSetupSessionsTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 108, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- jar:3.4.2:jar (default-jar) @ gateway ---
+[INFO] Building jar: /Users/yapweijun/Documents/GitHub/PWA-Remote-Desktop-Gateway/gateway/target/rdg-gateway.jar
+[INFO]
+[INFO] --- shade:3.6.1:shade (default) @ gateway ---
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] slf4j-api-2.0.17.jar, slf4j-nop-2.0.17.jar define 1 overlapping resource:
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] jackson-annotations-2.22.jar, jackson-core-2.22.3.jar, jackson-databind-2.22.3.jar, tomcat-annotations-api-9.0.122.jar, tomcat-embed-core-9.0.122.jar, tomcat-embed-websocket-9.0.122.jar define 2 overlapping resources:
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] jackson-core-2.22.3.jar, jackson-databind-2.22.3.jar, nimbus-jose-jwt-10.10.jar, slf4j-api-2.0.17.jar, slf4j-nop-2.0.17.jar, sqlite-jdbc-3.53.4.0.jar define 1 overlapping classes:
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] guacamole-common-1.6.0.jar, jackson-annotations-2.22.jar, jackson-core-2.22.3.jar, jackson-databind-2.22.3.jar, nimbus-jose-jwt-10.10.jar, rdg-gateway.jar, slf4j-api-2.0.17.jar, slf4j-nop-2.0.17.jar, sqlite-jdbc-3.53.4.0.jar, tomcat-annotations-api-9.0.122.jar, tomcat-embed-core-9.0.122.jar, tomcat-embed-websocket-9.0.122.jar define 1 overlapping resource:
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO]
+[INFO] --- dependency:3.9.0:list (default-cli) @ gateway ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.924 s
+[INFO] Finished at: 2026-10-04T18:30:27+08:00
+[INFO] ------------------------------------------------------------------------
+Verified 11 runtime JAR digests, extracted SQLite natives, official browser artifact and 393 pinned Ubuntu package records in six locks. Image installation hashes are checked during Docker builds.
