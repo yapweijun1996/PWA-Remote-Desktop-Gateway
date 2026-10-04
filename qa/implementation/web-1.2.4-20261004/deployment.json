@@ -1,0 +1,32 @@
+{
+  "status": "DEPLOYED_LOCAL_RUNTIME_VERIFIED",
+  "recordedAt": "2026-10-04T12:31:09.524Z",
+  "sourceCommit": "7490c260e7ddf48c10ea3ffd7c6553349abafe74",
+  "webVersion": "1.2.4",
+  "webBuild": "7fbd49d70597dc5e",
+  "url": "https://remote.gmb01.xyz",
+  "image": "sha256:ad6f0d8f468753c569564cde105b142cdfcea2baba5e32738b84a0f554065a24",
+  "previousImage": "sha256:2f9f4e8cb19bbd6fcbd457c3e934345fe81a0804d34e668b808ddb8072686bf0",
+  "containerId": "5c494877bd4cde874142794c532507d4e0a5f818f2ae568748ba822b9b9d8120",
+  "health": "healthy",
+  "architecture": "linux/arm64",
+  "activeUpstreamConnectionsBeforeReplacement": 0,
+  "gatewayEnvironmentUnchanged": true,
+  "onlyPrivateEnvironmentChange": "GATEWAY_IMAGE",
+  "stateAndKeyMountsPreserved": true,
+  "unrelatedContainersPreserved": true,
+  "preservedContainerCount": 9,
+  "rollbackEnvironmentSaved": true,
+  "rollbackEnvironmentPath": "/Users/yapweijun/.cloudflared/rdg-current-mac-pilot/owner-setup.env.before-web-1.2.4-20261004",
+  "gatewayLoopbackOnly": true,
+  "artifactHashes": {
+    "/app/rdg-gateway.jar": "5f77dc25a11f72c4469e45bd470c43726fcf74f60715549aa59ff2538ee411c8",
+    "/app/web/sw.js": "4b1087110eb8604292ac69430d655bf0011c31e933f5be2dd018eb7e6f47a896",
+    "/app/web/index.html": "422e1af5fbf0c374bbcf59f5555f5fa9f8e283b915ff0decad79880ff062f09e",
+    "/app/web/build.json": "2b735259aa942720227e4623f327916d436ad59418315de6a67acdefc16e5ccf"
+  },
+  "accessPolicyChanged": false,
+  "tunnelConfigChanged": false,
+  "realDesktopVerified": false,
+  "newVulnerabilityScanPerformed": false
+}
