@@ -3,10 +3,14 @@ const WINDOW_MS=5000;
 const BUCKET_COUNT=WINDOW_MS/BUCKET_MS+1;
 
 /** Size of canonical Guacamole UTF-8 instruction framing, without serialization. */
+const ASCII_ONLY=/^[\x00-\x7f]*$/;
 export function instructionBytes(elements){
   let total=0;
   for(const element of elements){
-    const value=String(element);let points=0,bytes=0;
+    const value=String(element);
+    // Base64 image blobs dominate traffic and are ASCII: one native scan instead of a per-character loop.
+    if(ASCII_ONLY.test(value)){total+=String(value.length).length+2+value.length;continue;}
+    let points=0,bytes=0;
     for(let index=0;index<value.length;index++){
       const unit=value.charCodeAt(index);points++;
       if(unit<0x80)bytes++;

@@ -18,17 +18,20 @@ export const CHORDS=Object.freeze({copy:['CommandLeft','keysym:99'],paste:['Comm
 
 /** Touch scrolling: clicks per window (40/s). Far below the gateway's 1000 messages/s hard limit (two messages per click). */
 export const SCROLL_WINDOW_MS=250,SCROLL_MAX_CLICKS=10;
-/** Wheel travel per remote wheel click. Guacamole's own value is 53 and it discards the remainder after every click. */
-export const SCROLL_SPEEDS=Object.freeze({slow:53,normal:30,fast:15});
-/** Wheel clicks: 100/s sustained after a burst of 20 (200 messages/s); excess distance waits, capped at 40 clicks. */
-export const WHEEL_BURST=20,WHEEL_CLICKS_PER_SECOND=100,WHEEL_BACKLOG_CLICKS=40,PIXELS_PER_LINE=18,PIXELS_PER_PAGE=288;
+/**
+ * Wheel travel per remote wheel click. Guacamole's own value is 53 and it discards the remainder after every click. A VNC
+ * click is usually one line on a Mac, so about 15 px keeps the remote close to the local scroll distance.
+ */
+export const SCROLL_SPEEDS=Object.freeze({slow:53,normal:30,fast:15,faster:8,max:4}),DEFAULT_SCROLL_SPEED='fast';
+/** Wheel clicks: 250/s sustained after a burst of 40 (500 messages/s, under the gateway's 1000/s); excess waits, capped at 200 clicks. */
+export const WHEEL_BURST=40,WHEEL_CLICKS_PER_SECOND=250,WHEEL_BACKLOG_CLICKS=200,PIXELS_PER_LINE=18,PIXELS_PER_PAGE=288;
 
 /** One normalized engine stream attached only to the focused remote surface. */
 export class RemoteInput {
   constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
     this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
     this.clock=clock;this.schedule=schedule;this.cancel=cancel;this.pointerSurface=pointerSurface;this.scrollWindowStart=-Infinity;this.scrollClicks=0;this.droppedWheelPress=false;
-    this.pixelsPerClick=SCROLL_SPEEDS.normal;this.wheelPixels=0;this.wheelTokens=WHEEL_BURST;this.wheelStamp=-Infinity;this.wheelTimer=null;this.wheelPoint={x:0,y:0};
+    this.pixelsPerClick=SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED];this.wheelPixels=0;this.wheelTokens=WHEEL_BURST;this.wheelStamp=-Infinity;this.wheelTimer=null;this.wheelPoint={x:0,y:0};
     this.enabled=false;this.mode='view';this.altGraph=false;this.leftAltPhysical=false;this.latches=new Set();this.disposers=[];
     this.pointer=new Guacamole.Mouse.State(0,0,false,false,false,false,false);this.protocolCounts=new Map();
     this.keys=new KeyboardState({profile,onTransition:({key,down})=>{

@@ -139,6 +139,8 @@ const entries = {
   'workspace.scrollSlow': ['Slow', '慢'],
   'workspace.scrollNormal': ['Normal', '正常'],
   'workspace.scrollFast': ['Fast', '快'],
+  'workspace.scrollFaster': ['Faster', '更快'],
+  'workspace.scrollMax': ['Maximum', '最快'],
   'workspace.fullscreen': ['Fullscreen', '全屏'],
   'workspace.pause': ['Pause input', '暂停输入'],
   'workspace.keysHelp': ['Control+C remains Terminal interrupt. System-reserved shortcuts require these buttons.', 'Control+C 保持终端中断语义。系统保留的快捷键请通过这些按钮发送。'],
