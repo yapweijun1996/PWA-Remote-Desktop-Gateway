@@ -21,7 +21,8 @@ public final class DesktopEndpoint extends Endpoint {
         try {
             ws.setMaxTextMessageBufferSize(49152);
             ws.getUserProperties().put("org.apache.tomcat.websocket.BLOCKING_SEND_TIMEOUT",5000L);
-            desktop=sessions.upgrade(ws.getPathParameters().get("intentId"));policy=new InputPolicy(desktop);
+            var caller=ws.getUserPrincipal();
+            desktop=sessions.upgrade(ws.getPathParameters().get("intentId"),caller==null?null:caller.getName());policy=new InputPolicy(desktop);
             // The session must own the browser even if upstream negotiation fails or times out.
             desktop.attachBrowser(ws);desktop.checkActive();tunnel=connector.open(desktop);
             try{desktop.checkActive();desktop.attach(tunnel,ws);}catch(Exception e){tunnel.close();throw e;}

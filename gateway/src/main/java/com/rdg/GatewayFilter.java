@@ -14,7 +14,11 @@ final class GatewayFilter implements Filter {
     public void doFilter(ServletRequest req,ServletResponse res,FilterChain chain) throws IOException,ServletException {
         var request=(HttpServletRequest)req;var response=(HttpServletResponse)res;
         securityHeaders(response);
-        String path=request.getRequestURI();boolean protectedPath=path.startsWith("/api/")||path.startsWith("/ws/");
+        String path=request.getRequestURI();
+        // Servlets and the WebSocket container route on the decoded, normalized path. Classifying the raw string
+        // would let /%77s/... or /ws/./... reach an endpoint without these guards, so non-canonical URIs are refused.
+        if(!path.equals(routedPath(request))){error(response,new Failure(400,"INVALID_REQUEST"));return;}
+        boolean protectedPath=path.startsWith("/api/")||path.startsWith("/ws/");
         if(!protectedPath){
             if(trusted!=null&&(path.equals("/")||path.equals("/index.html"))) {
                 response.setHeader("Cache-Control","no-store");
@@ -60,11 +64,14 @@ final class GatewayFilter implements Filter {
                     if(!request.getMethod().equals("GET") || !"websocket".equalsIgnoreCase(single(request,"Upgrade"))
                         || !"guacamole".equals(single(request,"Sec-WebSocket-Protocol")) || !path.matches("/ws/sessions/[A-Za-z0-9_-]{43}"))throw new Failure(400,"INVALID_REQUEST");
                     sessions.begin(app,path.substring("/ws/sessions/".length()));
+                    // Tomcat copies this principal into the WebSocket session; the endpoint refuses upgrades without it.
+                    req=new HttpServletRequestWrapper(request){@Override public java.security.Principal getUserPrincipal(){return ()->app.subject;}};
                 }
             }
             chain.doFilter(req,res);
         }catch(Failure f){error(response,f);}catch(Exception e){error(response,new Failure(500,"INTERNAL_ERROR"));}
     }
+    static String routedPath(HttpServletRequest r){String info=r.getPathInfo();return r.getServletPath()+(info==null?"":info);}
     static boolean json(HttpServletRequest r){String s=r.getContentType();return s!=null && s.matches("application/json(?:;\\s*charset=[Uu][Tt][Ff]-8)?");}
     static String single(HttpServletRequest r,String name) {
         List<String> values=Collections.list(r.getHeaders(name));

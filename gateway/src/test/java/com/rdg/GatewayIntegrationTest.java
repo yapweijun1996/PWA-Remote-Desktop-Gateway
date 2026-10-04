@@ -157,6 +157,35 @@ class GatewayIntegrationTest {
         live.sendText("3.key,5.65507,1.1;",true).get(4,TimeUnit.SECONDS);until(()->upstream.keys.get()==1);
         assertEquals(204,request("DELETE","/api/session",null,token,cookie,csrf,c.origin()).statusCode());until(()->upstream.closed.get()==1);
     }
+    /** Raw socket: java.net.http would normalize the request target before sending it. */
+    String rawStatus(String target,boolean upgrade,String assertion,String appCookie) throws Exception {
+        try(var socket=new java.net.Socket("127.0.0.1",runtime.port())) {
+            socket.setSoTimeout(4000);
+            StringBuilder head=new StringBuilder("GET "+target+" HTTP/1.1\r\nHost: gateway.fixture.test\r\nOrigin: "+c.origin()+"\r\nConnection: "+(upgrade?"Upgrade":"close")+"\r\n");
+            if(upgrade)head.append("Upgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Protocol: guacamole\r\n");
+            if(assertion!=null)head.append("Cf-Access-Jwt-Assertion: ").append(assertion).append("\r\n");
+            if(appCookie!=null)head.append("Cookie: ").append(appCookie).append("\r\n");
+            socket.getOutputStream().write(head.append("\r\n").toString().getBytes(java.nio.charset.StandardCharsets.US_ASCII));socket.getOutputStream().flush();
+            String line=new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream())).readLine();
+            return line==null?"closed":line.split(" ")[1];
+        }
+    }
+    @Test void nonCanonicalPathsCannotSkipProtectionClassification() throws Exception {
+        String id=intent("control");
+        for(String target:List.of("/%77s/sessions/"+id,"/ws/%73essions/"+id,"//ws/sessions/"+id,"/ws/./sessions/"+id,"/x/../ws/sessions/"+id,"/ws/sessions/"+id+";a=1"))
+            for(boolean authenticated:List.of(false,true))
+                assertEquals("400",rawStatus(target,true,authenticated?token:null,authenticated?cookie:null),target+" authenticated="+authenticated);
+        for(String target:List.of("/%61pi/devices","//api/devices","/api/./devices","/api/devices;a=1","/%69ndex.html","//"))
+            assertEquals("400",rawStatus(target,false,token,cookie),target);
+        // The canonical paths still behave as before, and none of the refused attempts consumed the intent or reached upstream.
+        assertEquals("401",rawStatus("/ws/sessions/"+id,true,null,null));assertEquals("200",rawStatus("/api/devices",false,token,cookie));
+        assertEquals("200",rawStatus("/",false,null,null));assertEquals("200",rawStatus("/health",false,null,null));
+        var manifest=Config.JSON.readTree(Files.readAllBytes(c.webDir().resolve("asset-manifest.json")));var assets=manifest.fieldNames();
+        while(assets.hasNext()){String asset=assets.next();assertEquals("200",rawStatus(asset,false,null,null),asset);}
+        assertEquals(0,upstream.connections.get());
+        var live=ws(id,token,cookie,c.origin()).get(4,TimeUnit.SECONDS);until(()->upstream.parameters.containsKey("read-only"));assertSingleDesktopOpen(live);
+        assertEquals(204,request("DELETE","/api/desktop-session",scopedBody(id),token,cookie,csrf,c.origin()).statusCode());until(()->upstream.closed.get()==1);
+    }
     @Test void rawViewInputClosesBothResources() throws Exception {
         var live=ws(intent("view"),token,cookie,c.origin()).get(4,TimeUnit.SECONDS);until(()->upstream.parameters.containsKey("read-only"));
         assertEquals("true",upstream.parameters.get("read-only"));assertEquals("true",upstream.parameters.get("disable-paste"));

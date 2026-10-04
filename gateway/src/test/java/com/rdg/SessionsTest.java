@@ -106,6 +106,14 @@ class SessionsTest {
             failure(400,"INVALID_REQUEST",()->s.intent(app,"fixture-mac","view","mac-native",quality));
         assertEquals(0,s.status(app).get("nodeActiveDesktops"));assertEquals(true,s.updateBoundary(app).get("safe"));
     }
+    @Test void upgradeRequiresTheSubjectAuthenticatedForThatHandshakeAndRefusalKeepsTheDesktop() throws Exception {
+        var desktop=s.begin(app,intent("control").id);
+        for(String caller:new String[]{null,"","other","OWNER"})failure(401,"AUTH_REQUIRED",()->s.upgrade(desktop.intentId,caller));
+        failure(401,"AUTH_REQUIRED",()->s.upgrade("A".repeat(43),"owner"));
+        assertFalse(desktop.ended.get());assertSame(desktop,s.upgrade(desktop.intentId,"owner"));
+        var transport=attach(desktop);failure(401,"AUTH_REQUIRED",()->s.upgrade(desktop.intentId,"owner"));
+        assertFalse(transport.upstreamClosed().get());
+    }
     @Test void secureBindingAndCsrf(){assertSame(app,s.authorize(cookie,identity("owner",3600)));assertThrows(Failure.class,()->s.authorize(cookie,identity("other",3600)));assertThrows(Failure.class,()->Sessions.csrf(app,"wrong"));Sessions.csrf(app,app.csrf);}
     @Test void atomicIntentRace() throws Exception {
         var i=intent("control");var gate=new CountDownLatch(1);var pool=Executors.newFixedThreadPool(2);

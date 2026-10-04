@@ -49,6 +49,8 @@ The official WebSocket example's background read loop produced an uncaught close
 
 The official JavaScript WebSocketTunnel always appends `?` even with empty connection data. The gateway permits the empty query only; any nonempty query remains denied. No bearer credential or upstream selection parameter is placed in the URL.
 
+Protection never depends on a raw-string prefix match. Tomcat routes servlets and WebSocket endpoints on the decoded, normalized path, so `GatewayFilter` refuses with `400 INVALID_REQUEST` every request whose raw URI differs from that path (percent-encoded letters such as `/%77s/`, `;` path parameters, `//`, `.`/`..` segments); a probe of `/%77s/sessions/<id>` previously reached the endpoint with `101` and no identity, Origin or CSRF check. As a second layer the filter attaches the authenticated subject to the upgrade request, and `DesktopEndpoint` refuses an upgrade whose subject does not own the intent before it touches any desktop. A refusal never ends another session's desktop. The intent ID remains a one-use secret, not an identity.
+
 ## ADR-008: shared cookie, fixed deadline
 
 Same-origin tabs share the host-only Secure/HttpOnly `__Host-rdg` cookie. Bootstrapping a second valid tab reuses the existing owner-bound session and CSRF without extending its deadline; rotating it would unexpectedly revoke the first tab. An identity mismatch is rejected. Expired/re-authenticated sessions start fresh. Node logout deliberately ends that node's app transports; it does not claim Access/fleet logout.

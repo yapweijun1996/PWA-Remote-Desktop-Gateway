@@ -169,9 +169,10 @@ final class Sessions implements AutoCloseable {
         if(desktops.size()>=2 || desktops.values().stream().anyMatch(d->d.app==app || (i.mode.equals("control")&&d.mode.equals("control"))))throw new Failure(409,"CONTROL_BUSY");
         i.consumed=true;Desktop desktop=new Desktop(i,app);desktops.put(id,desktop);return desktop;
     }
-    synchronized Desktop upgrade(String id) {
+    /** The caller must be the subject GatewayFilter authenticated for this very upgrade; the intent ID alone is not enough. */
+    synchronized Desktop upgrade(String id,String subject) {
         Desktop d=desktops.get(id);
-        if(d==null || d.ended.get() || d.connected())throw new Failure(401,"AUTH_REQUIRED");
+        if(d==null || d.ended.get() || d.connected() || subject==null || !d.app.subject.equals(subject))throw new Failure(401,"AUTH_REQUIRED");
         requireApp(d.app);return d;
     }
     synchronized void clipboard(App app,boolean consent) {
