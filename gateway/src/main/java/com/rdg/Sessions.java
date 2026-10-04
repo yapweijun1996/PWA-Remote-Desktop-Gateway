@@ -26,12 +26,13 @@ final class Sessions implements AutoCloseable {
     }
     static final class Intent {
         final String id, appIndex, mode, profile;
+        final DisplayQuality displayQuality;
         final long expires;
         final Instant publicExpiry;
         final boolean clipboard;
         boolean consumed;
-        Intent(String id,App app,String mode,String profile,long now,Instant wall) {
-            this.id=id;appIndex=app.index;this.mode=mode;this.profile=profile;expires=now+Duration.ofSeconds(30).toNanos();
+        Intent(String id,App app,String mode,String profile,DisplayQuality displayQuality,long now,Instant wall) {
+            this.id=id;appIndex=app.index;this.mode=mode;this.profile=profile;this.displayQuality=displayQuality;expires=now+Duration.ofSeconds(30).toNanos();
             publicExpiry=wall.plusSeconds(30);clipboard=app.clipboard && mode.equals("control");
         }
     }
@@ -39,6 +40,7 @@ final class Sessions implements AutoCloseable {
         final String intentId;
         final App app;
         final String mode;
+        final DisplayQuality displayQuality;
         final boolean clipboard;
         final long connectingDeadline;
         final AtomicBoolean ended=new AtomicBoolean();
@@ -46,7 +48,7 @@ final class Sessions implements AutoCloseable {
         private GuacamoleTunnel tunnel;
         private Session socket;
         private AutoCloseable pending;
-        Desktop(Intent i,App app) { intentId=i.id;this.app=app;mode=i.mode;clipboard=i.clipboard;lastInput=ticker.getAsLong();connectingDeadline=lastInput+Duration.ofSeconds(10).toNanos(); }
+        Desktop(Intent i,App app) { intentId=i.id;this.app=app;mode=i.mode;displayQuality=i.displayQuality;clipboard=i.clipboard;lastInput=ticker.getAsLong();connectingDeadline=lastInput+Duration.ofSeconds(10).toNanos(); }
         synchronized void pending(AutoCloseable resource) throws Exception {
             if(ended.get()) {resource.close();throw new Failure(401,"SESSION_EXPIRED");}pending=resource;
         }
@@ -141,7 +143,11 @@ final class Sessions implements AutoCloseable {
     }
     static void csrf(App app,String token) {if(token==null||!MessageDigest.isEqual(app.csrf.getBytes(StandardCharsets.UTF_8),token.getBytes(StandardCharsets.UTF_8)))throw new Failure(403,"CSRF_INVALID");}
     synchronized Intent intent(App app,String device,String mode,String profile) {
+        return intent(app,device,mode,profile,DisplayQuality.BALANCED.id);
+    }
+    synchronized Intent intent(App app,String device,String mode,String profile,String qualityId) {
         requireApp(app);config.requireDesktop();limit(app.subject+":intent",20);
+        DisplayQuality quality=DisplayQuality.parse(qualityId);
         if(cleanupUncertain)throw new Failure(503,"CLEANUP_UNCERTAIN");
         if(ticker.getAsLong()<maintenanceUntil)throw new Failure(409,"UPDATE_IN_PROGRESS");
         if(!config.deviceId().equals(device))throw new Failure(404,"DEVICE_UNKNOWN");
@@ -149,7 +155,7 @@ final class Sessions implements AutoCloseable {
         if(intents.size()>=64)throw new Failure(429,"RATE_LIMITED");
         if(desktops.values().stream().anyMatch(d->d.app==app))throw new Failure(409,"CONTROL_BUSY");
         if(mode.equals("control") && desktops.values().stream().anyMatch(d->d.mode.equals("control")))throw new Failure(409,"CONTROL_BUSY");
-        Intent i=new Intent(random(),app,mode,profile,ticker.getAsLong(),clock.instant());intents.put(i.id,i);return i;
+        Intent i=new Intent(random(),app,mode,profile,quality,ticker.getAsLong(),clock.instant());intents.put(i.id,i);return i;
     }
     synchronized Desktop begin(App app,String id) {
         requireApp(app);config.requireDesktop();
@@ -204,7 +210,7 @@ final class Sessions implements AutoCloseable {
         Desktop desktop=desktops.values().stream().filter(d->d.app==app).findFirst().orElse(null);
         var status=new LinkedHashMap<String,Object>(Map.of("expiresAt",app.expires.toString(),"activeDesktop",desktop!=null,
             "nodeActiveDesktops",desktops.size(),"clipboardConsent",app.clipboard,"maintenance",ticker.getAsLong()<maintenanceUntil));
-        if(desktop!=null)status.put("activeDesktopIntentId",desktop.intentId);
+        if(desktop!=null){status.put("activeDesktopIntentId",desktop.intentId);status.put("displayQuality",desktop.displayQuality.id);}
         return status;
     }
     synchronized Map<String,Object> updateBoundary(App app) {

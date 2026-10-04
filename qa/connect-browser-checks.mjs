@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 import {writeArtifact} from '../scripts/atomic-artifact.mjs';
-import {endWorkspace} from './workspace-controls-helper.mjs';
+import {openWorkspaceControls,endWorkspace} from './workspace-controls-helper.mjs';
 import {checkWorkspaceUI} from './workspace-ui-checks.mjs';
 import {checkPwaExperience} from './pwa-experience-checks.mjs';
 import {checkPrivacyLifecycle} from './privacy-lifecycle-checks.mjs';
@@ -22,17 +22,17 @@ if(priorApp){
 const fakeGuac=[
 "globalThis.__rdgConnectionFixture={clients:[]};",
 "class Display{constructor(){this.element=document.createElement('canvas');this.element.width=640;this.element.height=480;}getElement(){return this.element;}getWidth(){return 640;}getHeight(){return 480;}getScale(){return 1;}scale(){}}",
-"class Client{constructor(tunnel){this.tunnel=tunnel;this.display=new Display();globalThis.__rdgConnectionFixture.clients.push(this);}getDisplay(){return this.display;}connect(){this.savedFailure=this.onerror;queueMicrotask(()=>this.onstatechange?.(3));}disconnect(){}sendKeyEvent(){}sendMouseState(){}}",
+"class Client{constructor(tunnel){this.tunnel=tunnel;this.display=new Display();globalThis.__rdgConnectionFixture.clients.push(this);}getDisplay(){return this.display;}connect(){this.savedFailure=this.onerror;queueMicrotask(()=>{this.tunnel.oninstruction?.('sync',['1']);this.tunnel.sendMessage('sync','1');this.onstatechange?.(3);});}disconnect(){}sendKeyEvent(){}sendMouseState(){}}",
 "class Keyboard{reset(){}}",
 "class Mouse{onEach(){}}",
 "Mouse.State=class{constructor(x,y,left,middle,right,up,down){Object.assign(this,{x,y,left,middle,right,up,down});}};Mouse.Touchpad=Mouse;",
-"globalThis.Guacamole={Client,Keyboard,Mouse,WebSocketTunnel:class{constructor(url){this.url=url;}}};"
+"globalThis.Guacamole={Client,Keyboard,Mouse,WebSocketTunnel:class{constructor(url){this.url=url;}isConnected(){return true;}sendMessage(){}}};"
 ].join('\n');
 const results=[],totals={clipboardRequests:0,intentRequests:0,scopedDeletes:0,unscopedDeletes:0,expected409ConsoleErrors:0,expectedStale401ConsoleErrors:0,pageErrors:0,unexpectedConsoleErrors:0,webSockets:0,fixtureErrors:0};
 let fixture,browser,origin,failedStep='STARTUP',closed=false;
 const check=(condition,code)=>{if(!condition){failedStep=code;throw new Error(code);}};
 const pass=(test,metadata={})=>results.push({test,status:'PASS',...metadata});
-const fresh=(options={})=>({refusalStage:null,refusalCode:null,sameAppActive:false,lease:null,issued:0,clipboardRequests:0,intentRequests:0,deletes:[],holdIntent:false,holdDelete:false,holdSession:false,pendingIntent:null,pendingDelete:null,pendingSession:null,sessionDenialExpected:false,enforceBusy:false,...options});
+const fresh=(options={})=>({refusalStage:null,refusalCode:null,sameAppActive:false,lease:null,issued:0,clipboardRequests:0,intentRequests:0,qualities:[],deletes:[],holdIntent:false,holdDelete:false,holdSession:false,pendingIntent:null,pendingDelete:null,pendingSession:null,sessionDenialExpected:false,enforceBusy:false,...options});
 const respond=(response,status,body)=>{response.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});response.end(body===undefined?'':JSON.stringify(body));};
 const server=http.createServer(async(request,response)=>{
   try{
@@ -57,9 +57,10 @@ const server=http.createServer(async(request,response)=>{
       }
       if(pathname==='/api/connect-intents'){
         f.intentRequests++;totals.intentRequests++;
+        f.qualities.push(body?.displayQuality);
         if(f.refusalStage==='INTENT'){respond(response,409,{code:f.refusalCode});return;}
         const intentId=String.fromCharCode(65+f.issued++).repeat(43);f.lease=intentId;
-        const reply=()=>respond(response,201,{intentId,expiresAt:new Date(Date.now()+30000).toISOString()});
+        const reply=()=>respond(response,201,{intentId,displayQuality:body?.displayQuality??'balanced',expiresAt:new Date(Date.now()+30000).toISOString()});
         if(f.holdIntent){f.pendingIntent={intentId,reply};return;}reply();return;
       }
       if(pathname==='/api/desktop-session'&&request.method==='DELETE'){
@@ -80,7 +81,7 @@ const server=http.createServer(async(request,response)=>{
 });
 server.on('upgrade',(_request,socket)=>{totals.webSockets++;socket.end('HTTP/1.1 403 Denied\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');});
 const wait=async(predicate,code)=>{const until=Date.now()+8000;while(!predicate()){if(Date.now()>until){failedStep=code;throw new Error(code);}await new Promise(resolve=>setTimeout(resolve,20));}};
-const waitState=(page,state)=>page.waitForFunction(state=>document.getElementById('status')?.textContent===state,state);
+const waitState=(page,state)=>page.waitForFunction(state=>document.getElementById('status')?.dataset.state===state,state);
 const makeContext=async()=>{
   const context=await browser.newContext({viewport:{width:390,height:850},serviceWorkers:'block'});
   context.on('page',page=>{
@@ -163,6 +164,50 @@ try{
     check(snapshot==='R'.repeat(43)&&fixture.deletes.length===1&&fixture.deletes[0].onlyIntentField&&fixture.lease===replacementIntent&&await replacement.locator('#status').innerText()==='CONNECTED','DELAYED_RECOVERY_ENDED_REPLACEMENT');
     await endWorkspace(replacement);await waitState(replacement,'READY');await wait(()=>fixture.deletes.length===2,'RECOVERY_REPLACEMENT_END_MISSING');
     pass('Delayed explicit recovery remains scoped to its status snapshot and preserves a replacement simulated lease',{recoverySnapshotScoped:true,replacementPreserved:true,unscopedDeletes:0});await context.close();
+  }
+  fixture=fresh();{
+    const context=await makeContext(),page=await context.newPage();await prepare(page);
+    failedStep='QUALITY_INITIAL';await page.locator('#displayQuality').selectOption('low');await open(page);await waitState(page,'CONNECTED');
+    check(fixture.qualities.length===1&&fixture.qualities[0]==='low','QUALITY_INITIAL_REQUEST_MISSING');
+    failedStep='QUALITY_PANEL';await openWorkspaceControls(page);await page.getByText('Current mode: Low bandwidth').waitFor();
+    check(await page.locator('#applyDisplayQuality').isDisabled(),'QUALITY_APPLY_SAME_MODE_ENABLED');
+    check((await page.locator('#transportMetrics').innerText()).includes('Received'),'METRICS_MISSING_WHILE_CONNECTED');
+    failedStep='QUALITY_PROBE';await page.locator('#measureNetwork').click();await page.getByText(/^Latest HTTP round trip: [\d.]+ ms$/).waitFor();
+    check(await page.locator('#measureNetwork').isEnabled(),'METRICS_PROBE_NOT_REENABLED');
+    failedStep='QUALITY_CLEAR_RECONNECT';const old=fixture.lease;await page.locator('#liveDisplayQuality').selectOption('clear');
+    check(fixture.intentRequests===1&&fixture.deletes.length===0,'QUALITY_SELECTION_AUTO_RECONNECTED');
+    await page.locator('#applyDisplayQuality').click();await wait(()=>fixture.intentRequests===2,'QUALITY_RECONNECT_NOT_REQUESTED');await waitState(page,'CONNECTED');
+    check(fixture.deletes.length===1&&fixture.deletes[0].intentId===old&&fixture.deletes[0].onlyIntentField&&fixture.qualities[1]==='clear','QUALITY_RECONNECT_NOT_SCOPED');
+    failedStep='QUALITY_CLEAR_PANEL';await openWorkspaceControls(page);await page.getByText('Current mode: Clear').waitFor();
+    await page.getByText('Not measured',{exact:true}).waitFor();
+    check((await page.locator('#inputStatus').innerText()).includes('paused'),'QUALITY_RECONNECT_ENABLED_HIDDEN_INPUT');
+    await page.locator('#liveDisplayQuality').selectOption('balanced');await page.locator('#applyDisplayQuality').click();await wait(()=>fixture.intentRequests===3,'QUALITY_BALANCED_RECONNECT_MISSING');await waitState(page,'CONNECTED');
+    check(fixture.qualities.join(',')==='low,clear,balanced'&&fixture.deletes.length===2,'QUALITY_CATALOG_NOT_COMPLETE');
+    await openWorkspaceControls(page);fixture.holdSession=true;await page.locator('#measureNetwork').click();await wait(()=>fixture.pendingSession!==null,'METRICS_DELAYED_PROBE_MISSING');
+    await page.keyboard.press('Escape');fixture.pendingSession.reply(200,{activeDesktop:true});fixture.pendingSession=null;fixture.holdSession=false;
+    await openWorkspaceControls(page);await page.getByText('Not measured',{exact:true}).waitFor();
+    check(await page.locator('#measureNetwork').isEnabled(),'METRICS_CLOSED_PROBE_BLOCKED_BUTTON');
+    await page.locator('#preferencesBtn').click();await page.locator('#languagePreference').selectOption('zh-CN');await page.locator('#preferencesDialog button[data-close]').first().click();
+    check((await page.locator('#activeDisplayQuality').innerText()).includes('平衡'),'QUALITY_NOT_LOCALIZED');
+    await page.locator('#measureNetwork').click();await page.getByText(/^最近 HTTP 往返耗时：[\d.]+ ms$/).waitFor();
+    fixture.holdSession=true;await page.locator('#measureNetwork').click();await wait(()=>fixture.pendingSession!==null,'METRICS_STALE_PROBE_MISSING');
+    await page.locator('#end').click();await waitState(page,'READY');fixture.pendingSession.reply(200,{activeDesktop:true});fixture.pendingSession=null;fixture.holdSession=false;
+    await page.waitForLoadState('networkidle');
+    check(await page.locator('#transportMetrics').innerText()===''&&await page.locator('#networkLatency').innerText()==='','METRICS_STALE_PROBE_REPOPULATED_AFTER_END');
+    check(await page.evaluate(()=>{const entries=[...Object.keys(localStorage),...Object.keys(sessionStorage)];return entries.every(key=>/^rdg:(quality:|profile:|theme$|locale$)/.test(key));}),'METRICS_PERSISTED_TO_STORAGE');
+    pass('Low/balanced/clear requests require explicit scoped reconnect; live payload/HTTP metrics localize and clear without stale probe writes',{profiles:['low','clear','balanced'],noSelectionSideEffect:true,scopedReconnects:2,metricsStayInMemory:true,syntheticMetrics:true,realInputLatency:false});await context.close();
+  }
+  fixture=fresh();{
+    const context=await makeContext(),page=await context.newPage();await prepare(page);await open(page);await waitState(page,'CONNECTED');await openWorkspaceControls(page);
+    await page.evaluate(()=>{document.getElementById('closeWorkspacePanel').click();document.getElementById('moreBtn').click();});
+    await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,50)));
+    check(await page.locator('#workspaceMenu').isVisible()&&await page.locator('#moreBtn').getAttribute('aria-expanded')==='true','METRICS_STALE_CLOSE_ENDED_REOPENED_PANEL');
+    fixture.holdSession=true;fixture.sessionDenialExpected=true;await page.locator('#measureNetwork').click();await wait(()=>fixture.pendingSession!==null,'METRICS_AUTH_PROBE_MISSING');
+    const old=fixture.lease;fixture.pendingSession.reply(401,{code:'SESSION_EXPIRED'});fixture.pendingSession=null;fixture.holdSession=false;
+    await waitState(page,'REAUTH_REQUIRED');await wait(()=>fixture.deletes.length===1,'METRICS_AUTH_CLEANUP_MISSING');
+    check(!await page.locator('#workspace').isVisible()&&await page.locator('#surface canvas').count()===0&&fixture.deletes[0].intentId===old,'METRICS_AUTH_FAILURE_LEFT_DESKTOP');
+    check(await page.locator('#transportMetrics').innerText()===''&&await page.locator('#networkLatency').innerText()==='','METRICS_AUTH_FAILURE_LEFT_COUNTERS');
+    pass('Queued close events preserve reopened controls and explicit probe authorization failure immediately clears only the owned desktop',{syntheticRapidReopen:true,authDenial:401,scopedCleanup:true});await context.close();
   }
   fixture=fresh();{
     const context=await makeContext(),page=await context.newPage();await prepare(page);await open(page);await waitState(page,'CONNECTED');

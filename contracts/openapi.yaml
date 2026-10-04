@@ -173,6 +173,11 @@ paths:
                 keyboardProfile:
                   type: string
                   enum: [mac-native, windows-native, windows-alt-command]
+                displayQuality:
+                  type: string
+                  enum: [low, balanced, clear]
+                  default: balanced
+                  description: Server-owned VNC quality preset, negotiated with the target. Requires a new connection; no FPS cap.
       responses:
         '201':
           description: Owner-bound one-use 30-second intent; ID alone does not authorize a connection.
@@ -181,10 +186,11 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [intentId, expiresAt]
+                required: [intentId, expiresAt, displayQuality]
                 properties:
                   intentId: {type: string, minLength: 32, maxLength: 128}
                   expiresAt: {type: string, format: date-time}
+                  displayQuality: {type: string, enum: [low, balanced, clear]}
         '404':
           description: Unknown deviceId or a kind=bookmark device. Bookmarks only link to another node and are never connectable here.
           content:

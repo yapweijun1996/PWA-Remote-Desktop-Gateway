@@ -1,11 +1,13 @@
 import {t} from './i18n.mjs';
 import {RemoteInput} from './input.mjs';
+import {TransportMetrics,observeTunnelTransfer} from './transport-metrics.mjs';
 
 /** Official Guacamole display, keyboard, pointer, tunnel and clipboard objects. */
 export class DesktopAdapter {
   constructor({surface,profile,keysyms,onState,onFailure,onInput,onClipboard,clipboard}) {
     this.surface=surface;this.clipboard=clipboard;this.onFailure=onFailure;
     this.tunnel=null;this.client=null;this.input=null;
+    this.metrics=null;this.stopMetrics=null;
     this.options={surface,profile,keysyms,onPause:onInput,onFailure};this.onState=onState;this.onClipboard=onClipboard;
   }
   connect(intentId,mode){
@@ -13,6 +15,10 @@ export class DesktopAdapter {
     this.tunnel=new G.WebSocketTunnel(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/sessions/${intentId}`);
     this.client=new G.Client(this.tunnel);
     this.display=this.client.getDisplay();
+    this.metrics=new TransportMetrics();
+    this.stopMetrics=observeTunnelTransfer(this.tunnel,this.metrics,{display:this.display});
+    const metrics=this.metrics;
+    this.display.onstatistics=statistics=>metrics.displayStatistics(statistics);
     const capture=document.createElement('div');capture.className='capture';capture.tabIndex=0;capture.setAttribute('role','application');capture.setAttribute('aria-label',t('workspace.surfaceLabel'));
     capture.append(this.display.getElement());this.surface.replaceChildren(capture);
     this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:this.display.getElement(),client:this.client,Guacamole:G});
@@ -47,8 +53,12 @@ export class DesktopAdapter {
       writer.sendText(text);writer.sendEnd();
     });
   }
+  stats(){return this.metrics?.snapshot()??null;}
   disconnect(){
     this.input?.dispose();this.input=null;
+    this.stopMetrics?.();this.stopMetrics=null;
+    this.metrics?.dispose();this.metrics=null;
+    if(this.display)this.display.onstatistics=null;
     if(this.client){this.client.onerror=null;this.client.onstatechange=null;this.client.onclipboard=null;this.client.disconnect();}
     if(this.tunnel)this.tunnel.onerror=null;
     this.client=null;this.tunnel=null;this.display=null;this.surface.replaceChildren();

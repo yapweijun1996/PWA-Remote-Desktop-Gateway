@@ -36,6 +36,7 @@ class GuacdConnector {
                 public void close() throws GuacamoleException {try{raw.close();}catch(IOException e){throw new GuacamoleConnectionClosedException("UPSTREAM_CLOSED");}}
             };
             GuacamoleConfiguration vnc=new GuacamoleConfiguration();vnc.setProtocol("vnc");
+            desktop.displayQuality.apply(vnc);
             vnc.setParameter("hostname",config.targetHost());vnc.setParameter("port",Integer.toString(config.targetPort()));
             vnc.setParameter("password",password);
             vnc.setParameter("read-only",desktop.mode.equals("view")?"true":"false");

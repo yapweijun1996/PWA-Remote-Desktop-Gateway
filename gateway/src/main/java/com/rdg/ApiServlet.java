@@ -37,9 +37,10 @@ final class ApiServlet extends HttpServlet {
                 send(res,200,sessions.desktopCredential(app,b.path("password").textValue()));
             }
             else if(method.equals("POST")&&path.equals("/api/connect-intents")) {
-                JsonNode b=body(r);Config.fields(b,Set.of("deviceId","mode","keyboardProfile"));
-                var i=sessions.intent(app,text(b,"deviceId"),text(b,"mode"),text(b,"keyboardProfile"));
-                send(res,201,Map.of("intentId",i.id,"expiresAt",i.publicExpiry.toString()));
+                JsonNode b=body(r);Config.fields(b,Set.of("deviceId","mode","keyboardProfile","displayQuality"));
+                String quality=b.has("displayQuality")?text(b,"displayQuality"):DisplayQuality.BALANCED.id;
+                var i=sessions.intent(app,text(b,"deviceId"),text(b,"mode"),text(b,"keyboardProfile"),quality);
+                send(res,201,Map.of("intentId",i.id,"expiresAt",i.publicExpiry.toString(),"displayQuality",i.displayQuality.id));
             }else if(method.equals("POST")&&path.equals("/api/clipboard-consent")) {
                 JsonNode b=body(r);Config.fields(b,Set.of("enabled"));if(!b.path("enabled").isBoolean())throw new Failure(400,"INVALID_REQUEST");
                 sessions.clipboard(app,b.path("enabled").booleanValue());send(res,200,Map.of("enabled",app.clipboard));
@@ -57,7 +58,8 @@ final class ApiServlet extends HttpServlet {
                 send(res,200,list);
             }else if(method.equals("GET")&&path.equals("/api/diagnostics")) {
                 var diagnostics=new LinkedHashMap<String,Object>(Map.of("build","1.0.0","guacamole","1.6.0","nodeId",config.nodeId(),"keysyms",config.keysyms(),"clipboardLimit",16384,"remoteResize",false,"directLocalIME",false));
-                diagnostics.putAll(config.desktopStatus());diagnostics.put("trustedDevicesEnabled",trusted!=null);send(res,200,diagnostics);
+                diagnostics.putAll(config.desktopStatus());diagnostics.put("trustedDevicesEnabled",trusted!=null);
+                diagnostics.put("displayQualities",DisplayQuality.ids());diagnostics.put("displayQualityRequiresReconnect",true);send(res,200,diagnostics);
             }
             else if(method.equals("GET")&&path.equals("/api/history"))send(res,200,sessions.audit.history(app.ref));
             else throw new Failure(404,"NOT_FOUND");

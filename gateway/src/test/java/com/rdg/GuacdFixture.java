@@ -23,7 +23,7 @@ final class GuacdFixture implements AutoCloseable {
             var reader=new ReaderGuacamoleReader(new InputStreamReader(socket.getInputStream(),StandardCharsets.UTF_8));
             var writer=new WriterGuacamoleWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8));
             if(!reader.readInstruction().getOpcode().equals("select"))throw new Exception();
-            String[] names={"hostname","port","password","read-only","disable-copy","disable-paste"};writer.writeInstruction(new GuacamoleInstruction("args",names));
+            String[] names={"hostname","port","password","read-only","disable-copy","disable-paste","color-depth","compress-level","quality-level","force-lossless","encodings"};writer.writeInstruction(new GuacamoleInstruction("args",names));
             GuacamoleInstruction i;while(!(i=reader.readInstruction()).getOpcode().equals("connect")){}
             Map<String,String> map=new HashMap<>();for(int n=0;n<names.length;n++)map.put(names[n],i.getArgs().get(n));parameters=Map.copyOf(map);
             writer.writeInstruction(new GuacamoleInstruction("ready","fixture-upstream"));

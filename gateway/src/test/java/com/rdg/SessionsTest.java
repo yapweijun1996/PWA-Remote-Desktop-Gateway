@@ -90,6 +90,22 @@ class SessionsTest {
         var desktop=s.begin(app,intent("control").id);var deadline=app.expires;time.advance(2);
         var reused=s.bootstrap(identity("owner",3600),cookie);assertSame(app,reused.getValue());assertEquals(cookie,reused.getKey());assertEquals(deadline,reused.getValue().expires);assertFalse(desktop.ended.get());
     }
+    @Test void qualityIsBoundToIntentAndVisibleOnlyToOwningAppUntilEnd() {
+        assertEquals(DisplayQuality.BALANCED,intent("view").displayQuality);
+        var low=s.intent(app,"fixture-mac","view","mac-native","low");
+        var clear=s.intent(app,"fixture-mac","view","mac-native","clear");
+        var desktop=s.begin(app,low.id);assertEquals(DisplayQuality.LOW,desktop.displayQuality);
+        assertEquals("low",s.status(app).get("displayQuality"));
+        var other=s.bootstrap(identity("owner",3600),null).getValue();assertFalse(s.status(other).containsKey("displayQuality"));
+        failure(409,"CONTROL_BUSY",()->s.begin(app,clear.id));assertEquals(DisplayQuality.LOW,desktop.displayQuality);
+        s.endDesktop(app,low.id,"USER_ENDED");assertFalse(s.status(app).containsKey("displayQuality"));
+        assertEquals(DisplayQuality.CLEAR,s.begin(app,clear.id).displayQuality);
+    }
+    @Test void arbitraryQualityValuesDoNotReserveAnIntentOrDesktop() {
+        for(String quality:Arrays.asList("",null,"LOW","low ","1fps","custom","127.0.0.1","{\"hostname\":\"evil\"}"))
+            failure(400,"INVALID_REQUEST",()->s.intent(app,"fixture-mac","view","mac-native",quality));
+        assertEquals(0,s.status(app).get("nodeActiveDesktops"));assertEquals(true,s.updateBoundary(app).get("safe"));
+    }
     @Test void secureBindingAndCsrf(){assertSame(app,s.authorize(cookie,identity("owner",3600)));assertThrows(Failure.class,()->s.authorize(cookie,identity("other",3600)));assertThrows(Failure.class,()->Sessions.csrf(app,"wrong"));Sessions.csrf(app,app.csrf);}
     @Test void atomicIntentRace() throws Exception {
         var i=intent("control");var gate=new CountDownLatch(1);var pool=Executors.newFixedThreadPool(2);

@@ -12,6 +12,29 @@ const desktopBlockedMessage='notice.desktopBlocked';
 const platform=/Mac/.test(navigator.platform)?'mac':'windows';
 const messages=new Map();
 let diagnosticsRequest=0,clipboardActivity=0;
+let activeDisplayQuality=null,metricsTimer=null,latencyRequest=0;
+const displayQualities=['low','balanced','clear'];
+function cancelNetworkProbe(){
+  ++latencyRequest;if($('measureNetwork').disabled)setMessage('networkLatency','network.unavailable');$('measureNetwork').disabled=false;
+}
+function clearNetworkMeasurements(){
+  clearInterval(metricsTimer);metricsTimer=null;++latencyRequest;activeDisplayQuality=null;
+  for(const id of ['transportMetrics','networkLatency','activeDisplayQuality']){messages.delete($(id));$(id).textContent='';}
+  $('measureNetwork').disabled=false;$('applyDisplayQuality').disabled=true;
+}
+function renderNetworkMeasurements(){
+  if(!adapter||!$('workspaceMenu').open)return;
+  const stats=adapter.stats?.();
+  setMessage('activeDisplayQuality','network.active',()=>({mode:t(activeDisplayQuality?'network.'+activeDisplayQuality:'network.unavailable')}));
+  if(!stats){setMessage('transportMetrics','network.unavailable');return;}
+  const number=(value,divisor=1)=>Number.isFinite(value)?(value/divisor).toFixed(1):t('network.unavailable');
+  setMessage('transportMetrics','network.transfer',{down:number(stats.inboundBytesPerSecond,1024),up:number(stats.outboundBytesPerSecond,1024),window:number(stats.rateWindowMs,1000),elapsed:number(stats.elapsedMs,1000),received:number(stats.inboundBytes,1048576),sent:number(stats.outboundBytes,1024),first:number(stats.firstDisplayMs),lag:number(stats.processingLagMs)});
+}
+function loadDisplayQuality(){
+  let value='balanced';try{const stored=localStorage.getItem(`rdg:quality:${nodeId}`);if(displayQualities.includes(stored))value=stored;}catch{}
+  $('displayQuality').value=value;$('liveDisplayQuality').value=value;
+}
+function rememberDisplayQuality(){try{localStorage.setItem(`rdg:quality:${nodeId}`,$('displayQuality').value);}catch{}}
 function pruneMessages(){for(const node of messages.keys())if(!node.isConnected)messages.delete(node);}
 function setMessage(id,key,params={}){const node=typeof id==='string'?$(id):id;if(!node)return;messages.set(node,{key,params});node.textContent=t(key,typeof params==='function'?params():params);}
 function state(value,message,params={}){const known=Object.hasOwn(TRANSLATIONS.en,'status.'+value)?value:'ERROR';$('status').dataset.state=known;setMessage('status','status.'+known);setMessage('notice',message??'status.'+known,params);}
@@ -37,6 +60,7 @@ function updateState(value,quiet=false){
 }
 
 function closeWorkspaceMenu(restoreFocus=false){
+  clearInterval(metricsTimer);metricsTimer=null;cancelNetworkProbe();
   const wasOpen=$('workspaceMenu').open;if(wasOpen)$('workspaceMenu').close();$('moreBtn').setAttribute('aria-expanded','false');
   if(wasOpen&&restoreFocus&&document.body.classList.contains('viewing'))$('moreBtn').focus();
 }
@@ -54,6 +78,7 @@ function updateWorkspaceIdentity(){
 }
 function clearCredentialInput(){$('desktopPassword').value='';}
 function clearPrivate(){
+  clearNetworkMeasurements();
   clearCredentialInput();desktopIntentId=null;recoveryIntentId=null;$('recoverConnection').hidden=true;diag=null;$('credentialSetup').hidden=true;$('changeCredential').hidden=true;
   messages.delete($('credentialStatus'));$('credentialStatus').textContent='';$('trustedDevicesBtn').hidden=true;$('workspaceTrustedDevices').hidden=true;$('trustedDevicesList').replaceChildren();messages.delete($('trustedDevicesStatus'));$('trustedDevicesStatus').textContent='';
   workspaceLayout(false);
@@ -68,7 +93,7 @@ function trustedLoginRequired(error){
   state('AUTH_REQUIRED','app.notice.sign_in_to_trust_this_browser');$('reauth').hidden=false;return true;
 }
 function rememberProfile(){try{localStorage.setItem(`rdg:profile:${nodeId}:${platform}`,$('profile').value);}catch{}}
-function loadProfile(){let p=platform==='mac'?'mac-native':'windows-native';try{const stored=localStorage.getItem(`rdg:profile:${nodeId}:${platform}`);if(['mac-native','windows-native','windows-alt-command'].includes(stored))p=stored;}catch{}$('profile').value=p;$('liveProfile').value=p;updateProfileHelp();}
+function loadProfile(){let p=platform==='mac'?'mac-native':'windows-native';try{const stored=localStorage.getItem(`rdg:profile:${nodeId}:${platform}`);if(['mac-native','windows-native','windows-alt-command'].includes(stored))p=stored;}catch{}$('profile').value=p;$('liveProfile').value=p;updateProfileHelp();loadDisplayQuality();}
 function ownerSetup(){return diag?.desktopPolicy==='OWNER_SETUP';}
 function credentialSetupAllowed(){return ownerSetup()&&diag?.credentialSetupEnabled===true;}
 function updateProfileHelp(){
@@ -164,6 +189,7 @@ async function cancelIntent(intentId){
   await api.request('/api/desktop-session',{method:'DELETE',body:{intentId}});
 }
 async function end(reason='READY',message){
+  clearNetworkMeasurements();
   const intentId=desktopIntentId;desktopIntentId=null;const request=++epoch;busy=true;
   clearCredentialInput();adapter?.disconnect();adapter=null;$('surface').replaceChildren();$('localText').value='';$('remoteText').value='';
   for(const d of document.querySelectorAll('dialog[open]'))d.close();
@@ -197,18 +223,21 @@ async function recoverConnection(){
   finally{if(request===epoch)busy=false;$('recoverConnection').disabled=false;}
 }
 async function connect(){
-  if(busy||!device)return;if(diag?.desktopEnabled===false||device.desktopEnabled===false||device.status==='BLOCKED'){state('BLOCKED',desktopBlockedMessage);return;}if(!$('consent').checked){setMessage('notice','app.notice.confirm_shared_desktop_consent_before_connecting');return;}
+  if(busy||adapter||!device)return;if(diag?.desktopEnabled===false||device.desktopEnabled===false||device.status==='BLOCKED'){state('BLOCKED',desktopBlockedMessage);return;}if(!$('consent').checked){setMessage('notice','app.notice.confirm_shared_desktop_consent_before_connecting');return;}
   clearCredentialInput();recoveryIntentId=null;$('recoverConnection').hidden=true;const request=++epoch;busy=true;$('connect').disabled=true;state('CONNECTING');
   try{
     const clipboard=$('clipboardConsent').checked&&$('mode').value==='control';
     await api.request('/api/clipboard-consent',{method:'POST',body:{enabled:clipboard}});if(request!==epoch)return;
-    const intent=await api.request('/api/connect-intents',{method:'POST',body:{deviceId:device.id,mode:$('mode').value,keyboardProfile:$('profile').value}});
+    const quality=$('displayQuality').value;
+    const intent=await api.request('/api/connect-intents',{method:'POST',body:{deviceId:device.id,mode:$('mode').value,keyboardProfile:$('profile').value,displayQuality:quality}});
     if(request!==epoch){await cancelIntent(intent.intentId);return;}
     desktopIntentId=intent.intentId;
+    activeDisplayQuality=displayQualities.includes(intent.displayQuality)?intent.displayQuality:null;
+    $('liveDisplayQuality').value=activeDisplayQuality??quality;$('applyDisplayQuality').disabled=true;rememberDisplayQuality();setMessage('networkLatency','network.unavailable');
     rememberProfile();updateWorkspaceIdentity();
     $('liveProfile').value=$('profile').value;workspaceLayout(true);
     const connectingAdapter=new DesktopAdapter({surface:$('surface'),profile:$('profile').value,keysyms:diag.keysyms,clipboard,
-      onState:value=>{if(request===epoch&&adapter===connectingAdapter)state(value);},onFailure:reason=>{if(request===epoch)void end(reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
+      onState:value=>{if(request!==epoch||adapter!==connectingAdapter)return;state(value);if(value==='CONNECTED'){busy=false;syncConnectButton();}},onFailure:reason=>{if(request===epoch)void end(reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
       onClipboard:text=>{if(request!==epoch||adapter!==connectingAdapter)return;$('remoteText').value=text;setMessage('clipboardStatus','app.clipboardStatus.received_text_held_in_memory_copy');}});
     adapter=connectingAdapter;adapter.connect(intent.intentId,$('mode').value);$('clipboardBtn').disabled=!clipboard;$('clipboardBtn').dataset.i18nTitle=clipboard?'clipboard.transferTitle':'clipboard.enableTitle';$('clipboardBtn').title=t($('clipboardBtn').dataset.i18nTitle);$('keysBtn').disabled=$('mode').value==='view';$('keysBtn').dataset.i18nTitle=$('mode').value==='view'?'workspace.viewInputUnavailable':'workspace.remoteKeys';$('keysBtn').title=t($('keysBtn').dataset.i18nTitle);
     setMessage('clipboardStatus',clipboard?'clipboard.enabled':'clipboard.disabled');
@@ -245,6 +274,30 @@ $('pause').onclick=()=>{adapter?.input?.pause();closeWorkspaceMenu(true);};$('ke
 $('moreBtn').onclick=()=>{
   if($('workspaceMenu').open){closeWorkspaceMenu(true);return;}
   clearCredentialInput();adapter?.input?.pause();$('workspaceMenu').showModal();$('moreBtn').setAttribute('aria-expanded','true');$('closeWorkspacePanel').focus();
+  renderNetworkMeasurements();clearInterval(metricsTimer);metricsTimer=setInterval(renderNetworkMeasurements,1000);
+};
+$('displayQuality').onchange=rememberDisplayQuality;
+$('liveDisplayQuality').onchange=()=>{$('applyDisplayQuality').disabled=busy||!adapter||$('liveDisplayQuality').value===activeDisplayQuality;};
+$('applyDisplayQuality').onclick=async()=>{
+  if(busy||!adapter||$('applyDisplayQuality').disabled)return;
+  const quality=$('liveDisplayQuality').value;if(!displayQualities.includes(quality))return;
+  $('applyDisplayQuality').disabled=true;
+  if(!await end())return;
+  $('displayQuality').value=quality;rememberDisplayQuality();await connect();
+};
+$('measureNetwork').onclick=async()=>{
+  if(!adapter||!$('workspaceMenu').open||$('measureNetwork').disabled)return;
+  const request=epoch,currentAdapter=adapter,generation=++latencyRequest;
+  const current=()=>request===epoch&&currentAdapter===adapter&&generation===latencyRequest&&$('workspaceMenu').open;
+  $('measureNetwork').disabled=true;setMessage('networkLatency','network.measuring');const started=performance.now();
+  try{const session=await api.request('/api/session');if(!current())return;if(!session.activeDesktop){void end('SESSION_EXPIRED');return;}setMessage('networkLatency','network.latency',{ms:(performance.now()-started).toFixed(1)});}
+  catch(error){
+    if(!current())return;
+    if(trustedLoginRequired(error))return;
+    if(['AUTH_REQUIRED','SESSION_EXPIRED','ACCESS_DENIED'].includes(error.message)){void end('REAUTH_REQUIRED');clearPrivate();$('reauth').hidden=false;return;}
+    setMessage('networkLatency','network.failed');
+  }
+  finally{if(current())$('measureNetwork').disabled=false;}
 };
 $('closeWorkspacePanel').onclick=()=>closeWorkspaceMenu(true);
 $('workspaceMenu').addEventListener('cancel',event=>{event.preventDefault();closeWorkspaceMenu(true);});
@@ -255,6 +308,8 @@ $('workspaceMenu').addEventListener('keydown',event=>{
   if(first&&last&&((event.shiftKey&&document.activeElement===first)||(!event.shiftKey&&document.activeElement===last))){event.preventDefault();(event.shiftKey?last:first).focus();}
 });
 $('workspaceMenu').addEventListener('close',()=>{
+  if($('workspaceMenu').open)return;
+  clearInterval(metricsTimer);metricsTimer=null;cancelNetworkProbe();
   $('moreBtn').setAttribute('aria-expanded','false');
   if(document.body.classList.contains('viewing')&&!document.querySelector('dialog[open]'))$('moreBtn').focus();
 });
@@ -312,6 +367,7 @@ onLocaleChange(()=>{
   for(const [node,{key,params}] of messages){if(node.isConnected)node.textContent=t(key,typeof params==='function'?params():params);else messages.delete(node);}
   for(const button of document.querySelectorAll('[data-trusted-id]'))button.setAttribute('aria-label',t('trusted.revokeLabel',{id:button.dataset.trustedId}));
   updateProfileHelp();updateWorkspaceIdentity();adapter?.input?.pause();
+  renderNetworkMeasurements();
   if($('moreBtn').dataset.updateDescription)$('moreBtn').setAttribute('aria-description',t($('moreBtn').dataset.updateDescription));
   if(adapter?.input?.surface)adapter.input.surface.setAttribute('aria-label',t('workspace.surfaceLabel'));
 });

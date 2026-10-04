@@ -17,8 +17,8 @@ Every subsequent API and WebSocket operation revalidates the trusted edge identi
 
 ## Connection workflow
 1. List public device projection (`GET /api/devices`); remote-node bookmarks carry UNKNOWN status.
-2. `POST /api/connect-intents` with allowed `deviceId`, `mode`, `keyboardProfile`; no host/port/password fields accepted. Require consent to control and enforce one controller per device atomically.
-3. Response contains intent ID and expiry only. Browser upgrades `/ws/sessions/{intentId}` with app cookie; edge adds assertion. The ID alone is insufficient authority. Redact it from access logs anyway.
+2. `POST /api/connect-intents` with allowed `deviceId`, `mode`, `keyboardProfile`, and optional `displayQuality` (`low`, `balanced`, `clear`; omission defaults to `balanced`). Null, invalid types/values and arbitrary VNC parameters are refused; no host/port/password fields accepted. Require consent to control and enforce one controller per device atomically.
+3. Response contains intent ID, expiry and approved display quality. Intent/Desktop retain an immutable server-owned quality preset. Browser upgrades `/ws/sessions/{intentId}` with app cookie; edge adds assertion. The ID alone is insufficient authority. Redact it from access logs anyway. The owning app's `/api/session` status includes its active display quality; other apps cannot inspect that profile or intent ID.
 4. Validate Origin/Host/JWT/app session/target/mode/expiry and consume once; reserve the controller lease; create fresh guacd transport. Race two upgrades in tests.
 5. Return the official Guacamole protocol over WebSocket. Do not invent JSON key events or prepend control messages to that protocol. Keep application heartbeat/status on a distinct authenticated `/api` channel as necessary.
 6. Server releases lease and resources on termination, even if the browser vanishes. A failed upstream connection consumes the intent; reconnect requires a new one.

@@ -108,6 +108,46 @@ class GatewayIntegrationTest {
         assertEquals(0,upstream.connections.get());
         String projection=request("GET","/api/devices",null,token,cookie,null,null).body();assertFalse(projection.contains("password"));assertFalse(projection.contains("127.0.0.1"));assertTrue(projection.contains("GATEWAY_REACHABLE"));
     }
+    @Test void qualityRequestsReachTheOfficialHandshakeWithFixedTargetAndReadOnlyPolicy() throws Exception {
+        for(String quality:List.of("low","balanced","clear")) {
+            upstream.parameters=Map.of();
+            String payload=Config.JSON.writeValueAsString(Map.of("deviceId","fixture-mac","mode","view","keyboardProfile","mac-native","displayQuality",quality));
+            var response=request("POST","/api/connect-intents",payload,token,cookie,csrf,c.origin());assertEquals(201,response.statusCode(),response.body());
+            var intent=Config.JSON.readTree(response.body());assertEquals(quality,intent.path("displayQuality").asText());
+            String id=intent.path("intentId").asText();var live=ws(id,token,cookie,c.origin()).get(4,TimeUnit.SECONDS);
+            until(()->upstream.parameters.containsKey("color-depth"));
+            var negotiated=upstream.parameters;assertEquals("127.0.0.1",negotiated.get("hostname"));assertEquals("5900",negotiated.get("port"));
+            assertEquals("true",negotiated.get("read-only"));assertEquals("true",negotiated.get("disable-copy"));assertEquals("true",negotiated.get("disable-paste"));
+            for(String parameter:List.of("encodings","quality-level","compress-level"))assertEquals("",negotiated.get(parameter));
+            if(quality.equals("balanced"))for(String parameter:List.of("color-depth","compress-level","quality-level","force-lossless"))assertEquals("",negotiated.get(parameter));
+            else {
+                assertEquals(quality.equals("low")?"8":"24",negotiated.get("color-depth"));
+                assertEquals("true",negotiated.get("force-lossless"));
+            }
+            assertEquals(quality,Config.JSON.readTree(request("GET","/api/session",null,token,cookie,null,null).body()).path("displayQuality").asText());
+            int expectedClosed=upstream.closed.get()+1;
+            assertEquals(204,request("DELETE","/api/desktop-session",scopedBody(id),token,cookie,csrf,c.origin()).statusCode());
+            until(()->live.isInputClosed()&&upstream.closed.get()==expectedClosed);
+            assertFalse(Config.JSON.readTree(request("GET","/api/session",null,token,cookie,null,null).body()).has("displayQuality"));
+        }
+        var diagnostics=Config.JSON.readTree(request("GET","/api/diagnostics",null,token,cookie,null,null).body());
+        assertEquals(Config.JSON.valueToTree(List.of("low","balanced","clear")),diagnostics.path("displayQualities"));assertTrue(diagnostics.path("displayQualityRequiresReconnect").asBoolean());
+    }
+    @Test void missingQualityPreservesLegacyDefaultsAndInvalidTypesOrParametersNeverOpenUpstream() throws Exception {
+        String prefix="{\"deviceId\":\"fixture-mac\",\"mode\":\"view\",\"keyboardProfile\":\"mac-native\"";
+        for(String value:List.of("null","7","true","{}","[]","\"\"","\"LOW\"","\"low \"","\"custom\"","\"1fps\"")) {
+            var response=request("POST","/api/connect-intents",prefix+",\"displayQuality\":"+value+"}",token,cookie,csrf,c.origin());
+            assertEquals(400,response.statusCode(),value);assertEquals("INVALID_REQUEST",Config.JSON.readTree(response.body()).path("code").asText());
+        }
+        for(String parameter:List.of("hostname","port","password","encodings","color-depth","quality-level","compress-level","force-lossless"))
+            assertEquals(400,request("POST","/api/connect-intents",prefix+",\"displayQuality\":\"low\",\""+parameter+"\":\"evil\"}",token,cookie,csrf,c.origin()).statusCode());
+        assertEquals(0,upstream.connections.get());
+        var response=request("POST","/api/connect-intents",prefix+"}",token,cookie,csrf,c.origin());assertEquals(201,response.statusCode(),response.body());
+        var intent=Config.JSON.readTree(response.body());assertEquals("balanced",intent.path("displayQuality").asText());
+        var live=ws(intent.path("intentId").asText(),token,cookie,c.origin()).get(4,TimeUnit.SECONDS);until(()->upstream.parameters.containsKey("color-depth"));
+        for(String parameter:List.of("color-depth","compress-level","quality-level","force-lossless","encodings"))assertEquals("",upstream.parameters.get(parameter));
+        live.sendClose(WebSocket.NORMAL_CLOSURE,"TEST_ENDED").get(4,TimeUnit.SECONDS);
+    }
     @Test void websocketRejectsMissingIdentityHostileOriginAndReplay() throws Exception {
         String id=intent("control");assertThrows(ExecutionException.class,()->ws(id,null,cookie,c.origin()).get(4,TimeUnit.SECONDS));
         assertThrows(ExecutionException.class,()->ws(id,token,cookie,"https://evil.test").get(4,TimeUnit.SECONDS));assertEquals(0,upstream.connections.get());
