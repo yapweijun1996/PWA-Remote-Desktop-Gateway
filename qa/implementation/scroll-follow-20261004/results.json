@@ -1,0 +1,15 @@
+{
+  "scope": "LOCAL_REAL_CHROMIUM_WHEEL_STRESS",
+  "browser": "Chrome for Testing 153 (Playwright 1.58.2)",
+  "realGuacamoleMouse": true, "realWheelEvents": true, "simulatedDisplay": true, "realMac": false, "realWindowsInput": false,
+  "defaults": {"pixelsPerClick": 15, "burstClicks": 40, "sustainedClicksPerSecond": 250, "backlogClicks": 200, "gatewayLimitMessagesPerSecond": 1000},
+  "gestures": {
+    "mouse 10 notches":               {"inputPx": 1000,  "clicksSent": 66,   "clicksIdeal": 66,   "peakMessagesIn1s": 132},
+    "mouse spin 40 notches in 1 s":   {"inputPx": 4000,  "clicksSent": 267,  "clicksIdeal": 266,  "peakMessagesIn1s": 280},
+    "touchpad 3000 px in about 1 s":  {"inputPx": 3000,  "clicksSent": 200,  "clicksIdeal": 200,  "peakMessagesIn1s": 140},
+    "worst case 12000 px/s for 2 s at Maximum speed": {"inputPx": 24000, "clicksSent": 2268, "clicksIdeal": 6000, "peakMessagesIn1s": 578}
+  },
+  "before_v1_2_5": "100 clicks/s sustained, backlog capped at 40 clicks, default 30 px per click",
+  "transportMetrics": {"instructionBytesMsPer720KBFrame": {"before": 1.23, "after": 0.197}},
+  "unverified": "Remote scroll distance per click on the real Mac is assumed to be about one line; no real Mac or Windows measurement exists."
+}

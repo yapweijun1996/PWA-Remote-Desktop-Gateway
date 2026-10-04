@@ -1,0 +1,17 @@
+<!doctype html><meta charset=utf-8><style>
+html,body{margin:0}#surface{width:400px;height:300px;overflow:auto}
+.capture{width:100%;height:100%;overflow:auto}
+.capture>div{width:1000px;height:2000px;background:#234}
+</style><div id=surface></div>
+<script src="/web/vendor/all.min.js"></script>
+<script type=module>
+import {RemoteInput} from '/web/src/input.mjs';
+const G=window.Guacamole;
+const capture=document.createElement('div');capture.className='capture';capture.tabIndex=0;
+const display=document.createElement('div');capture.append(display);document.getElementById('surface').append(capture);
+window.sent=[];
+const client={getDisplay:()=>({getScale:()=>1,getWidth:()=>1000,getHeight:()=>2000}),sendMouseState:s=>window.sent.push({x:s.x,y:s.y,up:s.up,down:s.down,t:performance.now()}),sendKeyEvent(){}};
+window.input=new RemoteInput({surface:capture,pointerSurface:display,client,Guacamole:G,profile:'mac-native',
+  keysyms:{CommandLeft:0xffe7,CommandRight:0xffe8,OptionLeft:0xffe9,OptionRight:0xffea,ControlLeft:0xffe3,ControlRight:0xffe4},onPause(){},onFailure(e){window.failure=e;}});
+window.capture=capture;window.ready=true;
+</script>

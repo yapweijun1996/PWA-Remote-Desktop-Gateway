@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {logicalKey,encodeKey,RemoteInput,SCROLL_MAX_CLICKS,SCROLL_WINDOW_MS,WHEEL_BURST,WHEEL_BACKLOG_CLICKS} from './input.mjs';
+import {logicalKey,encodeKey,RemoteInput,SCROLL_MAX_CLICKS,SCROLL_WINDOW_MS,SCROLL_SPEEDS,DEFAULT_SCROLL_SPEED,WHEEL_BURST,WHEEL_BACKLOG_CLICKS,WHEEL_CLICKS_PER_SECOND} from './input.mjs';
 const keysyms={CommandLeft:0xffe7,CommandRight:0xffe8,OptionLeft:0xffe9,OptionRight:0xffea,ControlLeft:0xffe3,ControlRight:0xffe4};
 function fixture(profile='windows-alt-command',calibrated=keysyms){
   globalThis.window=new EventTarget();const surface=new EventTarget();globalThis.document=new EventTarget();document.hidden=false;document.activeElement=surface;surface.blur=()=>{};surface.focus=()=>{};
@@ -33,11 +33,12 @@ function scrollFixture(){
     Guacamole:{Keyboard,Mouse},profile:'mac-native',keysyms,onPause:()=>{},onFailure:error=>{throw new Error(error);},clock:()=>time,
     schedule:fn=>{timers.set(++timerId,fn);return timerId;},cancel:id=>timers.delete(id)});
   input.start('control');input.enabled=true;
+  const defaultSpeed=input.pixelsPerClick;input.setScrollSpeed('normal');   // most cases below assume 30 px per click
   const wheelEvent=(deltaY,deltaMode=0,type='wheel')=>Object.assign(new Event(type,{cancelable:true}),{deltaY,deltaMode,clientX:7,clientY:9});
   const wheel=(deltaY,deltaMode)=>{const event=wheelEvent(deltaY,deltaMode);surface.dispatchEvent(event);return event;};
   const clicks=()=>sent.filter(state=>state.up||state.down);
   const runTimers=()=>{for(const [id,fn] of [...timers]){timers.delete(id);fn();}};
-  return {input,surface,sent,attributes,wheel,wheelEvent,clicks,runTimers,timers,tick:ms=>{time+=ms;},State};
+  return {input,surface,sent,attributes,wheel,wheelEvent,clicks,runTimers,timers,defaultSpeed,tick:ms=>{time+=ms;},State};
 }
 test('Touch scroll clicks are bounded per window in press/release pairs and resume in the next window',()=>{
   const f=scrollFixture(),touch=direction=>{f.input.sendPointer(new f.State(5,5,false,false,false,direction==='up',direction==='down'),true);f.input.sendPointer(new f.State(5,5,false,false,false,false,false),true);};
@@ -59,17 +60,29 @@ test('Wheel pixels convert to clicks keeping the remainder, with direction, posi
   fresh();f.wheel(3,1);assert.equal(f.clicks().length,1,'3 lines = 54px');
   fresh();f.wheel(1,2);assert.equal(f.clicks().length,9,'1 page = 288px');
   fresh();f.input.setScrollSpeed('fast');f.wheel(100);assert.equal(f.clicks().length,6);
+  fresh();f.input.setScrollSpeed('faster');f.wheel(100);assert.equal(f.clicks().length,12);
+  fresh();f.input.setScrollSpeed('max');f.wheel(100);assert.equal(f.clicks().length,25);
   fresh();f.input.setScrollSpeed('slow');f.wheel(100);assert.equal(f.clicks().length,1);
   f.input.setScrollSpeed('bogus');fresh();f.wheel(100);assert.equal(f.clicks().length,1,'unknown speed keeps the current one');
 });
-test('A fast flick is delayed, not dropped, and the backlog is bounded',()=>{
-  const f=scrollFixture();f.wheel(30*100);   // 100 clicks of travel; only 40 may wait
+test('The default speed follows a Mac line click and a sustained flick is paced, not truncated',()=>{
+  const f=scrollFixture();assert.equal(DEFAULT_SCROLL_SPEED,'fast');assert.equal(f.defaultSpeed,SCROLL_SPEEDS.fast);
+  assert.ok(WHEEL_CLICKS_PER_SECOND*2<1000,'wheel traffic stays under the gateway limit of 1000 messages/s');
+  // 1 s of 60 Hz events at 50 px each = 3000 px = 200 clicks at 15 px: all of it is delivered, none dropped
+  f.input.setScrollSpeed('fast');let delivered=0;
+  for(let n=0;n<60;n++){f.wheel(50);f.tick(1000/60);f.runTimers();}
+  for(let n=0;n<400&&f.timers.size;n++){f.tick(4);f.runTimers();}
+  assert.equal(f.clicks().length,Math.floor(3000/15),'a 3000 px scroll becomes 200 clicks');
+  assert.ok(f.clicks().length<=WHEEL_BACKLOG_CLICKS);
+});
+test('A huge flick is delayed, not dropped, and the backlog is bounded',()=>{
+  const f=scrollFixture();f.wheel(30*500);   // 500 clicks of travel; only 200 may wait
   assert.equal(f.clicks().length,WHEEL_BURST,'burst first');assert.equal(f.timers.size,1,'remainder is scheduled');
-  for(let n=0;n<20&&f.timers.size;n++){f.tick(10);f.runTimers();}
-  assert.equal(f.clicks().length,WHEEL_BACKLOG_CLICKS,'backlog drains completely, capped at 40 clicks');
+  for(let n=0;n<2000&&f.timers.size;n++){f.tick(4);f.runTimers();}
+  assert.equal(f.clicks().length,WHEEL_BACKLOG_CLICKS,'backlog drains completely, capped at 200 clicks');
   assert.equal(f.timers.size,0);
   const before=f.sent.length;f.tick(1000);f.runTimers();assert.equal(f.sent.length,before,'nothing is replayed later');
-  f.sent.length=0;f.wheel(30*100);assert.ok(f.clicks().length>0);f.input.pause();assert.equal(f.timers.size,0,'pause cancels the pending backlog');
+  f.sent.length=0;f.tick(1000);f.wheel(30*100);assert.ok(f.clicks().length>0);f.input.pause();assert.equal(f.timers.size,0,'pause cancels the pending backlog');
   const after=f.sent.length;f.tick(1000);f.runTimers();assert.equal(f.sent.length,after,'a paused surface never replays scroll');
 });
 test('Wheel and touch reach Guacamole only from the active controller; otherwise the browser keeps its local scroll',()=>{
