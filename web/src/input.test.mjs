@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {logicalKey,encodeKey,RemoteInput,SCROLL_MAX_CLICKS,SCROLL_WINDOW_MS,SCROLL_SPEEDS,DEFAULT_SCROLL_SPEED,WHEEL_BURST,WHEEL_BACKLOG_CLICKS,WHEEL_CLICKS_PER_SECOND} from './input.mjs';
+import {logicalKey,encodeKey,RemoteInput,COMMAND_KEY_CANDIDATES,SCROLL_MAX_CLICKS,SCROLL_WINDOW_MS,SCROLL_SPEEDS,DEFAULT_SCROLL_SPEED,WHEEL_BURST,WHEEL_BACKLOG_CLICKS,WHEEL_CLICKS_PER_SECOND} from './input.mjs';
 const keysyms={CommandLeft:0xffe7,CommandRight:0xffe8,OptionLeft:0xffe9,OptionRight:0xffea,ControlLeft:0xffe3,ControlRight:0xffe4};
 function fixture(profile='windows-alt-command',calibrated=keysyms){
   globalThis.window=new EventTarget();const surface=new EventTarget();globalThis.document=new EventTarget();document.hidden=false;document.activeElement=surface;surface.blur=()=>{};surface.focus=()=>{};
@@ -99,4 +99,17 @@ test('Wheel and touch reach Guacamole only from the active controller; otherwise
   f.input.start('view');f.input.enabled=true;assert.equal(f.attributes['data-mode'],'view');
   for(const type of ['touchstart','touchmove','touchend','touchcancel'])assert.equal(touch(type),true,type+' view-only');
   assert.deepEqual(fires('wheel'),{stopped:true,prevented:false},'view-only wheel scrolls locally');
+});
+
+test('The Command key code can be trialed per page: chords use it, held keys release with the old code, server value restores',()=>{
+  const f=fixture('windows-native');
+  f.input.chord('paste');assert.deepEqual(f.transitions,[[0xffe7,1],[118,1],[118,0],[0xffe7,0]],'server setting by default');
+  for(const [name,[left]] of Object.entries(COMMAND_KEY_CANDIDATES).filter(([,pair])=>pair)){
+    f.transitions.length=0;f.input.setCommandKey(name);f.input.enabled=true;f.input.chord('paste');
+    assert.deepEqual(f.transitions,[[left,1],[118,1],[118,0],[left,0]],name);
+  }
+  f.transitions.length=0;f.input.toggle('CommandLeft');   // latch held with the last candidate (Meta)
+  f.input.setCommandKey('super');assert.deepEqual(f.transitions,[[0xffe7,1],[0xffe7,0]],'a held Command is released with the code it was pressed with');
+  f.transitions.length=0;f.input.setCommandKey('bogus');f.input.setCommandKey('server');f.input.enabled=true;f.input.chord('paste');
+  assert.deepEqual(f.transitions,[[0xffe7,1],[118,1],[118,0],[0xffe7,0]],'server setting restored; unknown names ignored');
 });

@@ -31,6 +31,8 @@ The profile layer emits logical roles such as CommandLeft or OptionRight, not gu
 
 Calibration gate: connect to the actual Mac, use a harmless text editor and visible macOS menu actions, establish which keysym yields Command, Option and Control, then record target OS build, VNC mode, Guacamole version, browser and mapping. Keep left/right identity where available. If the server collapses sides, disclose it and maintain reference counts so releasing one physical key does not release another still-held logical modifier.
 
+Observed on the owner's real Mac: with the standard test profile (Command = `Meta_L`, 0xffe7) Remote Paste typed a plain `v`, so that VNC server does not treat `Meta_L` as Command. Remote keys therefore offers a page-only "Command key code (test)" choice (Server setting, Super, Alt, Hyper, Meta; left and right pairs) so the owner can find the code that works without restarting the gateway. The choice releases held keys with the previous code, is re-applied on each connection, and is never stored. Once the owner knows the working code, saving it in the server device configuration (`keysyms`, read at gateway start) is a separate approved change.
+
 The supplied reference module deliberately stops before keysym encoding. It tests state ownership/mapping, not Windows-to-Mac interoperability. Official Guacamole keyboard objects normalize input into keysyms; the adapter integrates that single normalized stream. [S12,S13]
 
 ## Event ownership pipeline

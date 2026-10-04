@@ -12,6 +12,11 @@ export function encodeKey(key, calibrated) {
   if(key.startsWith('keysym:'))return Number(key.slice(7));
   throw new Error('Key mapping unavailable');
 }
+/**
+ * Candidate X11 keysyms for the Mac Command key (left, right). The server configuration is an unverified test profile
+ * (Meta_L); which code a real Mac VNC server treats as Command must be found on the target. Session-only trial values.
+ */
+export const COMMAND_KEY_CANDIDATES=Object.freeze({server:null,super:[0xffeb,0xffec],alt:[0xffe9,0xffea],hyper:[0xffed,0xffee],meta:[0xffe7,0xffe8]});
 export const CHORDS=Object.freeze({copy:['CommandLeft','keysym:99'],paste:['CommandLeft','keysym:118'],
   cut:['CommandLeft','keysym:120'],undo:['CommandLeft','keysym:122'],select:['CommandLeft','keysym:97'],
   save:['CommandLeft','keysym:115'],switch:['CommandLeft','keysym:65289'],search:['CommandLeft','keysym:32']});
@@ -30,13 +35,14 @@ export const WHEEL_BURST=40,WHEEL_CLICKS_PER_SECOND=250,WHEEL_BACKLOG_CLICKS=200
 export class RemoteInput {
   constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
     this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
+    this.serverKeysyms=Object.freeze({...keysyms});this.keysyms={...keysyms};
     this.clock=clock;this.schedule=schedule;this.cancel=cancel;this.pointerSurface=pointerSurface;this.scrollWindowStart=-Infinity;this.scrollClicks=0;this.droppedWheelPress=false;
     this.pixelsPerClick=SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED];this.wheelPixels=0;this.wheelTokens=WHEEL_BURST;this.wheelStamp=-Infinity;this.wheelTimer=null;this.wheelPoint={x:0,y:0};
     this.enabled=false;this.mode='view';this.altGraph=false;this.leftAltPhysical=false;this.latches=new Set();this.disposers=[];
     this.pointer=new Guacamole.Mouse.State(0,0,false,false,false,false,false);this.protocolCounts=new Map();
     this.keys=new KeyboardState({profile,onTransition:({key,down})=>{
       if(this.mode!=='control')return;
-      const keysym=encodeKey(key,keysyms),count=this.protocolCounts.get(keysym)??0;
+      const keysym=encodeKey(key,this.keysyms),count=this.protocolCounts.get(keysym)??0;
       if(down){this.protocolCounts.set(keysym,count+1);if(count===0)client.sendKeyEvent(1,keysym);}
       else if(count===1){this.protocolCounts.delete(keysym);client.sendKeyEvent(0,keysym);}
       else if(count>1)this.protocolCounts.set(keysym,count-1);
@@ -84,6 +90,12 @@ export class RemoteInput {
   }
   active(){return this.enabled&&this.mode==='control'&&document.activeElement===this.surface&&!document.hidden;}
   run(fn){if(this.failed)return;try{fn();}catch{this.failed=true;this.protocolCounts.clear();this.enabled=false;this.onFailure('INPUT_FAILURE');}}
+  /** Replace the Command keysym for this page only; held keys are released with the old mapping first. */
+  setCommandKey(name) {
+    if(!Object.hasOwn(COMMAND_KEY_CANDIDATES,name))return;
+    this.pause();this.keysyms={...this.serverKeysyms};
+    const pair=COMMAND_KEY_CANDIDATES[name];if(pair){this.keysyms.CommandLeft=pair[0];this.keysyms.CommandRight=pair[1];}
+  }
   setScrollSpeed(speed){if(Object.hasOwn(SCROLL_SPEEDS,speed))this.pixelsPerClick=SCROLL_SPEEDS[speed];}
   /** Pixels (lines and pages normalized) accumulate with their remainder; clicks leave at a bounded rate and excess waits. */
   wheel(event) {
