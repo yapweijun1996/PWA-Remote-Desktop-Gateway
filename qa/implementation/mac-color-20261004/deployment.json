@@ -1,0 +1,52 @@
+{
+  "status": "DEPLOYED_LOCAL_RUNTIME_VERIFIED",
+  "recordedAt": "2026-10-04T11:10:50.061476+00:00",
+  "sourceCommit": "481ec19f71654b3c788d1b78e085ae79f0226de5",
+  "webVersion": "1.2.2",
+  "webBuild": "1db76b487cb2834d",
+  "image": "sha256:173335c8d27a396f57da8ccd8f9a6f3b0b372af6089865fee082aaae4f7b313d",
+  "previousImage": "sha256:7fe91d1e9a375b1433c63a0538c646e745f4a52ace947557b8e98da00de7f088",
+  "containerId": "a33ed371e1ecc6e426030171b944d628c442b48a12b02e9d01ec02f6e6c1c204",
+  "health": "healthy",
+  "gatewayEnvironmentUnchanged": true,
+  "onlyPrivateEnvironmentChange": "GATEWAY_IMAGE",
+  "mounts": [
+    {
+      "type": "bind",
+      "target": "/app/config/device.json",
+      "readOnly": true,
+      "canonicalIdentityVerified": true
+    },
+    {
+      "type": "volume",
+      "target": "/var/lib/rdg",
+      "readOnly": false,
+      "canonicalIdentityVerified": true
+    },
+    {
+      "type": "volume",
+      "target": "/var/lib/rdg-key",
+      "readOnly": true,
+      "canonicalIdentityVerified": true
+    }
+  ],
+  "mountByteStringGuardFailed": true,
+  "mountResolution": "Canonical approved bind path and exact file bytes verified; state/key volume identities and access modes verified against unchanged Compose configuration. Raw prior mount strings were not retained.",
+  "activeUpstreamConnectionsBeforeReplacement": 0,
+  "gatewayLoopbackOnly": true,
+  "nonrootReadOnly": true,
+  "otherContainersRunning": 9,
+  "otherContainerLifecycleChangesSincePreflight": 0,
+  "artifactHashes": {
+    "/app/rdg-gateway.jar": "4411fb50aeadae65fe768065f9d16955c07e64996c9303aec8bd4fc80294d9c5",
+    "/app/web/sw.js": "3afc54ea1913cc45559f90bd6a99c398d74c1041769dc5a9de9f206090a846ea",
+    "/app/web/index.html": "dfdf28cd5bf352c6679372d9c85079dc4e62bd0784117f1af39a017494e1f02a",
+    "/app/web/build.json": "268e39240a1306413696a82f04940a9248f72cbdde69237c4d6b7cebfe6704d2"
+  },
+  "accessPolicyChanged": false,
+  "tunnelConfigChanged": false,
+  "rollbackEnvironmentSaved": true,
+  "rollbackEnvironmentPath": "/Users/yapweijun/.cloudflared/rdg-current-mac-pilot/owner-setup.env.before-mac-color-1.2.2-20261004",
+  "realMacReadOnlyProtocolVerified": true,
+  "realBrowserControlVerified": false
+}

@@ -1,0 +1,38 @@
+{
+  "scope": "APPROVED_LOCAL_MAC_VIEW_ONLY_PROTOCOL_COMPARISON",
+  "noInput": true,
+  "noScreenCapture": true,
+  "noClipboard": true,
+  "credentialsChanged": false,
+  "results": [
+    {
+      "profile": "balanced",
+      "syncs": 44,
+      "imageInstructions": 81,
+      "hasSize": true,
+      "outcome": "STREAMED"
+    },
+    {
+      "profile": "low",
+      "colorDepth": 8,
+      "outcome": "UPSTREAM_ERROR",
+      "code": 515
+    },
+    {
+      "profile": "clear",
+      "colorDepth": 24,
+      "syncs": 57,
+      "imageInstructions": 108,
+      "hasSize": true,
+      "outcome": "STREAMED"
+    },
+    {
+      "profile": "candidate16",
+      "colorDepth": 16,
+      "syncs": 46,
+      "imageInstructions": 71,
+      "hasSize": true,
+      "outcome": "STREAMED"
+    }
+  ]
+}

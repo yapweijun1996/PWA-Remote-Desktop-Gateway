@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "481ec19f71654b3c788d1b78e085ae79f0226de5",
+  "artifacts": [
+    {
+      "file": "REPORT.md",
+      "bytes": 6484,
+      "sha256": "f998bef4dae76a3c7683ecf300874316b5a9972d973da226f4411952aed1e9d1"
+    },
+    {
+      "file": "UpstreamProbe.java",
+      "bytes": 2510,
+      "sha256": "246edc5c457545815c28e51d7896961af76a44b1c86808f770133faa66627639"
+    },
+    {
+      "file": "benchmark-log.txt",
+      "bytes": 1846,
+      "sha256": "b00b943b688eaa50def3cda934be89b1635f8c7113e632733064c8dccb9d4f9f"
+    },
+    {
+      "file": "browser-log.txt",
+      "bytes": 179,
+      "sha256": "47061aa32917e73852bf403c195a3075ab153d9525f89bec48c72becc5838062"
+    },
+    {
+      "file": "browser-results.json",
+      "bytes": 3374,
+      "sha256": "65624ab561723b44fe3209d4c16c3846380a26bb5bd7c13bfed589eeb5f04d69"
+    },
+    {
+      "file": "build.txt",
+      "bytes": 7595,
+      "sha256": "a0a05a2ba1279cae22eb9e34611e39e8fb12c527b14449875a0e4f20405782e1"
+    },
+    {
+      "file": "check-mac-color-live.mjs",
+      "bytes": 5478,
+      "sha256": "e9f2383eb183ea302baff0f8fc8f2d160823189f9e04df44b0f8dc8969fe96d9"
+    },
+    {
+      "file": "connect-browser-results.json",
+      "bytes": 10502,
+      "sha256": "c978f5e0cb5a59476f6b276144d6167429af2261900589c02417572ebe23e523"
+    },
+    {
+      "file": "connect-log.txt",
+      "bytes": 8120,
+      "sha256": "869b069237f9fea7c0d46e75b1a46ff56755bc2ef8089ecce3588f786902537b"
+    },
+    {
+      "file": "container.txt",
+      "bytes": 400,
+      "sha256": "76a42529e8b8b0137167ad8dc2de5c07292beec4db0e8251f0c4d40e9d9865ba"
+    },
+    {
+      "file": "deploy-mac-color.mjs",
+      "bytes": 8279,
+      "sha256": "8e1d45d31aff727e72493b5b1f14d7f74dc2665329dbbcb94195e4df80a30f3a"
+    },
+    {
+      "file": "deployment.json",
+      "bytes": 2201,
+      "sha256": "56b96b19e5ef31af4ddaedd383cdb23d6e5867fd622f6709043cf63559929b21"
+    },
+    {
+      "file": "image-build.txt",
+      "bytes": 2679,
+      "sha256": "6183621fc5655238d81d174ff7db5ca69ea75b5842e9777ff49f81e8bf1b5784"
+    },
+    {
+      "file": "live-checks.json",
+      "bytes": 2793,
+      "sha256": "1575d494359564436bc5f78141a19630ea9fa798a0a5d6c7d5c59c7e0af1a14b"
+    },
+    {
+      "file": "node-tests.txt",
+      "bytes": 11463,
+      "sha256": "1875d6be33629604e97c37a55e500af290f6294489df82137108d5769f3a192e"
+    },
+    {
+      "file": "post-fix-probe.json",
+      "bytes": 356,
+      "sha256": "21ce4685ef1c58fff9b68973c3d300b3bf4546c3dd3043e5fd67ab4eb4d6b311"
+    },
+    {
+      "file": "pre-fix-probes.json",
+      "bytes": 776,
+      "sha256": "2daeccd3bed8262650053d09235f861c7a05df137d5f52e30598cfacbeb1a6ca"
+    },
+    {
+      "file": "synthetic-benchmark.json",
+      "bytes": 35855,
+      "sha256": "64bac7f9350c4a26b33cbb1012e22783f40c375cd4aab9daf2b9cd5db91fcd5a"
+    },
+    {
+      "file": "web-build.json",
+      "bytes": 58,
+      "sha256": "268e39240a1306413696a82f04940a9248f72cbdde69237c4d6b7cebfe6704d2"
+    }
+  ]
+}

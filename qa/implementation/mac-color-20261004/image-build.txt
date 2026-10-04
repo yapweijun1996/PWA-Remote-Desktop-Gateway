@@ -1,0 +1,59 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.51kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/eclipse-temurin:17-jre-jammy@sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 119B done
+#3 DONE 0.0s
+
+#4 [ 1/10] FROM docker.io/library/eclipse-temurin:17-jre-jammy@sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7
+#4 resolve docker.io/library/eclipse-temurin:17-jre-jammy@sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 238.18kB done
+#5 DONE 0.0s
+
+#6 [ 5/10] RUN groupadd --gid 10001 rdg && useradd --uid 10001 --gid rdg --no-create-home rdg && mkdir -p /app /var/lib/rdg /var/lib/rdg-key && chown 10001:10001 /var/lib/rdg /var/lib/rdg-key && chmod 0700 /var/lib/rdg /var/lib/rdg-key
+#6 CACHED
+
+#7 [ 2/10] COPY deployment/install-locked-debs.sh /install-locked-debs.sh
+#7 CACHED
+
+#8 [ 6/10] WORKDIR /app
+#8 CACHED
+
+#9 [ 8/10] RUN case "arm64" in arm64) sqlite_arch=aarch64 ;; amd64) sqlite_arch=x86_64 ;; *) exit 1 ;; esac && mkdir /app/lib && cp "/app/native/$sqlite_arch/libsqlitejdbc.so" /app/lib/ && chmod 0555 /app/lib/libsqlitejdbc.so && rm -rf /app/native
+#9 CACHED
+
+#10 [ 4/10] RUN sh /install-locked-debs.sh "/locks/gateway-arm64.lock" && cp "/locks/gateway-arm64.lock" /opt/rdg-os-packages.lock && rm /install-locked-debs.sh && rm -r /locks
+#10 CACHED
+
+#11 [ 3/10] COPY deployment/deb-locks/ /locks/
+#11 CACHED
+
+#12 [ 7/10] COPY gateway/target/sqlite-native/org/sqlite/native/Linux/ /app/native/
+#12 CACHED
+
+#13 [ 9/10] COPY --chown=10001:10001 gateway/target/rdg-gateway.jar /app/rdg-gateway.jar
+#13 CACHED
+
+#14 [10/10] COPY --chown=10001:10001 web/dist/ /app/web/
+#14 DONE 0.1s
+
+#15 exporting to image
+#15 exporting layers 0.0s done
+#15 exporting manifest sha256:cce243ff6b4ef12b2ef17908be6aab8e0db8ff7315496b9d568beef7f6b2322c done
+#15 exporting config sha256:f4cf17b0a607cd60aa562fd834ab0b62017aa1fa23e4068b1789d26b97f9ac14 0.0s done
+#15 exporting attestation manifest sha256:0240fed9ff086838edff06142fc7f9f04275b780457ca1a2b35fbc3ee2220694 done
+#15 exporting manifest list sha256:173335c8d27a396f57da8ccd8f9a6f3b0b372af6089865fee082aaae4f7b313d done
+#15 naming to docker.io/library/rdg-gateway:mac-color-1.2.2-1db76b487cb2834d done
+#15 unpacking to docker.io/library/rdg-gateway:mac-color-1.2.2-1db76b487cb2834d 0.0s done
+#15 DONE 0.1s
+
+View build details: docker-desktop://dashboard/build/default/default/i28lrugrbridspmnj4kf58nr6
