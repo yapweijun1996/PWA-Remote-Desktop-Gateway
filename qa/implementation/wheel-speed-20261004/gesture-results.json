@@ -1,0 +1,16 @@
+{
+  "scope": "LOCAL_REAL_CHROMIUM_WHEEL_GESTURES",
+  "browser": "Chrome for Testing 153 (Playwright 1.58.2)",
+  "realGuacamoleMouse": true, "realWheelEvents": true, "simulatedDisplay": true, "realMac": false,
+  "unit": "remote wheel clicks sent for the whole gesture",
+  "gestures": {
+    "mouse wheel, 10 notches of 100px":       {"inputPx": 1000, "v1.2.3": 10, "v1.2.4": 10, "v1.2.5_normal_30px": 33},
+    "mouse wheel, fast spin 30 notches":      {"inputPx": 3000, "v1.2.3": 30, "v1.2.4": 30, "v1.2.5_normal_30px": 100},
+    "trackpad slow drag 8px x60":             {"inputPx": 480,  "v1.2.3": 8,  "v1.2.4": 8,  "v1.2.5_normal_30px": 16},
+    "trackpad medium swipe 30px x60":         {"inputPx": 1800, "v1.2.3": 30, "v1.2.4": 30, "v1.2.5_normal_30px": 60},
+    "trackpad flick ramp to 300px then decay":{"inputPx": 2575, "v1.2.3": 42, "v1.2.4": 24, "v1.2.5_normal_30px": 86}
+  },
+  "paused": {"localScrollTop": 300, "sent": 0}, "viewOnly": {"localScrollTop": 200, "sent": 0},
+  "sustainedLimit": "100 clicks/s (200 messages/s) after a burst of 20; backlog capped at 40 clicks",
+  "pageErrors": []
+}

@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {logicalKey,encodeKey,RemoteInput,SCROLL_MAX_CLICKS,SCROLL_WINDOW_MS} from './input.mjs';
+import {logicalKey,encodeKey,RemoteInput,SCROLL_MAX_CLICKS,SCROLL_WINDOW_MS,WHEEL_BURST,WHEEL_BACKLOG_CLICKS} from './input.mjs';
 const keysyms={CommandLeft:0xffe7,CommandRight:0xffe8,OptionLeft:0xffe9,OptionRight:0xffea,ControlLeft:0xffe3,ControlRight:0xffe4};
 function fixture(profile='windows-alt-command',calibrated=keysyms){
   globalThis.window=new EventTarget();const surface=new EventTarget();globalThis.document=new EventTarget();document.hidden=false;document.activeElement=surface;surface.blur=()=>{};surface.focus=()=>{};
@@ -28,29 +28,62 @@ function scrollFixture(){
   class Keyboard{reset(){}}
   class State{constructor(x,y,left,middle,right,up,down){Object.assign(this,{x,y,left,middle,right,up,down});}}
   class Mouse{static State=State;onEach(){}}Mouse.Touchpad=Mouse;
-  let time=0;const sent=[];
+  let time=0,timerId=0;const sent=[],timers=new Map();
   const input=new RemoteInput({surface,client:{getDisplay:()=>({getScale:()=>1,getWidth:()=>1000,getHeight:()=>1000}),sendMouseState:state=>sent.push({...state}),sendKeyEvent(){}},
-    Guacamole:{Keyboard,Mouse},profile:'mac-native',keysyms,onPause:()=>{},onFailure:error=>{throw new Error(error);},clock:()=>time});
+    Guacamole:{Keyboard,Mouse},profile:'mac-native',keysyms,onPause:()=>{},onFailure:error=>{throw new Error(error);},clock:()=>time,
+    schedule:fn=>{timers.set(++timerId,fn);return timerId;},cancel:id=>timers.delete(id)});
   input.start('control');input.enabled=true;
-  const wheel=(direction,x=5)=>{input.sendPointer(new State(x,5,false,false,false,direction==='up',direction==='down'));input.sendPointer(new State(x,5,false,false,false,false,false));};
-  return {input,surface,sent,attributes,wheel,tick:ms=>{time+=ms;},State};
+  const wheelEvent=(deltaY,deltaMode=0,type='wheel')=>Object.assign(new Event(type,{cancelable:true}),{deltaY,deltaMode,clientX:7,clientY:9});
+  const wheel=(deltaY,deltaMode)=>{const event=wheelEvent(deltaY,deltaMode);surface.dispatchEvent(event);return event;};
+  const clicks=()=>sent.filter(state=>state.up||state.down);
+  const runTimers=()=>{for(const [id,fn] of [...timers]){timers.delete(id);fn();}};
+  return {input,surface,sent,attributes,wheel,wheelEvent,clicks,runTimers,timers,tick:ms=>{time+=ms;},State};
 }
-test('Wheel clicks are bounded per window in press/release pairs and resume in the next window',()=>{
-  const f=scrollFixture();
-  for(let n=0;n<25;n++)f.wheel(n%2?'up':'down');
+test('Touch scroll clicks are bounded per window in press/release pairs and resume in the next window',()=>{
+  const f=scrollFixture(),touch=direction=>{f.input.sendPointer(new f.State(5,5,false,false,false,direction==='up',direction==='down'),true);f.input.sendPointer(new f.State(5,5,false,false,false,false,false),true);};
+  for(let n=0;n<25;n++)touch(n%2?'up':'down');
   assert.equal(f.sent.length,SCROLL_MAX_CLICKS*2);
   f.sent.forEach((state,index)=>assert.equal(Boolean(state.up||state.down),index%2===0,'every press is followed by its release'));
-  f.input.sendPointer(new f.State(9,9,false,false,false,false,false));assert.equal(f.sent.length,SCROLL_MAX_CLICKS*2+1,'pointer moves are never throttled');
-  f.tick(SCROLL_WINDOW_MS-1);f.wheel('up');assert.equal(f.sent.length,SCROLL_MAX_CLICKS*2+1);
-  f.tick(1);f.wheel('up');assert.equal(f.sent.length,SCROLL_MAX_CLICKS*2+3);assert.equal(f.sent.at(-2).up,true);assert.equal(f.sent.at(-1).up,false);
+  f.input.sendPointer(new f.State(9,9,false,false,false,false,false),true);assert.equal(f.sent.length,SCROLL_MAX_CLICKS*2+1,'pointer moves are never throttled');
+  f.tick(SCROLL_WINDOW_MS-1);touch('up');assert.equal(f.sent.length,SCROLL_MAX_CLICKS*2+1);
+  f.tick(1);touch('up');assert.equal(f.sent.length,SCROLL_MAX_CLICKS*2+3);
+});
+test('Wheel pixels convert to clicks keeping the remainder, with direction, position and units',()=>{
+  const f=scrollFixture();
+  let event=f.wheel(100);assert.equal(event.defaultPrevented,true);assert.equal(f.clicks().length,3,'100px at 30px/click, remainder 10 kept');
+  f.wheel(100);f.wheel(100);assert.equal(f.clicks().length,10,'300px total = 10 clicks; Guacamole alone would send 5');
+  assert.deepEqual([f.sent.at(-2).down,f.sent.at(-2).up,f.sent.at(-1).down,f.sent.at(-1).up],[true,false,false,false],'press then release, scrolling down');
+  assert.deepEqual([f.sent.at(-2).x,f.sent.at(-2).y],[0,0],'position falls back to the last pointer when the surface has no geometry');
+  const fresh=()=>{f.sent.length=0;f.input.wheelPixels=0;f.tick(1000);};
+  fresh();f.wheel(-60);assert.equal(f.clicks().length,2);assert.equal(f.clicks()[0].up,true);
+  fresh();f.wheel(3,1);assert.equal(f.clicks().length,1,'3 lines = 54px');
+  fresh();f.wheel(1,2);assert.equal(f.clicks().length,9,'1 page = 288px');
+  fresh();f.input.setScrollSpeed('fast');f.wheel(100);assert.equal(f.clicks().length,6);
+  fresh();f.input.setScrollSpeed('slow');f.wheel(100);assert.equal(f.clicks().length,1);
+  f.input.setScrollSpeed('bogus');fresh();f.wheel(100);assert.equal(f.clicks().length,1,'unknown speed keeps the current one');
+});
+test('A fast flick is delayed, not dropped, and the backlog is bounded',()=>{
+  const f=scrollFixture();f.wheel(30*100);   // 100 clicks of travel; only 40 may wait
+  assert.equal(f.clicks().length,WHEEL_BURST,'burst first');assert.equal(f.timers.size,1,'remainder is scheduled');
+  for(let n=0;n<20&&f.timers.size;n++){f.tick(10);f.runTimers();}
+  assert.equal(f.clicks().length,WHEEL_BACKLOG_CLICKS,'backlog drains completely, capped at 40 clicks');
+  assert.equal(f.timers.size,0);
+  const before=f.sent.length;f.tick(1000);f.runTimers();assert.equal(f.sent.length,before,'nothing is replayed later');
+  f.sent.length=0;f.wheel(30*100);assert.ok(f.clicks().length>0);f.input.pause();assert.equal(f.timers.size,0,'pause cancels the pending backlog');
+  const after=f.sent.length;f.tick(1000);f.runTimers();assert.equal(f.sent.length,after,'a paused surface never replays scroll');
 });
 test('Wheel and touch reach Guacamole only from the active controller; otherwise the browser keeps its local scroll',()=>{
   const f=scrollFixture();
-  const stops=(type,cancelable=true)=>{const event=new Event(type,{cancelable});let stopped=false;event.stopPropagation=()=>{stopped=true;};f.surface.dispatchEvent(event);return stopped;};
-  for(const type of ['wheel','mousewheel','DOMMouseScroll']){assert.equal(stops(type),false,type+' active');f.input.enabled=false;assert.equal(stops(type),true,type+' paused');f.input.enabled=true;}
-  document.activeElement=null;assert.equal(stops('wheel'),true,'unfocused');document.activeElement=f.surface;
-  for(const type of ['touchstart','touchmove','touchend','touchcancel'])assert.equal(stops(type),false,type+' control');
+  const fires=(type,cancelable=true)=>{const event=f.wheelEvent(100,0,type);let stopped=false;event.stopPropagation=()=>{stopped=true;};f.surface.dispatchEvent(event);return {stopped,prevented:event.defaultPrevented};};
+  for(const type of ['wheel','mousewheel','DOMMouseScroll']){
+    assert.deepEqual(fires(type),{stopped:true,prevented:true},type+' active: handled here, Guacamole never sees it');
+    f.input.enabled=false;assert.deepEqual(fires(type),{stopped:true,prevented:false},type+' paused: local scroll');f.input.enabled=true;
+  }
+  f.sent.length=0;f.input.enabled=false;f.wheel(500);f.input.enabled=true;f.tick(1000);f.runTimers();assert.equal(f.sent.length,0,'paused wheel sends nothing');
+  document.activeElement=null;assert.equal(fires('wheel').prevented,false,'unfocused');document.activeElement=f.surface;
+  const touch=type=>{const event=new Event(type,{cancelable:true});let stopped=false;event.stopPropagation=()=>{stopped=true;};f.surface.dispatchEvent(event);return stopped;};
+  for(const type of ['touchstart','touchmove','touchend','touchcancel'])assert.equal(touch(type),false,type+' control');
   f.input.start('view');f.input.enabled=true;assert.equal(f.attributes['data-mode'],'view');
-  for(const type of ['touchstart','touchmove','touchend','touchcancel'])assert.equal(stops(type),true,type+' view-only');
-  assert.equal(stops('wheel'),true,'view-only wheel');
+  for(const type of ['touchstart','touchmove','touchend','touchcancel'])assert.equal(touch(type),true,type+' view-only');
+  assert.deepEqual(fires('wheel'),{stopped:true,prevented:false},'view-only wheel scrolls locally');
 });
