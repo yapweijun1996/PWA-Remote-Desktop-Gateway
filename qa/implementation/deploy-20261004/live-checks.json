@@ -1,0 +1,121 @@
+{
+  "status": "PASS",
+  "recordedAt": "2026-10-04T07:31:27Z",
+  "scope": "DEPLOYED_RUNTIME_AND_NEGATIVE_BOUNDARIES",
+  "publicRequestUserAgent": "Mozilla/5.0",
+  "checks": [
+    {
+      "case": "API_MISSING_IDENTITY",
+      "status": 401,
+      "expected": 401,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "API_FORGED_ASSERTION",
+      "status": 401,
+      "expected": 401,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "API_WRONG_HOST",
+      "status": 403,
+      "expected": 403,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "API_FOREIGN_ORIGIN",
+      "status": 403,
+      "expected": 403,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "BOOTSTRAP_MISSING_ORIGIN",
+      "status": 403,
+      "expected": 403,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "WS_MISSING_IDENTITY",
+      "status": 401,
+      "expected": 401,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "SCOPED_CANCEL_MISSING_IDENTITY",
+      "status": 401,
+      "expected": 401,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "SCOPED_CANCEL_FOREIGN_ORIGIN",
+      "status": 403,
+      "expected": 403,
+      "noStore": true,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_ROOT",
+      "status": 302,
+      "expected": 302,
+      "redirectToAccess": true,
+      "tlsVerified": true,
+      "followedRedirect": false,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_API",
+      "status": 302,
+      "expected": 302,
+      "redirectToAccess": true,
+      "tlsVerified": true,
+      "followedRedirect": false,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_WS",
+      "status": 302,
+      "expected": 302,
+      "redirectToAccess": true,
+      "tlsVerified": true,
+      "followedRedirect": false,
+      "pass": true
+    },
+    {
+      "case": "PUBLIC_MANIFEST",
+      "status": 302,
+      "expected": 302,
+      "redirectToAccess": true,
+      "tlsVerified": true,
+      "followedRedirect": false,
+      "pass": true
+    },
+    {
+      "case": "DEPLOYED_WORKER_HASH",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "case": "LOGIN_UNSIGNED_DENIED",
+      "status": 401,
+      "expected": 401,
+      "html": true,
+      "pass": true
+    }
+  ],
+  "originHealth": 200,
+  "connectorReady": 200,
+  "connectorHaConnections": 4.0,
+  "limits": {
+    "positiveOwnerLoginVerified": false,
+    "realDesktopVerified": false,
+    "anonymous302DoesNotProveDesktop": true,
+    "credentialsOrDesktopRead": false
+  }
+}

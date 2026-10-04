@@ -1,0 +1,16 @@
+{
+  "sourceCommit": "bdbd239effa2f19c5624b977dc6c5016071b16c6",
+  "image": "sha256:513fe8ebfbd6c71dd4578e8e7919d7fdf386138b74217f321448c9f401ab7c7b",
+  "webBuild": "d3d201de7cabda02",
+  "files": {
+    "gateway/target/rdg-gateway.jar": "6e614867afc693108337fd6ac9b051494b03c60e2656f52ed22ccc89080836f5",
+    "web/dist/build.json": "5f0fedadbd7808e8e0116c3e9610a6c00cedfa45357ca79adc52e96247b1332f",
+    "web/dist/sw.js": "281f3e4705220d3eab7867c5a6cd1c94b521cbb198ac778b88851298315ead91",
+    "web/dist/index.html": "0215cf8d54553a600bb7fff21b34c8bec80526c9f69de4b05acb95996c42d738",
+    "web/src/app.mjs": "1bab580f403f5a09b1a2385fbed6515699efb31c6a5b6c9beaaf27d9dc783ac4",
+    "web/src/input.mjs": "d705b50844c48ed854f15dd3ea8f2cf6db71f6f82dca36c99c774e1d2a6f2387",
+    "web/public/styles.css": "eaca3ea5443c810dfc3c713fce7f1744f828ccce12aa66b8339eef36cf7c4800",
+    "web/public/index.html": "a27950934ccbac0b29badef6152ca32ffdbaacda3963cf4db3b00620434d534e",
+    "gateway/dependencies.lock.json": "6a230e65275a42d7069dd27273c768bbf6f23fbbaed1d3711d0e7f63f9ab946f"
+  }
+}
