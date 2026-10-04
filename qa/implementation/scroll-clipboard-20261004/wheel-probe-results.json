@@ -1,0 +1,11 @@
+{
+  "scope": "LOCAL_REAL_CHROMIUM_WHEEL_PROBE",
+  "browser": "Chrome for Testing 153 (Playwright 1.58.2)",
+  "realGuacamoleMouse": true,
+  "realWheelEvents": true,
+  "simulatedDisplay": true,
+  "realMac": false,
+  "before": {"pausedScrollTop": 0, "viewOnlyScrollTop": 0, "burst600Clicks": {"wheelPresses": 600, "totalMessages": 1200}},
+  "after": {"pausedScrollTop": 300, "pausedSent": 0, "activeScrollTopDelta": 0, "activeWheelPresses": 2, "viewOnlyScrollTop": 200, "viewOnlySent": 0, "burst600Clicks": {"wheelPresses": 80, "totalMessages": 160, "danglingPresses": 0}},
+  "pageErrors": []
+}

@@ -188,6 +188,7 @@ const entries = {
   'clipboard.copied': ['Copied received text locally.', '已将收到的文本复制到本机。'],
   'clipboard.copyDenied': ['Permission unavailable. Copy the selected text manually.', '权限不可用。请手动复制选中的文本。'],
   'clipboard.notEnabled': ['Clipboard not enabled', '剪贴板未启用'],
+  'clipboard.empty': ['Enter text to send first', '请先输入要发送的文本'],
   'clipboard.tooLarge': ['Text exceeds 16 KiB', '文本超过 16 KiB'],
   'clipboard.timedOut': ['Clipboard transfer timed out', '剪贴板传输超时'],
   'clipboard.unavailable': ['Clipboard unavailable', '剪贴板不可用'],
