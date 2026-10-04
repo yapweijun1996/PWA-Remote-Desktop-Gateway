@@ -44,6 +44,14 @@ test('.gitignore covers OS and tool droppings', () => {
   const lines = readFileSync(new URL('.gitignore', root), 'utf8').split('\n');
   for (const entry of ['.DS_Store', '__pycache__/', 'node_modules/']) assert.ok(lines.includes(entry), entry);
 });
+test('.gitignore covers per-user tool state but not shared evidence', t => {
+  try { execFileSync('git', ['rev-parse', '--git-dir'], {cwd: root, stdio: 'ignore'}); } catch { return t.skip('not a git checkout'); }
+  const ignored = p => { try { execFileSync('git', ['check-ignore', '-q', p], {cwd: root}); return true; } catch { return false; } };
+  for (const p of ['.claude/settings.local.json', '.idea/workspace.xml', '.vscode/settings.json', 'gateway/target/classes/A.class'])
+    assert.equal(ignored(p), true, `${p} must be ignored`);
+  for (const p of ['qa/implementation/deploy-20261004/REPORT.md', 'gateway/src/main/java/com/rdg/Main.java'])
+    assert.equal(ignored(p), false, `${p} must stay trackable`);
+});
 test('No ignored droppings are tracked by git', t => {
   try { execFileSync('git', ['rev-parse', '--git-dir'], {cwd: root, stdio: 'ignore'}); } catch { return t.skip('not a git checkout'); }
   const tracked = execFileSync('git', ['ls-files'], {cwd: root, encoding: 'utf8'}).split('\n');

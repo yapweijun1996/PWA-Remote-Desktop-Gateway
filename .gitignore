@@ -11,6 +11,11 @@ web/dist/
 qa/implementation/runtime/
 .playwright-cli/
 output/playwright/
+# Per-user tool and editor state
+.claude/settings.local.json
+.idea/
+.vscode/
+*.swp
 # Secrets and credentials must never be committed; the example stays tracked.
 .env
 .env.*
