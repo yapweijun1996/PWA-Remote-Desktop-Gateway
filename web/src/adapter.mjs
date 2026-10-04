@@ -31,7 +31,7 @@ export class DesktopAdapter {
     this.client.onerror=()=>failure('TARGET_UNAVAILABLE');
     // Official tunnel invokes onerror before setting CLOSED. Defer app cleanup
     // until that state transition finishes, avoiding sends on a closing socket.
-    this.tunnel.onerror=()=>failure('TRANSPORT_ERROR');
+    this.tunnel.onerror=status=>failure(status?.message==='TARGET_UNAVAILABLE'?'TARGET_UNAVAILABLE':'TRANSPORT_ERROR');
     this.client.onstatechange=state=>{
       if(state===3){this.input.start(mode);this.fit();this.onState('CONNECTED');}
       if(state===5)failure('DISCONNECTED');

@@ -170,7 +170,7 @@ try{
     const context=await makeContext(),page=await context.newPage();await prepare(page);
     failedStep='QUALITY_INITIAL';await page.locator('#displayQuality').selectOption('low');await open(page);await waitState(page,'CONNECTED');
     check(fixture.qualities.length===1&&fixture.qualities[0]==='low','QUALITY_INITIAL_REQUEST_MISSING');
-    failedStep='QUALITY_PANEL';await openWorkspaceControls(page);await page.getByText('Current mode: Low bandwidth').waitFor();
+    failedStep='QUALITY_PANEL';await openWorkspaceControls(page);await page.getByText('Current mode: Reduced colors (16-bit)').waitFor();
     check(await page.locator('#applyDisplayQuality').isDisabled(),'QUALITY_APPLY_SAME_MODE_ENABLED');
     await page.locator('.network-details summary').click();
     check((await page.locator('#transportMetrics').innerText()).includes('Received'),'METRICS_MISSING_WHILE_CONNECTED');

@@ -23,12 +23,12 @@ function fixture(){
   G.Mouse=class {onEach(){}};G.Mouse.Touchpad=G.Mouse;G.Mouse.State=class {constructor(x,y,left,middle,right,up,down){Object.assign(this,{x,y,left,middle,right,up,down});}};
   globalThis.Guacamole=G;globalThis.window=window;globalThis.location=window.location;
   globalThis.document=Object.assign(new EventTarget(),{hidden:false,createElement:()=>new Node()});
-  let failures=0;
-  const adapter=new DesktopAdapter({surface:new Node(),profile:'mac-native',keysyms:{ControlLeft:0xffe3},onState:()=>{},onFailure:()=>{failures++;adapter.disconnect();},onInput:()=>{}});
+  let failures=0,lastReason=null;
+  const adapter=new DesktopAdapter({surface:new Node(),profile:'mac-native',keysyms:{ControlLeft:0xffe3},onState:()=>{},onFailure:reason=>{failures++;lastReason=reason;adapter.disconnect();},onInput:()=>{}});
   adapter.connect('F'.repeat(43),'control');
   const socket=sockets[0];socket.readyState=1;socket.onopen({});
   socket.onmessage({data:G.Parser.toInstruction(['','fixture-uuid'])});
-  return {adapter,socket,sent,timers,counts:()=>({closedSends,disconnects,failures})};
+  return {adapter,socket,sent,timers,reason:()=>lastReason,counts:()=>({closedSends,disconnects,failures})};
 }
 
 test('Pinned tunnel error-before-CLOSED does not send input release or disconnect on a closed socket',async()=>{
@@ -39,6 +39,13 @@ test('Pinned tunnel error-before-CLOSED does not send input release or disconnec
   assert.deepEqual(f.counts(),{closedSends:0,disconnects:1,failures:1});
   assert.equal(f.timers.size,0);assert.equal(f.adapter.stats(),null);
   f.adapter.disconnect();assert.equal(f.counts().disconnects,1);
+});
+
+test('Only an exact bounded target close reason is attributed upstream; arbitrary close text stays generic',async()=>{
+  for(const [message,expected] of [['TARGET_UNAVAILABLE','TARGET_UNAVAILABLE'],['untrusted arbitrary close text','TRANSPORT_ERROR']]){
+    const f=fixture();f.socket.readyState=3;f.socket.onclose({code:1008,reason:message});await Promise.resolve();
+    assert.equal(f.reason(),expected);assert.equal(f.counts().closedSends,0);assert.equal(f.timers.size,0);
+  }
 });
 
 test('Manual close sends official disconnect once and ignores a queued failure after teardown',async()=>{

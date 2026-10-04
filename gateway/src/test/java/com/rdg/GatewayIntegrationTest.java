@@ -121,7 +121,7 @@ class GatewayIntegrationTest {
             for(String parameter:List.of("encodings","quality-level","compress-level"))assertEquals("",negotiated.get(parameter));
             if(quality.equals("balanced"))for(String parameter:List.of("color-depth","compress-level","quality-level","force-lossless"))assertEquals("",negotiated.get(parameter));
             else {
-                assertEquals(quality.equals("low")?"8":"24",negotiated.get("color-depth"));
+                assertEquals(quality.equals("low")?"16":"24",negotiated.get("color-depth"));
                 assertEquals("true",negotiated.get("force-lossless"));
             }
             assertEquals(quality,Config.JSON.readTree(request("GET","/api/session",null,token,cookie,null,null).body()).path("displayQuality").asText());

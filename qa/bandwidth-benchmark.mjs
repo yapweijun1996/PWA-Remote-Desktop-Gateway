@@ -23,7 +23,7 @@ report.artifacts={guacdImage,javaImage,fixtureSourceSha256:hash(await readFile(s
 if(mode==='full'){
   if(report.presetSource!=='COMPILED_PRODUCTION_DISPLAY_QUALITY_SNAPSHOT')throw new Error('PRODUCTION_PRESET_OWNER_NOT_USED');
   for(const row of report.results){
-    const expected=row.profile==='low'?{'color-depth':'8','force-lossless':'true'}:row.profile==='clear'?{'color-depth':'24','force-lossless':'true'}:{};
+    const expected=row.profile==='low'?{'color-depth':'16','force-lossless':'true'}:row.profile==='clear'?{'color-depth':'24','force-lossless':'true'}:{};
     if(JSON.stringify(Object.entries(row.settings).sort())!==JSON.stringify(Object.entries(expected).sort()))throw new Error('PRODUCTION_PRESET_MISMATCH');
   }
 }

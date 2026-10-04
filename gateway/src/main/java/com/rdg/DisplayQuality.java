@@ -7,7 +7,8 @@ import java.util.Map;
 /** Server-owned VNC display presets; bandwidth depends on workload and target support. */
 enum DisplayQuality {
     // Preserve guacd's encoding defaults; enabling Tight would expose the pinned libvncclient advisory.
-    LOW("low",Map.of("color-depth","8","force-lossless","true")),
+    // The approved Mac returns UPSTREAM_ERROR for 8-bit output; 16-bit was verified live.
+    LOW("low",Map.of("color-depth","16","force-lossless","true")),
     BALANCED("balanced",Map.of()),
     CLEAR("clear",Map.of("color-depth","24","force-lossless","true"));
 

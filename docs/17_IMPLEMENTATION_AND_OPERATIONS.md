@@ -11,6 +11,12 @@ This supplements the original design pack. The implemented local pilot is review
 - `Audit`: fixed SQLite metadata fields, hashed user reference, 30-day/10,000-entry retention, no arbitrary payload field. The stored node ID prevents restoring another node's database unnoticed.
 - `web/src/`: vanilla production UI and official Guacamole browser objects; reference ownership logic is deliberately reused as a pure library, not treated as a transport/security adapter.
 
+## Mac color compatibility correction (web release 1.2.2)
+
+A view-only comparison on the explicitly approved real Mac reproduced an 8-bit Low failure with Guacamole UPSTREAM_ERROR (515); Balanced, 24-bit Clear and the otherwise identical 16-bit/lossless candidate streamed real size/image/sync instructions. No keyboard/mouse input or screen capture was performed. Release 1.2.2 therefore changes the server-owned Low preset to 16-bit/lossless, retaining the API enum and all input/identity/target restrictions. The user-facing label is now Reduced colors (16-bit), avoiding a bandwidth promise. A new 18-run synthetic benchmark showed browser payload 3.88% higher than Balanced in that workload despite lower upstream RFB bytes; Clear remained smaller. This is not a real WAN measurement. Real Mac compatibility takes priority over the earlier synthetic 8-bit byte savings. Those historical results do not establish savings for the replacement preset; no lower internet traffic is guaranteed.
+
+The frontend also recognizes the gateway's exact bounded TARGET_UNAVAILABLE close reason and preserves its upstream attribution, instead of always displaying a generic network/Access suggestion. Arbitrary close text remains generic and is never displayed. The maintained official Client/Tunnel are unchanged. Real browser-to-Mac control and external-network latency remain separate acceptance gates.
+
 ## Connection health panel (web release 1.2.1)
 
 The modal drawer is capped at 320 CSS pixels (304 pixels at a 320-pixel viewport). Header/End action remain fixed while the middle scrolls. FPS and network observations precede the picture-mode configuration; bandwidth details collapse independently.
