@@ -1,0 +1,13 @@
+<!doctype html><meta charset=utf-8><style>html,body{margin:0}.capture{width:400px;height:300px}</style><div id=surface></div>
+<script src="/web/vendor/all.min.js"></script>
+<script type=module>
+import {RemoteInput} from '/web/src/input.mjs';
+const G=window.Guacamole;const capture=document.createElement('div');capture.className='capture';capture.tabIndex=0;
+const display=document.createElement('div');capture.append(display);document.getElementById('surface').append(capture);
+window.keys=[];const t0=performance.now();
+const client={getDisplay:()=>({getScale:()=>1,getWidth:()=>400,getHeight:()=>300}),sendMouseState(){},sendKeyEvent:(down,sym)=>window.keys.push({t:Math.round(performance.now()-t0),down,sym:'0x'+sym.toString(16)})};
+window.make=profile=>{window.input?.dispose();window.input=new RemoteInput({surface:capture,pointerSurface:display,client,Guacamole:G,profile,
+  keysyms:{CommandLeft:65511,CommandRight:65512,OptionLeft:65513,OptionRight:65514,ControlLeft:65507,ControlRight:65508},onPause(){},onFailure(e){window.failure=e;}});
+  window.input.start('control');capture.focus();window.input.enabled=true;window.keys.length=0;};
+window.ready=true;
+</script>
