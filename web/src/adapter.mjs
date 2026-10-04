@@ -19,6 +19,13 @@ export class DesktopAdapter {
     // unusable sends, while still running official cleanup and its timer teardown.
     tunnel.sendMessage=function(...elements){if(tunnel.isConnected())return send.apply(this,elements);};
     this.display=this.client.getDisplay();
+    // Pinned Guacamole 1.6.0 decodes image streams with ImageDecoder and never closes the returned VideoFrame; unclosed
+    // frames wait for GC and can stall the decoder. Use the library's own Image/data-URI path (its non-WebCodecs fallback).
+    const display=this.display;
+    display.drawStream=(layer,x,y,stream,mimetype)=>{
+      const reader=new G.DataURIReader(stream,mimetype);
+      reader.onend=()=>display.draw(layer,x,y,reader.getURI());
+    };
     this.display.statisticWindow=5000;
     this.metrics=new TransportMetrics();
     this.stopMetrics=observeTunnelTransfer(this.tunnel,this.metrics,{display:this.display});
@@ -53,6 +60,8 @@ export class DesktopAdapter {
   }
   sendClipboard(text){
     if(!this.clipboard||!this.client||this.input.mode!=='control')throw new Error('CLIPBOARD_DISABLED');
+    // An empty stream would clear the remote clipboard.
+    if(text==='')throw new Error('CLIPBOARD_EMPTY');
     if(new TextEncoder().encode(text).length>16384)throw new Error('CLIPBOARD_TOO_LARGE');
     const writer=new globalThis.Guacamole.StringWriter(this.client.createClipboardStream('text/plain'));
     return new Promise((resolve,reject)=>{

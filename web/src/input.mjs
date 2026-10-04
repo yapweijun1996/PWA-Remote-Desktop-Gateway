@@ -16,10 +16,14 @@ export const CHORDS=Object.freeze({copy:['CommandLeft','keysym:99'],paste:['Comm
   cut:['CommandLeft','keysym:120'],undo:['CommandLeft','keysym:122'],select:['CommandLeft','keysym:97'],
   save:['CommandLeft','keysym:115'],switch:['CommandLeft','keysym:65289'],search:['CommandLeft','keysym:32']});
 
+/** Wheel clicks sent per window: 40/s, far below the gateway's 1000 messages/s hard limit (two messages per click). */
+export const SCROLL_WINDOW_MS=250,SCROLL_MAX_CLICKS=10;
+
 /** One normalized engine stream attached only to the focused remote surface. */
 export class RemoteInput {
-  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure}) {
+  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,clock=()=>performance.now()}) {
     this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
+    this.clock=clock;this.scrollWindowStart=-Infinity;this.scrollClicks=0;this.droppedWheelPress=false;
     this.enabled=false;this.mode='view';this.altGraph=false;this.leftAltPhysical=false;this.latches=new Set();this.disposers=[];
     this.pointer=new Guacamole.Mouse.State(0,0,false,false,false,false,false);this.protocolCounts=new Map();
     this.keys=new KeyboardState({profile,onTransition:({key,down})=>{
@@ -37,6 +41,10 @@ export class RemoteInput {
       if(e.code==='Escape' && e.shiftKey){e.stopImmediatePropagation();e.preventDefault();this.pause();surface.blur();}
     },true);
     listen(surface,'keyup',e=>{if(e.code==='AltLeft')this.leftAltPhysical=false;},true);
+    // Guacamole.Mouse/Touchpad always cancel wheel and touch defaults on the display. Only the active controller may feed
+    // them; otherwise the browser keeps scrolling/panning the local viewport (Actual size, view-only, not yet focused).
+    for(const type of ['wheel','mousewheel','DOMMouseScroll'])listen(surface,type,e=>{if(!this.active())e.stopPropagation();},true);
+    for(const type of ['touchstart','touchmove','touchend','touchcancel'])listen(surface,type,e=>{if(this.mode!=='control')e.stopPropagation();},true);
     this.keyboard=new Guacamole.Keyboard(surface);
     this.keyboard.onkeydown=keysym=>{
       if(!this.active())return true;
@@ -67,8 +75,17 @@ export class RemoteInput {
   }
   active(){return this.enabled&&this.mode==='control'&&document.activeElement===this.surface&&!document.hidden;}
   run(fn){if(this.failed)return;try{fn();}catch{this.failed=true;this.protocolCounts.clear();this.enabled=false;this.onFailure('INPUT_FAILURE');}}
-  sendPointer(state){const display=this.client.getDisplay(),scale=display.getScale();const x=Math.max(0,Math.min(state.x,Math.max(0,display.getWidth()*scale-1))),y=Math.max(0,Math.min(state.y,Math.max(0,display.getHeight()*scale-1)));this.pointer=new this.Guacamole.Mouse.State(x,y,state.left,state.middle,state.right,state.up,state.down);this.run(()=>this.client.sendMouseState(this.pointer,true));}
-  start(mode){this.mode=mode;this.enabled=false;this.onPause(mode==='view'?t('input.viewOnly'):t('input.clickToControl'));}
+  /** Bounds wheel clicks (press+release pairs from Guacamole.Mouse); a dropped press also drops its release. */
+  scrollAllowed(state){
+    const press=(state.up&&!this.pointer.up)||(state.down&&!this.pointer.down);
+    if(!press){const releaseOfDropped=this.droppedWheelPress&&!state.up&&!state.down;if(releaseOfDropped)this.droppedWheelPress=false;return !releaseOfDropped;}
+    const now=this.clock();
+    if(now-this.scrollWindowStart>=SCROLL_WINDOW_MS){this.scrollWindowStart=now;this.scrollClicks=0;}
+    if(++this.scrollClicks>SCROLL_MAX_CLICKS){this.droppedWheelPress=true;return false;}
+    return true;
+  }
+  sendPointer(state){if(!this.scrollAllowed(state))return;const display=this.client.getDisplay(),scale=display.getScale();const x=Math.max(0,Math.min(state.x,Math.max(0,display.getWidth()*scale-1))),y=Math.max(0,Math.min(state.y,Math.max(0,display.getHeight()*scale-1)));this.pointer=new this.Guacamole.Mouse.State(x,y,state.left,state.middle,state.right,state.up,state.down);this.run(()=>this.client.sendMouseState(this.pointer,true));}
+  start(mode){this.mode=mode;this.enabled=false;this.surface.setAttribute?.('data-mode',mode);this.onPause(mode==='view'?t('input.viewOnly'):t('input.clickToControl'));}
   release(){
     this.run(()=>this.keys.releaseAll());this.latches.clear();this.leftAltPhysical=false;this.altGraph=false;this.keyboard.reset();
     if(this.mode==='control')this.run(()=>{

@@ -54,3 +54,20 @@ test('Manual close sends official disconnect once and ignores a queued failure a
   assert.equal(f.sent.filter(data=>data.includes('disconnect')).length,1);
   assert.equal(f.timers.size,0);
 });
+
+test('Image streams use the Image/data-URI path so no WebCodecs VideoFrame is left unclosed',()=>{
+  const f=fixture(),G=globalThis.Guacamole,drawn=[];
+  globalThis.ImageDecoder=class{constructor(){throw new Error('IMAGE_DECODER_USED');}};
+  try {
+    f.adapter.display.draw=(layer,x,y,uri)=>drawn.push([layer,x,y,uri]);
+    const stream=new G.InputStream({},7);
+    f.adapter.display.drawStream('layer',3,4,stream,'image/png');
+    stream.onblob('QUJD');stream.onblob('REVG');stream.onend();
+    assert.deepEqual(drawn,[['layer',3,4,'data:image/png;base64,QUJDREVG']]);
+  } finally {delete globalThis.ImageDecoder;}
+});
+test('An empty clipboard send is refused locally so it cannot clear the remote clipboard',()=>{
+  const f=fixture();f.adapter.clipboard=true;f.adapter.input.start('control');
+  assert.throws(()=>f.adapter.sendClipboard(''),{message:'CLIPBOARD_EMPTY'});
+  assert.throws(()=>f.adapter.sendClipboard('x'.repeat(16385)),{message:'CLIPBOARD_TOO_LARGE'});
+});

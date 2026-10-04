@@ -215,6 +215,8 @@ body.viewing .update-banner button { width: 100%; }
 #surface { flex: 1; min-height: 0; min-width: 0; background: #07141b; overflow: auto; position: relative; touch-action: none; }
 #surface > div { margin: auto; }
 .capture { width: 100%; height: 100%; overflow: auto; touch-action: none; }
+/* View-only never sends touch input, so let the browser pan an Actual-size display. */
+.capture[data-mode="view"] { touch-action: pan-x pan-y; }
 .capture > div { margin: auto; }
 
 @media (max-width: 840px) {
