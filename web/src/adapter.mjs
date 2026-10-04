@@ -14,7 +14,12 @@ export class DesktopAdapter {
     const G=globalThis.Guacamole;
     this.tunnel=new G.WebSocketTunnel(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/sessions/${intentId}`);
     this.client=new G.Client(this.tunnel);
+    const tunnel=this.tunnel,send=tunnel.sendMessage;
+    // Official Client.disconnect() sends even after a transport close. Drop those
+    // unusable sends, while still running official cleanup and its timer teardown.
+    tunnel.sendMessage=function(...elements){if(tunnel.isConnected())return send.apply(this,elements);};
     this.display=this.client.getDisplay();
+    this.display.statisticWindow=5000;
     this.metrics=new TransportMetrics();
     this.stopMetrics=observeTunnelTransfer(this.tunnel,this.metrics,{display:this.display});
     const metrics=this.metrics;
@@ -22,11 +27,14 @@ export class DesktopAdapter {
     const capture=document.createElement('div');capture.className='capture';capture.tabIndex=0;capture.setAttribute('role','application');capture.setAttribute('aria-label',t('workspace.surfaceLabel'));
     capture.append(this.display.getElement());this.surface.replaceChildren(capture);
     this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:this.display.getElement(),client:this.client,Guacamole:G});
-    this.client.onerror=()=>this.onFailure('TARGET_UNAVAILABLE');
-    this.tunnel.onerror=()=>this.onFailure('TRANSPORT_ERROR');
+    const failure=reason=>queueMicrotask(()=>{if(this.tunnel===tunnel)this.onFailure(reason);});
+    this.client.onerror=()=>failure('TARGET_UNAVAILABLE');
+    // Official tunnel invokes onerror before setting CLOSED. Defer app cleanup
+    // until that state transition finishes, avoiding sends on a closing socket.
+    this.tunnel.onerror=()=>failure('TRANSPORT_ERROR');
     this.client.onstatechange=state=>{
       if(state===3){this.input.start(mode);this.fit();this.onState('CONNECTED');}
-      if(state===5)this.onFailure('DISCONNECTED');
+      if(state===5)failure('DISCONNECTED');
     };
     this.display.onresize=()=>this.fit();
     this.client.onclipboard=(stream,mimetype)=>{
@@ -53,14 +61,19 @@ export class DesktopAdapter {
       writer.sendText(text);writer.sendEnd();
     });
   }
-  stats(){return this.metrics?.snapshot()??null;}
+  stats(){
+    const stats=this.metrics?.snapshot();if(!stats)return null;
+    const states=globalThis.Guacamole.Tunnel?.State;
+    return {...stats,tunnelState:states&&this.tunnel?.state===states.UNSTABLE?'unstable':this.tunnel?.isConnected()?'open':'closed'};
+  }
   disconnect(){
+    if(this.client){this.client.onerror=null;this.client.onstatechange=null;this.client.onclipboard=null;}
+    if(this.tunnel)this.tunnel.onerror=null;
     this.input?.dispose();this.input=null;
     this.stopMetrics?.();this.stopMetrics=null;
     this.metrics?.dispose();this.metrics=null;
     if(this.display)this.display.onstatistics=null;
-    if(this.client){this.client.onerror=null;this.client.onstatechange=null;this.client.onclipboard=null;this.client.disconnect();}
-    if(this.tunnel)this.tunnel.onerror=null;
+    if(this.client)this.client.disconnect();
     this.client=null;this.tunnel=null;this.display=null;this.surface.replaceChildren();
   }
 }

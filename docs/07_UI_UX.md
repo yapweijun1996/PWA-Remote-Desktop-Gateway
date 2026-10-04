@@ -45,3 +45,7 @@ Phone widths 390 and 430, tablet 768/1024, desktop 1440; portrait and landscape;
 
 ## Prototype contract
 `prototype/` runs locally and demonstrates navigation, profile selection and logical key state only. All target statuses are Unverified. The placeholder display is not a mock live Mac screenshot; it explicitly explains that transport is absent. Buttons produce local UI feedback, never system commands. It is not registered as a production service worker and does not simulate a successful OTP login.
+
+## Compact connection diagnostics (1.2.1)
+
+The on-demand controls drawer is capped at 320px and keeps its fixed heading/End action. Its quality section shows FPS (client/gateway/remote when available), HTTP RTT in ms, recent-sample stability and bounded troubleshooting advice before picture configuration. Bandwidth/timing detail is collapsible. Live HTTP ping is opt-in, panel-scoped and labeled separately from actual remote interaction delay. Low/unknown FPS on a still or unsupported desktop never implies a network failure. Light/dark and English/Simplified Chinese use the same layout and labels.

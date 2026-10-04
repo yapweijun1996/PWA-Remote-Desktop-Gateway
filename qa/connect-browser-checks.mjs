@@ -46,6 +46,7 @@ const server=http.createServer(async(request,response)=>{
       if(pathname==='/api/devices'){respond(response,200,[{id:'fixture-local-desktop',label:'Local simulated desktop — fixture only',kind:'local',status:'GATEWAY_REACHABLE',desktopEnabled:true,desktopPolicy:'FULL',checkedAt:'2026-10-03T00:00:00Z'}]);return;}
       if(pathname==='/api/diagnostics'){respond(response,200,{nodeId:'fixture-lifecycle-node',desktopEnabled:true,desktopPolicy:'FULL',keysyms:{},trustedDevicesEnabled:false});return;}
       if(pathname==='/api/session'){
+        f.sessionRequests=(f.sessionRequests??0)+1;
         if(f.holdSession){f.pendingSession={reply:(status,value)=>respond(response,status,value)};return;}
         const active=f.sameAppActive||f.lease!==null;
         respond(response,200,{activeDesktop:active,...(active?{activeDesktopIntentId:f.lease}:{}),nodeActiveDesktops:active?1:f.refusalCode==='CONTROL_BUSY'?1:0,clipboardConsent:false,maintenance:f.refusalCode==='UPDATE_IN_PROGRESS'});return;
@@ -171,21 +172,35 @@ try{
     check(fixture.qualities.length===1&&fixture.qualities[0]==='low','QUALITY_INITIAL_REQUEST_MISSING');
     failedStep='QUALITY_PANEL';await openWorkspaceControls(page);await page.getByText('Current mode: Low bandwidth').waitFor();
     check(await page.locator('#applyDisplayQuality').isDisabled(),'QUALITY_APPLY_SAME_MODE_ENABLED');
+    await page.locator('.network-details summary').click();
     check((await page.locator('#transportMetrics').innerText()).includes('Received'),'METRICS_MISSING_WHILE_CONNECTED');
+    await page.evaluate(()=>{const display=globalThis.__rdgConnectionFixture.clients.at(-1).display;if(display.statisticWindow!==5000)throw new Error('STATS_WINDOW_NOT_ENABLED');display.onstatistics({processingLag:75,clientFps:10,serverFps:11,desktopFps:null});});
+    await page.getByText(/FPS · client 10.0 · gateway 11.0/).waitFor();await page.getByText(/Client frame processing is slow/).waitFor();
     failedStep='QUALITY_PROBE';await page.locator('#measureNetwork').click();await page.getByText(/^Latest HTTP round trip: [\d.]+ ms$/).waitFor();
     check(await page.locator('#measureNetwork').isEnabled(),'METRICS_PROBE_NOT_REENABLED');
+    await page.locator('#measureNetwork').click();await page.locator('#measureNetwork').click();
+    await page.getByText(/Network: Recent samples stable/).waitFor();
+    check((await page.locator('#networkSummary').innerText()).includes('HTTP samples 3'),'HEALTH_SAMPLE_COUNT_MISSING');
+    // Distinguish optional measurements from the required 10s auth heartbeat.
+    await page.evaluate(()=>{globalThis.__fixtureProbeCalls=0;const fetch=window.fetch;window.fetch=function(...args){if(new Error().stack.includes('measureNetwork'))globalThis.__fixtureProbeCalls++;return fetch.apply(this,args);};});
+    await page.locator('#liveNetwork').check();await page.getByText(/HTTP samples 4/).waitFor();
+    await page.waitForFunction(()=>globalThis.__fixtureProbeCalls>=2);
+    await page.keyboard.press('Escape');await page.locator('#workspaceMenu').waitFor({state:'hidden'});const afterClose=await page.evaluate(()=>globalThis.__fixtureProbeCalls);
+    await page.waitForTimeout(5500);check(await page.evaluate(()=>globalThis.__fixtureProbeCalls)===afterClose,'LIVE_HTTP_PROBE_CONTINUED_AFTER_CLOSE');
+    await openWorkspaceControls(page);await page.locator('#liveNetwork').uncheck();
+    pass('FPS uses enabled official statistics; recent HTTP samples assess stability and opt-in polling stops with the panel',{simulatedStats:true,clientFps:10,desktopFpsUnavailable:true,livePollMilliseconds:5000,noInputLatencyClaim:true});
     failedStep='QUALITY_CLEAR_RECONNECT';const old=fixture.lease;await page.locator('#liveDisplayQuality').selectOption('clear');
     check(fixture.intentRequests===1&&fixture.deletes.length===0,'QUALITY_SELECTION_AUTO_RECONNECTED');
     await page.locator('#applyDisplayQuality').click();await wait(()=>fixture.intentRequests===2,'QUALITY_RECONNECT_NOT_REQUESTED');await waitState(page,'CONNECTED');
     check(fixture.deletes.length===1&&fixture.deletes[0].intentId===old&&fixture.deletes[0].onlyIntentField&&fixture.qualities[1]==='clear','QUALITY_RECONNECT_NOT_SCOPED');
     failedStep='QUALITY_CLEAR_PANEL';await openWorkspaceControls(page);await page.getByText('Current mode: Clear').waitFor();
-    await page.getByText('Not measured',{exact:true}).waitFor();
+    await page.locator('#networkLatency').filter({hasText:'Not measured'}).waitFor();
     check((await page.locator('#inputStatus').innerText()).includes('paused'),'QUALITY_RECONNECT_ENABLED_HIDDEN_INPUT');
     await page.locator('#liveDisplayQuality').selectOption('balanced');await page.locator('#applyDisplayQuality').click();await wait(()=>fixture.intentRequests===3,'QUALITY_BALANCED_RECONNECT_MISSING');await waitState(page,'CONNECTED');
     check(fixture.qualities.join(',')==='low,clear,balanced'&&fixture.deletes.length===2,'QUALITY_CATALOG_NOT_COMPLETE');
     await openWorkspaceControls(page);fixture.holdSession=true;await page.locator('#measureNetwork').click();await wait(()=>fixture.pendingSession!==null,'METRICS_DELAYED_PROBE_MISSING');
     await page.keyboard.press('Escape');fixture.pendingSession.reply(200,{activeDesktop:true});fixture.pendingSession=null;fixture.holdSession=false;
-    await openWorkspaceControls(page);await page.getByText('Not measured',{exact:true}).waitFor();
+    await openWorkspaceControls(page);await page.locator('#networkLatency').filter({hasText:'Not measured'}).waitFor();
     check(await page.locator('#measureNetwork').isEnabled(),'METRICS_CLOSED_PROBE_BLOCKED_BUTTON');
     await page.locator('#preferencesBtn').click();await page.locator('#languagePreference').selectOption('zh-CN');await page.locator('#preferencesDialog button[data-close]').first().click();
     check((await page.locator('#activeDisplayQuality').innerText()).includes('平衡'),'QUALITY_NOT_LOCALIZED');

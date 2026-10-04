@@ -33,13 +33,17 @@
   </div>
     <label><span data-i18n="workspace.scale">Scale</span><select id="scale"><option value="fit" data-i18n="workspace.fit">Fit to window</option><option value="actual" data-i18n="workspace.actualSize">Actual size · 100%</option></select></label>
     <section class="network-settings" aria-labelledby="networkTitle"><h3 id="networkTitle" data-i18n="network.title">Connection quality</h3>
+      <h3 data-i18n="network.metrics">Live connection measurements</h3>
+      <p id="connectionHealth" class="connection-health"></p>
+      <p id="frameMetrics" class="frame-metrics"></p><p id="connectionAdvice"></p>
+      <details class="network-details"><summary data-i18n="network.details">Bandwidth and timing details</summary><p id="transportMetrics"></p><p id="networkSummary"></p><p data-i18n="network.fpsHelp">FPS measures changed frames. A still desktop can have low FPS; — means unavailable or idle.</p></details><p id="networkLatency"></p>
+      <button id="measureNetwork" type="button" data-i18n="network.measure">Measure HTTP round trip</button>
+      <label class="check"><input id="liveNetwork" type="checkbox"><span data-i18n="network.live">Live HTTP ping every 5 seconds while this panel is open</span></label>
+      <p class="metric-note" data-i18n="network.measureHelp">Rates count Guacamole payload only, excluding WebSocket/TLS overhead. HTTP round trip is not the delay from typing to seeing a change. Measurements stay in memory and clear on disconnect.</p>
       <p id="activeDisplayQuality"></p>
       <label for="liveDisplayQuality"><span data-i18n="network.select">Picture mode</span><select id="liveDisplayQuality"><option value="low" data-i18n="network.low">Low bandwidth</option><option value="balanced" data-i18n="network.balanced">Balanced</option><option value="clear" data-i18n="network.clear">Clear</option></select></label>
       <p data-i18n="network.reconnectHelp">Changing picture mode ends this connection and opens a new one. Mac support determines the resulting quality.</p>
       <button id="applyDisplayQuality" type="button" disabled data-i18n="network.apply">End and reconnect with this mode</button>
-      <h3 data-i18n="network.metrics">Live connection measurements</h3><p id="transportMetrics"></p><p id="networkLatency"></p>
-      <button id="measureNetwork" type="button" data-i18n="network.measure">Measure HTTP round trip</button>
-      <p class="metric-note" data-i18n="network.measureHelp">Rates count Guacamole payload only, excluding WebSocket/TLS overhead. HTTP round trip is not the delay from typing to seeing a change. Measurements stay in memory and clear on disconnect.</p>
     </section>
     <button id="fullscreen" data-i18n="workspace.fullscreen">Fullscreen</button><button id="pause" data-i18n="workspace.pause">Pause input</button>
     <div class="menu-divider"></div><button id="workspaceProfileBtn" data-i18n="fields.profile">Keyboard profile</button><button id="workspaceDiagnostics" data-i18n="actions.diagnostics">Diagnostics & session history</button><button id="workspaceTrustedDevices" hidden data-i18n="trusted.title">Trusted devices</button>

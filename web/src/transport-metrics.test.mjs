@@ -29,7 +29,15 @@ test('Long high-frequency streams aggregate numerically with bounded quarter-sec
   const stats=f.metrics.snapshot();
   assert.equal(stats.inboundBytes,10000000);assert.equal(stats.outboundBytes,0);
   assert.ok(stats.inboundBytesPerSecond>=100000&&stats.inboundBytesPerSecond<=105000);
-  assert.deepEqual(Object.keys(stats).sort(),['elapsedMs','firstDisplayMs','inboundBytes','inboundBytesPerSecond','outboundBytes','outboundBytesPerSecond','processingLagMs','rateWindowMs'].sort());
+  assert.deepEqual(Object.keys(stats).sort(),['display','elapsedMs','firstDisplayMs','inboundBytes','inboundBytesPerSecond','outboundBytes','outboundBytesPerSecond','processingLagMs','rateWindowMs'].sort());
+});
+
+test('Official display FPS values are nullable, finite, fresh and clear on idle',()=>{
+  const f=fixture();f.at(1000);f.metrics.displayStatistics({processingLag:4,clientFps:12,serverFps:13,desktopFps:null,dropRate:Infinity});
+  assert.deepEqual(f.metrics.snapshot().display,{clientFps:12,serverFps:13,desktopFps:null,dropRate:null});
+  f.at(6001);assert.equal(f.metrics.snapshot().display,null);assert.equal(f.metrics.snapshot().processingLagMs,null);
+  f.metrics.displayStatistics({clientFps:0,serverFps:-1,desktopFps:'30'});
+  assert.deepEqual(f.metrics.snapshot().display,{clientFps:0,serverFps:null,desktopFps:null,dropRate:null});
 });
 
 test('Unknown/invalid render statistics remain unknown and first display records only once',()=>{

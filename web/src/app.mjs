@@ -4,6 +4,7 @@ import {setupUpdates} from './pwa.mjs';
 import {release} from './release.mjs';
 import {t,applyTranslations,onLocaleChange,formatDate,TRANSLATIONS} from './i18n.mjs';
 import {setupPreferences} from './preferences.mjs';
+import {NetworkHealth,connectionAssessment} from './connection-health.mjs';
 
 const $=id=>document.getElementById(id),api=new GatewayAPI();
 let adapter=null,desktopIntentId=null,recoveryIntentId=null,device=null,diag=null,nodeId='',epoch=0,busy=false,update=null,updateSetup=false;
@@ -13,13 +14,15 @@ const platform=/Mac/.test(navigator.platform)?'mac':'windows';
 const messages=new Map();
 let diagnosticsRequest=0,clipboardActivity=0;
 let activeDisplayQuality=null,metricsTimer=null,latencyRequest=0;
+const networkHealth=new NetworkHealth();let nextNetworkProbe=0;
 const displayQualities=['low','balanced','clear'];
 function cancelNetworkProbe(){
   ++latencyRequest;if($('measureNetwork').disabled)setMessage('networkLatency','network.unavailable');$('measureNetwork').disabled=false;
 }
 function clearNetworkMeasurements(){
   clearInterval(metricsTimer);metricsTimer=null;++latencyRequest;activeDisplayQuality=null;
-  for(const id of ['transportMetrics','networkLatency','activeDisplayQuality']){messages.delete($(id));$(id).textContent='';}
+  networkHealth.clear();$('liveNetwork').checked=false;
+  for(const id of ['transportMetrics','networkLatency','activeDisplayQuality','frameMetrics','connectionHealth','networkSummary','connectionAdvice']){messages.delete($(id));$(id).textContent='';}
   $('measureNetwork').disabled=false;$('applyDisplayQuality').disabled=true;
 }
 function renderNetworkMeasurements(){
@@ -29,6 +32,12 @@ function renderNetworkMeasurements(){
   if(!stats){setMessage('transportMetrics','network.unavailable');return;}
   const number=(value,divisor=1)=>Number.isFinite(value)?(value/divisor).toFixed(1):t('network.unavailable');
   setMessage('transportMetrics','network.transfer',{down:number(stats.inboundBytesPerSecond,1024),up:number(stats.outboundBytesPerSecond,1024),window:number(stats.rateWindowMs,1000),elapsed:number(stats.elapsedMs,1000),received:number(stats.inboundBytes,1048576),sent:number(stats.outboundBytes,1024),first:number(stats.firstDisplayMs),lag:number(stats.processingLagMs)});
+  const fps=value=>Number.isFinite(value)?value.toFixed(1):'—',network=networkHealth.snapshot();
+  setMessage('frameMetrics','network.fps',{client:fps(stats.display?.clientFps),server:fps(stats.display?.serverFps),desktop:fps(stats.display?.desktopFps)});
+  setMessage('connectionHealth','network.health',()=>({state:t('network.state.'+(!navigator.onLine?'offline':network.state)),transport:t('network.transport.'+(stats.tunnelState??'unknown'))}));
+  setMessage('networkSummary','network.samples',{count:network.count,average:fps(network.averageMs),jitter:fps(network.jitterMs)});
+  setMessage('connectionAdvice','network.advice.'+connectionAssessment({online:navigator.onLine,hidden:document.hidden,tunnelState:stats.tunnelState,network,stats}));
+  if($('liveNetwork').checked&&!document.hidden&&!$('measureNetwork').disabled&&performance.now()>=nextNetworkProbe){nextNetworkProbe=performance.now()+5000;void measureNetwork();}
 }
 function loadDisplayQuality(){
   let value='balanced';try{const stored=localStorage.getItem(`rdg:quality:${nodeId}`);if(displayQualities.includes(stored))value=stored;}catch{}
@@ -237,7 +246,7 @@ async function connect(){
     rememberProfile();updateWorkspaceIdentity();
     $('liveProfile').value=$('profile').value;workspaceLayout(true);
     const connectingAdapter=new DesktopAdapter({surface:$('surface'),profile:$('profile').value,keysyms:diag.keysyms,clipboard,
-      onState:value=>{if(request!==epoch||adapter!==connectingAdapter)return;state(value);if(value==='CONNECTED'){busy=false;syncConnectButton();}},onFailure:reason=>{if(request===epoch)void end(reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
+      onState:value=>{if(request!==epoch||adapter!==connectingAdapter)return;state(value);if(value==='CONNECTED'){busy=false;syncConnectButton();}},onFailure:reason=>{if(request===epoch&&adapter===connectingAdapter)void end(reason,'connection.'+reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
       onClipboard:text=>{if(request!==epoch||adapter!==connectingAdapter)return;$('remoteText').value=text;setMessage('clipboardStatus','app.clipboardStatus.received_text_held_in_memory_copy');}});
     adapter=connectingAdapter;adapter.connect(intent.intentId,$('mode').value);$('clipboardBtn').disabled=!clipboard;$('clipboardBtn').dataset.i18nTitle=clipboard?'clipboard.transferTitle':'clipboard.enableTitle';$('clipboardBtn').title=t($('clipboardBtn').dataset.i18nTitle);$('keysBtn').disabled=$('mode').value==='view';$('keysBtn').dataset.i18nTitle=$('mode').value==='view'?'workspace.viewInputUnavailable':'workspace.remoteKeys';$('keysBtn').title=t($('keysBtn').dataset.i18nTitle);
     setMessage('clipboardStatus',clipboard?'clipboard.enabled':'clipboard.disabled');
@@ -285,20 +294,22 @@ $('applyDisplayQuality').onclick=async()=>{
   if(!await end())return;
   $('displayQuality').value=quality;rememberDisplayQuality();await connect();
 };
-$('measureNetwork').onclick=async()=>{
-  if(!adapter||!$('workspaceMenu').open||$('measureNetwork').disabled)return;
+async function measureNetwork(){
+  if(!adapter||document.hidden||!$('workspaceMenu').open||$('measureNetwork').disabled)return;
   const request=epoch,currentAdapter=adapter,generation=++latencyRequest;
-  const current=()=>request===epoch&&currentAdapter===adapter&&generation===latencyRequest&&$('workspaceMenu').open;
+  const current=()=>request===epoch&&currentAdapter===adapter&&generation===latencyRequest&&$('workspaceMenu').open&&!document.hidden;
   $('measureNetwork').disabled=true;setMessage('networkLatency','network.measuring');const started=performance.now();
-  try{const session=await api.request('/api/session');if(!current())return;if(!session.activeDesktop){void end('SESSION_EXPIRED');return;}setMessage('networkLatency','network.latency',{ms:(performance.now()-started).toFixed(1)});}
+  try{const session=await api.request('/api/session');if(!current())return;if(!session.activeDesktop){void end('SESSION_EXPIRED');return;}const ms=performance.now()-started;networkHealth.record(ms);setMessage('networkLatency','network.latency',{ms:ms.toFixed(1)});}
   catch(error){
     if(!current())return;
     if(trustedLoginRequired(error))return;
     if(['AUTH_REQUIRED','SESSION_EXPIRED','ACCESS_DENIED'].includes(error.message)){void end('REAUTH_REQUIRED');clearPrivate();$('reauth').hidden=false;return;}
-    setMessage('networkLatency','network.failed');
+    networkHealth.fail();setMessage('networkLatency','network.failed');
   }
-  finally{if(current())$('measureNetwork').disabled=false;}
-};
+  finally{if(current()){$('measureNetwork').disabled=false;renderNetworkMeasurements();}}
+}
+$('measureNetwork').onclick=measureNetwork;
+$('liveNetwork').onchange=()=>{nextNetworkProbe=performance.now()+5000;if($('liveNetwork').checked)void measureNetwork();else cancelNetworkProbe();};
 $('closeWorkspacePanel').onclick=()=>closeWorkspaceMenu(true);
 $('workspaceMenu').addEventListener('cancel',event=>{event.preventDefault();closeWorkspaceMenu(true);});
 $('workspaceMenu').addEventListener('keydown',event=>{
@@ -360,7 +371,7 @@ function checkSession(){
     void end('REAUTH_REQUIRED');clearPrivate();$('reauth').hidden=false;
   });
 }
-document.addEventListener('visibilitychange',()=>{if(document.hidden)clearCredentialInput();if(!document.hidden&&api.csrf)checkSession();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearCredentialInput();cancelNetworkProbe();}if(!document.hidden&&api.csrf)checkSession();});
 setInterval(()=>{if(adapter&&api.csrf)checkSession();},10000);
 onLocaleChange(()=>{
   applyTranslations();

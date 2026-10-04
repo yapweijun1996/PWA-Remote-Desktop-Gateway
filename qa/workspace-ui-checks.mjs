@@ -21,6 +21,7 @@ export async function checkWorkspaceUI({page,check,pass}){
    await openWorkspaceControls(page);await paused();const after=await geometry();
    check(JSON.stringify(before.surface)===JSON.stringify(after.surface),'SIDEBAR_OPEN_RESIZED_DESKTOP_'+suffix);
    check(after.panel.x>=0&&after.panel.right<=viewport.width+1&&after.panel.height<=viewport.height+1,'SIDEBAR_PANEL_BOUNDS_'+suffix);
+   check(after.panel.width<=322,'SIDEBAR_COMPACT_WIDTH_'+suffix);
    check(await page.locator('#end').isVisible()&&await page.locator('#closeWorkspacePanel').isVisible(),'SIDEBAR_SAFETY_ACTIONS_HIDDEN_'+suffix);
    const scroll=await page.evaluate(()=>{const middle=document.querySelector('.workspace-panel-content');const points=[0,(middle.scrollHeight-middle.clientHeight)/2,middle.scrollHeight];return points.map(point=>{middle.scrollTop=point;return {top:middle.scrollTop,heading:document.querySelector('#workspaceMenu .dialog-heading').getBoundingClientRect().toJSON(),footer:document.querySelector('#workspaceMenu .workspace-panel-footer').getBoundingClientRect().toJSON(),panel:document.getElementById('workspaceMenu').scrollTop};});});
    if(viewport.height===390)check(scroll.at(-1).top>0,'SIDEBAR_LANDSCAPE_CONTENT_NOT_SCROLLABLE_'+suffix);

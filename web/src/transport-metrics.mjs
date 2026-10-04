@@ -23,6 +23,7 @@ export function instructionBytes(elements){
 /** Connection-local numeric aggregates; no screen, clipboard, key or token data. */
 export class TransportMetrics {
   #clock;#started;#inbound=0;#outbound=0;#buckets;#firstDisplay=null;#processingLag=null;#active=true;
+  #display=null;#displayAt=null;
   constructor({now=()=>performance.now()}={}){
     this.#clock=now;this.#started=now();
     this.#buckets=Array.from({length:BUCKET_COUNT},()=>({index:-1,inbound:0,outbound:0}));
@@ -41,6 +42,9 @@ export class TransportMetrics {
     if(!this.#active)return;
     const lag=statistics?.processingLag;
     this.#processingLag=typeof lag==='number'&&Number.isFinite(lag)&&lag>=0?lag:null;
+    this.#display=Object.fromEntries(['clientFps','serverFps','desktopFps','dropRate'].map(key=>[key,
+      typeof statistics?.[key]==='number'&&Number.isFinite(statistics[key])&&statistics[key]>=0?statistics[key]:null]));
+    this.#displayAt=this.#elapsed();
   }
   snapshot(){
     if(!this.#active)return null;
@@ -52,9 +56,10 @@ export class TransportMetrics {
     return {elapsedMs,inboundBytes:this.#inbound,outboundBytes:this.#outbound,
       inboundBytesPerSecond:rateWindowMs?inbound*1000/rateWindowMs:null,
       outboundBytesPerSecond:rateWindowMs?outbound*1000/rateWindowMs:null,
-      rateWindowMs,firstDisplayMs:this.#firstDisplay,processingLagMs:this.#processingLag};
+      rateWindowMs,firstDisplayMs:this.#firstDisplay,processingLagMs:this.#displayAt!==null&&elapsedMs-this.#displayAt<=WINDOW_MS?this.#processingLag:null,
+      display:this.#displayAt!==null&&elapsedMs-this.#displayAt<=WINDOW_MS?this.#display:null};
   }
-  dispose(){this.#active=false;this.#inbound=0;this.#outbound=0;this.#buckets=[];this.#firstDisplay=null;this.#processingLag=null;}
+  dispose(){this.#active=false;this.#inbound=0;this.#outbound=0;this.#buckets=[];this.#firstDisplay=null;this.#processingLag=null;this.#display=null;this.#displayAt=null;}
 }
 
 /** Observe documented tunnel hooks while preserving the official client and ACKs. */
