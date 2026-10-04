@@ -15,7 +15,7 @@ function fixture(){
     send(data){if(this.readyState!==1){closedSends++;throw new Error('SEND_ON_CLOSED_SOCKET');}sent.push(data);}
     close(){this.readyState=3;disconnects++;}
   }
-  const context=vm.createContext({window,WebSocket:Socket,Blob});window.atob=atob;
+  const context=vm.createContext({window,WebSocket:Socket,Blob});window.atob=atob;window.btoa=btoa;
   vm.runInContext(readFileSync(new URL('../vendor/all.min.js',import.meta.url),'utf8'),context);
   const G=context.Guacamole;
   G.Display=class {getElement(){return new Node();}getWidth(){return 640;}getHeight(){return 480;}getScale(){return 1;}scale(){}moveCursor(){}};
@@ -77,4 +77,14 @@ test('An empty clipboard send is refused locally so it cannot clear the remote c
   const f=fixture();f.adapter.clipboard=true;f.adapter.input.start('control');
   assert.throws(()=>f.adapter.sendClipboard(''),{message:'CLIPBOARD_EMPTY'});
   assert.throws(()=>f.adapter.sendClipboard('x'.repeat(16385)),{message:'CLIPBOARD_TOO_LARGE'});
+});
+
+test('A clipboard send succeeds without any ack and only a closed tunnel fails it',async()=>{
+  const f=fixture();f.adapter.clipboard=true;f.adapter.input.start('control');f.adapter.clipboardSettleMs=5;
+  const before=f.sent.length;
+  await f.adapter.sendClipboard('hello world');   // guacd never acks on success, so this must not time out
+  const frames=f.sent.slice(before);
+  assert.ok(frames[0].includes('clipboard')&&frames.some(data=>data.includes('blob'))&&frames.at(-1).includes('end'),'clipboard, blob and end were sent in order');
+  const closing=f.adapter.sendClipboard('again');f.socket.readyState=3;f.socket.onclose({code:1006});
+  await assert.rejects(closing,{message:'CLIPBOARD_UNAVAILABLE'});
 });

@@ -25,7 +25,7 @@ export function useFastImageStreams(display,G,nativeBase64=typeof Uint8Array.fro
 export class DesktopAdapter {
   constructor({surface,profile,keysyms,onState,onFailure,onInput,onClipboard,clipboard}) {
     this.surface=surface;this.clipboard=clipboard;this.onFailure=onFailure;
-    this.tunnel=null;this.client=null;this.input=null;
+    this.tunnel=null;this.client=null;this.input=null;this.clipboardSettleMs=300;
     this.metrics=null;this.stopMetrics=null;
     this.options={surface,profile,keysyms,onPause:onInput,onFailure};this.onState=onState;this.onClipboard=onClipboard;
   }
@@ -76,11 +76,14 @@ export class DesktopAdapter {
     // An empty stream would clear the remote clipboard.
     if(text==='')throw new Error('CLIPBOARD_EMPTY');
     if(new TextEncoder().encode(text).length>16384)throw new Error('CLIPBOARD_TOO_LARGE');
-    const writer=new globalThis.Guacamole.StringWriter(this.client.createClipboardStream('text/plain'));
+    const writer=new globalThis.Guacamole.StringWriter(this.client.createClipboardStream('text/plain')),tunnel=this.tunnel;
+    // Waiting for an ack always timed out: the official guacd never acknowledges clipboard streams on success (checked against
+    // the reviewed daemon: no ack for clipboard, blob or end, and the text reaches the VNC server within milliseconds), and the
+    // official Client frees the stream at sendEnd(), so no later ack could reach onack anyway. A delivered transfer was reported
+    // as timed out. The send is complete once everything is written and the tunnel is still connected after a short settle.
+    writer.sendText(text);writer.sendEnd();
     return new Promise((resolve,reject)=>{
-      let timer=setTimeout(()=>{reject(new Error('CLIPBOARD_TIMEOUT'));},5000);
-      writer.onack=status=>{if(status.isError()){clearTimeout(timer);reject(new Error('CLIPBOARD_UNAVAILABLE'));}else{clearTimeout(timer);resolve();}};
-      writer.sendText(text);writer.sendEnd();
+      setTimeout(()=>{if(tunnel?.isConnected())resolve();else reject(new Error('CLIPBOARD_UNAVAILABLE'));},this.clipboardSettleMs);
     });
   }
   stats(){

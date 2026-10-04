@@ -57,11 +57,12 @@ export async function checkPrivacyLifecycle({page,base,check,pass}) {
     await page.evaluate(()=>globalThis.__rdgPrivacyFixture.pendingReader.onend());
     check(await ensureCleared('PRIVACY_LATE_STREAM_REPOPULATED')===cleared,'PRIVACY_LATE_STREAM_CHANGED_STATUS');
     record('A clipboard stream ending after its adapter disconnects cannot repopulate received text',{streamCompletionSimulated:true});
-    await page.evaluate(async()=>{globalThis.__rdgPrivacyFixture.writer.onack({isError:()=>false});await new Promise(resolve=>setTimeout(resolve,0));});
+    // The send has no acknowledgement; its result arrives after the settle time (300 ms) once the adapter is already gone.
+    await page.waitForTimeout(500);
     check(await ensureCleared('PRIVACY_LATE_SEND_ACK_REPOPULATED')===cleared,'PRIVACY_LATE_SEND_ACK_CHANGED_STATUS');
     await page.evaluate(async()=>{globalThis.__rdgPrivacyFixture.writeResolve();await new Promise(resolve=>setTimeout(resolve,0));});
     check(await ensureCleared('PRIVACY_LATE_LOCAL_COPY_REPOPULATED')===cleared,'PRIVACY_LATE_LOCAL_COPY_CHANGED_STATUS');
-    record('Send acknowledgement and local-copy completion after End cannot replace cleared clipboard status',{sendAcknowledgementSimulated:true,localCopyPermissionSimulated:true});
+    record('Send result and local-copy completion after End cannot replace cleared clipboard status',{sendResultAfterSettleTime:true,localCopyPermissionSimulated:true});
 
     for(const disconnect of [false,true]){
       if(disconnect)await connect();
@@ -97,7 +98,7 @@ export async function checkPrivacyLifecycle({page,base,check,pass}) {
     for(const [url,handler]of routeEntries)await page.unroute(url,handler);
     await page.evaluate(()=>{
       const f=globalThis.__rdgPrivacyFixture;if(!f)return;
-      f.readResolve?.('');f.writeResolve?.();f.writer?.onack?.({isError:()=>false});
+      f.readResolve?.('');f.writeResolve?.();
       if(f.clipboardDescriptor)Object.defineProperty(navigator,'clipboard',f.clipboardDescriptor);else delete navigator.clipboard;
       if(f.stringReader===undefined)delete Guacamole.StringReader;else Guacamole.StringReader=f.stringReader;
       if(f.stringWriter===undefined)delete Guacamole.StringWriter;else Guacamole.StringWriter=f.stringWriter;

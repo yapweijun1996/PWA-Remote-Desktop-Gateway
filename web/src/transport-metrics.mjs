@@ -1,6 +1,7 @@
 const BUCKET_MS=250;
 const WINDOW_MS=5000;
 const BUCKET_COUNT=WINDOW_MS/BUCKET_MS+1;
+const PEAK_BUCKETS=1000/BUCKET_MS;
 
 /** Size of canonical Guacamole UTF-8 instruction framing, without serialization. */
 const ASCII_ONLY=/^[\x00-\x7f]*$/;
@@ -26,7 +27,7 @@ export function instructionBytes(elements){
 
 /** Connection-local numeric aggregates; no screen, clipboard, key or token data. */
 export class TransportMetrics {
-  #clock;#started;#inbound=0;#outbound=0;#buckets;#firstDisplay=null;#processingLag=null;#active=true;
+  #clock;#started;#inbound=0;#outbound=0;#peakInbound=0;#buckets;#firstDisplay=null;#processingLag=null;#active=true;
   #display=null;#displayAt=null;
   constructor({now=()=>performance.now()}={}){
     this.#clock=now;this.#started=now();
@@ -38,8 +39,12 @@ export class TransportMetrics {
     const index=Math.floor(this.#elapsed()/BUCKET_MS),bucket=this.#buckets[index%BUCKET_COUNT];
     if(bucket.index!==index){bucket.index=index;bucket.inbound=0;bucket.outbound=0;}
     bucket[direction]=Math.min(Number.MAX_SAFE_INTEGER,bucket[direction]+bytes);
-    if(direction==='inbound')this.#inbound=Math.min(Number.MAX_SAFE_INTEGER,this.#inbound+bytes);
-    else this.#outbound=Math.min(Number.MAX_SAFE_INTEGER,this.#outbound+bytes);
+    if(direction==='inbound'){
+      this.#inbound=Math.min(Number.MAX_SAFE_INTEGER,this.#inbound+bytes);
+      // Highest download in any one second since connecting: the 5 s average hides a short scroll burst.
+      let second=0;for(let back=0;back<PEAK_BUCKETS;back++){const earlier=this.#buckets[(index-back+BUCKET_COUNT*PEAK_BUCKETS)%BUCKET_COUNT];if(earlier.index===index-back)second+=earlier.inbound;}
+      if(second>this.#peakInbound)this.#peakInbound=second;
+    }else this.#outbound=Math.min(Number.MAX_SAFE_INTEGER,this.#outbound+bytes);
   }
   firstDisplay(){if(this.#active&&this.#firstDisplay===null)this.#firstDisplay=this.#elapsed();}
   displayStatistics(statistics){
@@ -57,13 +62,13 @@ export class TransportMetrics {
     const firstIndex=Math.floor(Math.max(0,elapsedMs-WINDOW_MS)/BUCKET_MS),lastIndex=Math.floor(elapsedMs/BUCKET_MS);
     let inbound=0,outbound=0;
     for(const bucket of this.#buckets)if(bucket.index>=firstIndex&&bucket.index<=lastIndex){inbound+=bucket.inbound;outbound+=bucket.outbound;}
-    return {elapsedMs,inboundBytes:this.#inbound,outboundBytes:this.#outbound,
+    return {elapsedMs,inboundBytes:this.#inbound,outboundBytes:this.#outbound,peakInboundBytesPerSecond:this.#peakInbound,
       inboundBytesPerSecond:rateWindowMs?inbound*1000/rateWindowMs:null,
       outboundBytesPerSecond:rateWindowMs?outbound*1000/rateWindowMs:null,
       rateWindowMs,firstDisplayMs:this.#firstDisplay,processingLagMs:this.#displayAt!==null&&elapsedMs-this.#displayAt<=WINDOW_MS?this.#processingLag:null,
       display:this.#displayAt!==null&&elapsedMs-this.#displayAt<=WINDOW_MS?this.#display:null};
   }
-  dispose(){this.#active=false;this.#inbound=0;this.#outbound=0;this.#buckets=[];this.#firstDisplay=null;this.#processingLag=null;this.#display=null;this.#displayAt=null;}
+  dispose(){this.#active=false;this.#peakInbound=0;this.#inbound=0;this.#outbound=0;this.#buckets=[];this.#firstDisplay=null;this.#processingLag=null;this.#display=null;this.#displayAt=null;}
 }
 
 /** Observe documented tunnel hooks while preserving the official client and ACKs. */

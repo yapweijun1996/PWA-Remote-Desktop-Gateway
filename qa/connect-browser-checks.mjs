@@ -258,7 +258,7 @@ try{
   await writeArtifact('qa/implementation/connect-browser-results.json',JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify(evidence));
 }catch(error){
   const sensitive=priorApp&&error.message==='REFUSAL_SENT_DELETE';
-  const evidence={status:sensitive?'EXPECTED_FAILURE':'FAIL',scope,reason:sensitive?'PRIOR_APP_REFUSAL_SENT_DELETE':'CONNECT_BROWSER_CHECK_FAILED',failedStep,priorAppFixture:priorApp,...(priorApp?{baselineSourceCommit}:{}),productionBuild:build,results,totals};
+  const evidence={status:sensitive?'EXPECTED_FAILURE':'FAIL',scope,reason:sensitive?'PRIOR_APP_REFUSAL_SENT_DELETE':'CONNECT_BROWSER_CHECK_FAILED',failedStep,errorSummary:String(error?.message??'').split('\n')[0].slice(0,200),priorAppFixture:priorApp,...(priorApp?{baselineSourceCommit}:{}),productionBuild:build,results,totals};
   if(priorApp)await writeArtifact('qa/implementation/connect-browser-prior-app-negative.json',JSON.stringify(evidence,null,2)+'\n');
   console.error(JSON.stringify(evidence));process.exitCode=sensitive?0:1;
 }finally{clearTimeout(deadline);await cleanup();}

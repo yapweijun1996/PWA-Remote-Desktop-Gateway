@@ -29,7 +29,7 @@ test('Long high-frequency streams aggregate numerically with bounded quarter-sec
   const stats=f.metrics.snapshot();
   assert.equal(stats.inboundBytes,10000000);assert.equal(stats.outboundBytes,0);
   assert.ok(stats.inboundBytesPerSecond>=100000&&stats.inboundBytesPerSecond<=105000);
-  assert.deepEqual(Object.keys(stats).sort(),['display','elapsedMs','firstDisplayMs','inboundBytes','inboundBytesPerSecond','outboundBytes','outboundBytesPerSecond','processingLagMs','rateWindowMs'].sort());
+  assert.deepEqual(Object.keys(stats).sort(),['display','elapsedMs','firstDisplayMs','inboundBytes','inboundBytesPerSecond','outboundBytes','outboundBytesPerSecond','peakInboundBytesPerSecond','processingLagMs','rateWindowMs'].sort());
 });
 
 test('Official display FPS values are nullable, finite, fresh and clear on idle',()=>{
@@ -83,4 +83,14 @@ test('Disposal restores owned hooks, clears metrics and ignores late callbacks w
   lateReceive('blob',['0','discarded']);lateSend('key',99,1);assert.equal(f.metrics.snapshot().inboundBytes,100);assert.equal(f.metrics.snapshot().outboundBytes,0);
   const stopAgain=observeTunnelTransfer(tunnel,f.metrics),replacement=()=>{};tunnel.oninstruction=replacement;stopAgain();assert.equal(tunnel.oninstruction,replacement);
   f.metrics.dispose();f.metrics.record('inbound',100);f.metrics.firstDisplay();f.metrics.displayStatistics({processingLag:2});assert.equal(f.metrics.snapshot(),null);
+});
+
+test('Peak download is the busiest single second since connecting and survives later idle time',()=>{
+  const f=fixture();assert.equal(f.metrics.snapshot().peakInboundBytesPerSecond,0);
+  f.at(100);f.metrics.record('inbound',100000);f.at(400);f.metrics.record('inbound',200000);f.at(800);f.metrics.record('inbound',300000);   // one second: 600000
+  f.at(5000);f.metrics.record('inbound',50000);f.at(20000);
+  const snapshot=f.metrics.snapshot();assert.equal(snapshot.peakInboundBytesPerSecond,600000);assert.equal(snapshot.inboundBytesPerSecond,0,'the 5 s average has decayed, the peak has not');
+  f.at(21000);f.metrics.record('outbound',900000);assert.equal(f.metrics.snapshot().peakInboundBytesPerSecond,600000,'uploads never change the download peak');
+  f.at(22000);f.metrics.record('inbound',1000);f.at(22900);f.metrics.record('inbound',1000);assert.equal(f.metrics.snapshot().peakInboundBytesPerSecond,600000);
+  f.metrics.dispose();assert.equal(f.metrics.snapshot(),null);
 });
