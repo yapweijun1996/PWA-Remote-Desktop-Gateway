@@ -2,6 +2,25 @@ import {t} from './i18n.mjs';
 import {RemoteInput} from './input.mjs';
 import {TransportMetrics,observeTunnelTransfer} from './transport-metrics.mjs';
 
+/**
+ * Pinned Guacamole 1.6.0 decodes image streams with ImageDecoder and never closes the returned VideoFrame: unclosed frames
+ * wait for GC and can stall the decoder. Measured on real Display with distinct 1280x800 PNG frames: the library path takes
+ * ~1.9 ms/frame, its Image + data-URI fallback ~5.3 ms, BlobReader ~10.8 ms (byte-wise JS base64) and ArrayBufferReader +
+ * Blob + drawBlob ~1.0 ms, which needs native Uint8Array.fromBase64. Use that where available, else the data-URI fallback.
+ * The draw task is queued when the stream ends, which still precedes every later drawing instruction.
+ */
+export function useFastImageStreams(display,G,nativeBase64=typeof Uint8Array.fromBase64==='function') {
+  if(nativeBase64)display.drawStream=(layer,x,y,stream,mimetype)=>{
+    const chunks=[],reader=new G.ArrayBufferReader(stream);
+    reader.ondata=buffer=>chunks.push(buffer);
+    reader.onend=()=>display.drawBlob(layer,x,y,new Blob(chunks,{type:mimetype}));
+  };
+  else display.drawStream=(layer,x,y,stream,mimetype)=>{
+    const reader=new G.DataURIReader(stream,mimetype);
+    reader.onend=()=>display.draw(layer,x,y,reader.getURI());
+  };
+}
+
 /** Official Guacamole display, keyboard, pointer, tunnel and clipboard objects. */
 export class DesktopAdapter {
   constructor({surface,profile,keysyms,onState,onFailure,onInput,onClipboard,clipboard}) {
@@ -19,13 +38,7 @@ export class DesktopAdapter {
     // unusable sends, while still running official cleanup and its timer teardown.
     tunnel.sendMessage=function(...elements){if(tunnel.isConnected())return send.apply(this,elements);};
     this.display=this.client.getDisplay();
-    // Pinned Guacamole 1.6.0 decodes image streams with ImageDecoder and never closes the returned VideoFrame; unclosed
-    // frames wait for GC and can stall the decoder. Use the library's own Image/data-URI path (its non-WebCodecs fallback).
-    const display=this.display;
-    display.drawStream=(layer,x,y,stream,mimetype)=>{
-      const reader=new G.DataURIReader(stream,mimetype);
-      reader.onend=()=>display.draw(layer,x,y,reader.getURI());
-    };
+    useFastImageStreams(this.display,G);
     this.display.statisticWindow=5000;
     this.metrics=new TransportMetrics();
     this.stopMetrics=observeTunnelTransfer(this.tunnel,this.metrics,{display:this.display});
