@@ -33,7 +33,9 @@ export async function checkWorkspaceUI({page,check,pass}){
   }
  }
  record('Full viewport desktop and modal controls fit nine mobile/desktop sizes in both themes without reflow; only panel content scrolls',{viewports:sizes,themes:['light','dark'],realSafeAreas:false});
- await page.setViewportSize({width:862,height:844});await page.locator('.capture').focus();check((await page.locator('#inputStatus').innerText()).includes('active'),'SIDEBAR_CAPTURE_NOT_ACTIVE');
+ await page.setViewportSize({width:862,height:844});
+ // A resize pauses input by design; let its handler run before focusing, or the status can read paused.
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.locator('.capture').focus();check((await page.locator('#inputStatus').innerText()).includes('active'),'SIDEBAR_CAPTURE_NOT_ACTIVE');
  await page.locator('#moreBtn').focus();await page.keyboard.press('Enter');await focus('closeWorkspacePanel');await paused();
  for(let i=0;i<24;i++){await page.keyboard.press('Tab');check(await page.evaluate(()=>document.getElementById('workspaceMenu').contains(document.activeElement)),'SIDEBAR_FOCUS_ESCAPED_MODAL');}
  await page.keyboard.press('Escape');await closed();await focus('moreBtn');await paused();await page.keyboard.press('Space');await focus('closeWorkspacePanel');

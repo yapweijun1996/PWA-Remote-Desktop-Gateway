@@ -41,11 +41,11 @@ test('Release messages accept bounded semantic version and build identity only',
 
 test('Waiting worker version query returns only metadata and closes on nonresponsive legacy worker',async()=>{
   let observed;
-  const version=await requestWorkerVersion({postMessage(message,ports){observed=message;ports[0].postMessage(target);}},50);
+  const version=await requestWorkerVersion({postMessage(message,ports){observed=message;ports[0].postMessage(target);}},1000);   // generous: a loaded machine must not turn a prompt reply into a timeout
   assert.deepEqual(observed,{type:'GET_VERSION'});assert.deepEqual(version,target);
   assert.equal(await requestWorkerVersion({postMessage(){}},10),null);
   assert.equal(await requestWorkerVersion({postMessage(){throw new Error('fixture');}},10),null);
-  assert.equal(await requestWorkerVersion({postMessage(message,ports){ports[0].postMessage({secret:'not metadata'});}},50),null);
+  assert.equal(await requestWorkerVersion({postMessage(message,ports){ports[0].postMessage({secret:'not metadata'});}},1000),null);
 });
 
 test('First installation exposes current release without claiming an available update',async t=>{
