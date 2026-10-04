@@ -1,0 +1,13 @@
+# HTTP RTT freshness and update conflict investigation
+
+Status: LOCAL_FIX_VERIFIED_NOT_DEPLOYED. Runtime remains the previously deployed 1.2.2 image. No live gateway restart, Access change, session takeover or remote push occurred.
+
+The owner supplied UPDATE_IN_PROGRESS for /api/connect-intents. Sessions.intent deliberately rejects new connections during a 20-second monotonic update reservation. Retrying connect does not extend the reservation; a further successful update-boundary request starts a new reservation. This response is independent of PWA deferred-install console guidance and does not establish a network or remote Mac failure. Existing SessionsTest verifies pending/active-session protection and connection acceptance after reservation expiry.
+
+The supplied diagnostics also showed HTTP samples 0 with an old latest RTT of 45.8 ms. Source inspection confirmed that NetworkHealth expires its snapshot after 15 seconds but the separate latest-RTT label stayed visible. The panel now clears that label when the authoritative snapshot becomes unknown, without overwriting an in-flight measurement. Active desktop transport and input behavior are unchanged.
+
+Verification: 153 Node tests passed. All 32 local simulated API/Guacamole browser checks passed with zero unexpected console errors, including a real 16-second wait proving summary and RTT expiry, a new sample replacing expired history, no desktop disconnect, existing UPDATE_IN_PROGRESS refusals, scoped recovery and stale-response protection. SessionsTest passed with no errors/failures/skips. These fixtures do not prove real owner Access/control or the source of the VideoFrame warning. No application/pinned vendor VideoFrame or VideoDecoder calls were found; no global frame-close interception was introduced.
+
+Deployment is deferred to preserve the owner's reported connected desktop. No active-session count was verified: sandbox access to Docker was denied during the read-only check, and no host mutation was attempted. Browser fixture startup required approved sandbox escalation and then passed. Routed investigation/verification module files remain absent; project core rules and source-backed checks were used. Prior QA receipts and unrelated untracked deployment work were preserved.
+
+Repeated-pattern prevention: a repeated HTTP status alone is insufficient to identify the refusal; obtain the bounded response code before changing lease/security rules. Freshness applies to both aggregate and latest-value displays; regression must cover expiry and recovery, not only successful sampling. This narrow freshness lesson is retained here rather than creating a global Skill for an unverified VideoFrame origin.

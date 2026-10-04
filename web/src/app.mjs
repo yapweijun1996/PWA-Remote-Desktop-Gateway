@@ -33,6 +33,8 @@ function renderNetworkMeasurements(){
   const number=(value,divisor=1)=>Number.isFinite(value)?(value/divisor).toFixed(1):t('network.unavailable');
   setMessage('transportMetrics','network.transfer',{down:number(stats.inboundBytesPerSecond,1024),up:number(stats.outboundBytesPerSecond,1024),window:number(stats.rateWindowMs,1000),elapsed:number(stats.elapsedMs,1000),received:number(stats.inboundBytes,1048576),sent:number(stats.outboundBytes,1024),first:number(stats.firstDisplayMs),lag:number(stats.processingLagMs)});
   const fps=value=>Number.isFinite(value)?value.toFixed(1):'—',network=networkHealth.snapshot();
+  // Expired samples must not leave an old RTT labeled as the latest measurement.
+  if(network.state==='unknown'&&!$('measureNetwork').disabled)setMessage('networkLatency','network.unavailable');
   setMessage('frameMetrics','network.fps',{client:fps(stats.display?.clientFps),server:fps(stats.display?.serverFps),desktop:fps(stats.display?.desktopFps)});
   setMessage('connectionHealth','network.health',()=>({state:t('network.state.'+(!navigator.onLine?'offline':network.state)),transport:t('network.transport.'+(stats.tunnelState??'unknown'))}));
   setMessage('networkSummary','network.samples',{count:network.count,average:fps(network.averageMs),jitter:fps(network.jitterMs)});
@@ -361,15 +363,19 @@ window.addEventListener('offline',()=>{void end('OFFLINE');clearPrivate();$('rea
 window.addEventListener('blur',clearCredentialInput);
 window.addEventListener('pagehide',()=>{++epoch;clearPrivate();});
 window.addEventListener('pageshow',event=>{if(event.persisted)void initialize();});
+let sessionCheck=null;
 function checkSession(){
   const request=epoch,currentAdapter=adapter;
-  api.request('/api/session').then(session=>{
+  if(sessionCheck?.request===request&&sessionCheck.currentAdapter===currentAdapter)return;
+  const check={request,currentAdapter};sessionCheck=check;
+  api.request('/api/session',{retryNetwork:true}).then(session=>{
     if(request!==epoch||adapter!==currentAdapter)return;
     if(currentAdapter&&!session.activeDesktop)void end('SESSION_EXPIRED');
   }).catch(error=>{
     if(request!==epoch||adapter!==currentAdapter||trustedLoginRequired(error))return;
+    if(error.message==='NETWORK_UNAVAILABLE'){void end('TRANSPORT_ERROR','connection.TRANSPORT_ERROR');return;}
     void end('REAUTH_REQUIRED');clearPrivate();$('reauth').hidden=false;
-  });
+  }).finally(()=>{if(sessionCheck===check)sessionCheck=null;});
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearCredentialInput();cancelNetworkProbe();}if(!document.hidden&&api.csrf)checkSession();});
 setInterval(()=>{if(adapter&&api.csrf)checkSession();},10000);

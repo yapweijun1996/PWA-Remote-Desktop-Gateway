@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "baseCommit": "5657815cea69bd60ab13a30fe9d2ef8be0e38d4a",
+  "artifacts": {
+    "qa/implementation/network-resilience-20261004/node-tests.txt": {
+      "bytes": 12036,
+      "sha256": "a2dbf56764d9439365e58990930db63b6b883f9d59df96c0dab6b3910d668790"
+    },
+    "qa/implementation/network-resilience-20261004/REPORT.md": {
+      "bytes": 2954,
+      "sha256": "d0e04fe680f3792aba06c45f78268ba64fd92177cb2536897eb99fae7fa7d397"
+    },
+    "qa/implementation/network-resilience-20261004/browser-results.json": {
+      "bytes": 10951,
+      "sha256": "9060b9fcf74893b910d9c44c1d03839317b9f83a25b6b174b90ef6c2faa64b92"
+    },
+    "qa/implementation/network-resilience-20261004/web-build.json": {
+      "bytes": 58,
+      "sha256": "d8f24f86802c4cb270eab7009709a5d6cf1bb8bbcdee75c2bd044c080c4caf85"
+    },
+    "web/src/api.mjs": {
+      "bytes": 1505,
+      "sha256": "31a30e5e162eeafd7732fe8ee6859c39f35ad60be87aeb6fb340fd43fb314c20"
+    },
+    "web/src/api.test.mjs": {
+      "bytes": 3340,
+      "sha256": "cd9b062e9678f5a6049451b2ca3cb50b65b6b6cb6da93127217c14492728a015"
+    },
+    "web/src/app.mjs": {
+      "bytes": 36859,
+      "sha256": "2bf7ebe6e76325ff5033a6d378f4ab1684bafa02609e43aad5c4548cbb0207bf"
+    },
+    "web/src/release.mjs": {
+      "bytes": 164,
+      "sha256": "bb64c9091f021f26a97906101a6ec84440c8f3cab0e5679820a635bf55bffe51"
+    },
+    "qa/connect-browser-checks.mjs": {
+      "bytes": 31244,
+      "sha256": "2116ec18f4cd8908f4277c3bbffc5aa808ac3f1fe194529342d10650b20e419c"
+    }
+  }
+}

@@ -189,6 +189,28 @@ try{
     await page.waitForTimeout(5500);check(await page.evaluate(()=>globalThis.__fixtureProbeCalls)===afterClose,'LIVE_HTTP_PROBE_CONTINUED_AFTER_CLOSE');
     await openWorkspaceControls(page);await page.locator('#liveNetwork').uncheck();
     pass('FPS uses enabled official statistics; recent HTTP samples assess stability and opt-in polling stops with the panel',{simulatedStats:true,clientFps:10,desktopFpsUnavailable:true,livePollMilliseconds:5000,noInputLatencyClaim:true});
+    failedStep='QUALITY_EXPIRED_RTT';await page.waitForTimeout(16000);
+    await page.locator('#connectionHealth').filter({hasText:'Not sampled recently'}).waitFor();
+    check((await page.locator('#networkSummary').innerText()).includes('HTTP samples 0'),'EXPIRED_HTTP_SAMPLES_REMAINED');
+    await page.locator('#networkLatency').filter({hasText:'Not measured'}).waitFor();
+    check(await page.locator('#status').getAttribute('data-state')==='CONNECTED','EXPIRY_DISCONNECTED_DESKTOP');
+    await page.locator('#measureNetwork').click();await page.getByText(/^Latest HTTP round trip: [\d.]+ ms$/).waitFor();
+    check((await page.locator('#networkSummary').innerText()).includes('HTTP samples 1'),'EXPIRED_HTTP_SAMPLE_NOT_REPLACED');
+    pass('Expired HTTP samples clear the latest RTT without disconnecting the stream; a new sample replaces expired history',{freshnessMilliseconds:15000,realTimer:true});
+    failedStep='HEARTBEAT_TRANSIENT_RECOVERY';
+    await page.evaluate(()=>{
+      globalThis.__heartbeatOriginalFetch=window.fetch;globalThis.__heartbeatCalls=0;
+      window.fetch=async function(...args){
+        if(args[0]==='/api/session'&&++globalThis.__heartbeatCalls===1)throw new TypeError('fixture temporary network failure');
+        return globalThis.__heartbeatOriginalFetch.apply(this,args);
+      };
+      document.dispatchEvent(new Event('visibilitychange'));document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await page.waitForFunction(()=>globalThis.__heartbeatCalls===2);await page.waitForTimeout(300);
+    check(await page.locator('#status').getAttribute('data-state')==='CONNECTED','TRANSIENT_HEARTBEAT_ENDED_DESKTOP');
+    check(fixture.deletes.length===0,'TRANSIENT_HEARTBEAT_CANCELLED_LEASE');
+    await page.evaluate(()=>{window.fetch=globalThis.__heartbeatOriginalFetch;delete globalThis.__heartbeatOriginalFetch;});
+    pass('One failed authorization GET recovers without ending the desktop; overlapping visibility checks share one flight',{attempts:2,noMutationReplay:true});
     failedStep='QUALITY_CLEAR_RECONNECT';const old=fixture.lease;await page.locator('#liveDisplayQuality').selectOption('clear');
     check(fixture.intentRequests===1&&fixture.deletes.length===0,'QUALITY_SELECTION_AUTO_RECONNECTED');
     await page.locator('#applyDisplayQuality').click();await wait(()=>fixture.intentRequests===2,'QUALITY_RECONNECT_NOT_REQUESTED');await waitState(page,'CONNECTED');
