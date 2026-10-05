@@ -64,6 +64,9 @@ Failures before `ready` are reported to the browser as one fixed `error` code an
 ## Flow control
 Never queue frames in the gateway. The gateway pumps one agent message at a time: it requests the next only after the browser send completes, so TCP pushes back on the agent, which drops frames until the next keyframe (`kf` is sent when needed). Browser sends and input handling use separate locks so a stalled video send never blocks input. Measured against the disposable peer with 512 KiB frames and a browser that stops reading: the sender stalled at 8 frames (4 MiB across both hops, none of it queued by the gateway) and resumed on reading, and input kept flowing during the stall. The browser socket's idle timeout is Tomcat's 30 s, which only expires when both reads and writes are idle, so the agent's roughly 1 Hz `status` keeps a quiet session open and the browser needs no keepalive message. The browser decoder closes every `VideoFrame`, resets and sends `kf` on a decode error, and checks `VideoDecoder.isConfigSupported` before choosing this backend.
 
+## Client obligations the gateway enforces fatally (S3 adapter requirements)
+More than 120 `w` per second, more than 1000 messages per second, or any invalid message ends the session with a fixed code; the gateway does not drop and carry on. The PWA adapter must therefore coalesce wheel input to at most one `w` per animation frame (summing `dy`, clamped to ±4000) and pointer moves to at most one `m` per frame, with a test that asserts the rate, and must check JSON length before sending clipboard text (raw ≤ 40 KiB).
+
 ## Versioning
 `hello.v` and `ready.v` carry the protocol version (1). Any other value is refused with `PROTOCOL_UNSUPPORTED`. A new version means a new subprotocol string.
 

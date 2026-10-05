@@ -141,6 +141,24 @@ class AgentPolicyTest {
         assertEquals("{\"t\":\"error\",\"code\":\"AGENT_PROTOCOL\"}",p.fromAgent("{\"t\":\"error\",\"code\":\"free text from the agent\"}"));
     }
 
+    /** Literal shapes as agent/macos/Sources/Server.swift emits them (JSONSerialization: escaped slashes, integer counters, any key order). */
+    @Test void acceptsTheShapesTheSwiftAgentActuallyEmits() throws Exception {
+        var p=policy("control",true);
+        var ready=Config.JSON.readTree(p.fromAgent("{\"controlReason\":\"GRANTED\",\"t\":\"ready\",\"encoder\":\"ll\",\"clipboard\":true,\"height\":956,\"v\":1,\"control\":true,\"width\":1470}"));
+        assertEquals(1470,ready.path("width").asInt());assertEquals("ll",ready.path("encoder").asText());
+        assertEquals("sw",Config.JSON.readTree(p.fromAgent("{\"t\":\"ready\",\"v\":1,\"width\":1470,\"height\":956,\"control\":false,\"controlReason\":\"ACCESSIBILITY_NOT_PERMITTED\",\"clipboard\":false,\"encoder\":\"sw\"}")).path("encoder").asText());
+        var config=Config.JSON.readTree(p.fromAgent("{\"codec\":\"avc1.4D0028\",\"t\":\"config\",\"width\":1470,\"height\":956,\"avcc\":\"AU1EKP\\/hABRnTQAo2oBQAW5AtQYGhoAAAAMAgA\\/\\/+B==\"}"));
+        assertEquals("AU1EKP/hABRnTQAo2oBQAW5AtQYGhoAAAAMAgA//+B==",config.path("avcc").asText());
+        var status=Config.JSON.readTree(p.fromAgent("{\"t\":\"status\",\"secureInput\":false,\"sent\":1043,\"dropped\":0,\"bytes\":9876543210}"));
+        assertEquals(9876543210L,status.path("bytes").asLong());
+        assertEquals("{\"t\":\"clip-result\",\"ok\":false}",p.fromAgent("{\"ok\":false,\"t\":\"clip-result\"}"));
+        assertEquals("a/b \"q\" 你好",Config.JSON.readTree(p.fromAgent("{\"t\":\"clip\",\"text\":\"a\\/b \\\"q\\\" \\u4f60\\u597d\"}")).path("text").asText());
+        for(String code:new String[]{"PROTOCOL_UNSUPPORTED","SCREEN_RECORDING_NOT_PERMITTED","NO_DISPLAY","CAPTURE_FAILED","ENCODER_UNAVAILABLE"})
+            assertEquals("{\"t\":\"error\",\"code\":\""+code+"\"}",p.fromAgent("{\"code\":\""+code+"\",\"t\":\"error\"}"));
+        // The agent's own mismatch cases stay refused: a double counter is not an integer count.
+        refused(502,"AGENT_PROTOCOL",()->p.fromAgent("{\"t\":\"status\",\"secureInput\":false,\"sent\":12.0,\"dropped\":0,\"bytes\":1}"));
+    }
+
     @Test void videoFramesAreHeaderAndSizeChecked() {
         AgentPolicy.checkVideo(ByteBuffer.wrap(AgentFixture.frame(true,1,1)));
         for(byte[] bad:new byte[][]{new byte[0],new byte[14],AgentFixture.frame(true,1,0),new byte[]{2,1,0,0,0,0,0,0,0,0,0,0,0,0,9},new byte[]{1,2,0,0,0,0,0,0,0,0,0,0,0,0,9}})
