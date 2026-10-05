@@ -1,0 +1,26 @@
+{
+  "status": "AGENT_ENABLED_LOCAL_RUNTIME_VERIFIED",
+  "recordedAt": "2026-10-05T12:54:35.739Z",
+  "sourceCommit": "a9a75a504977de6e191ed8e8c478f4b46c2e8bee",
+  "image": "sha256:0ace2d4884d28fabb9da82ccb9bad3c28ffd1c0a63af0f95c3cd5abb1b9d43c4",
+  "containerId": "9da40e9bf4dd51196caa5b13fc101006888635a45c16381ee89eba21a402270b",
+  "health": "healthy",
+  "agentEnabled": true,
+  "onlyPrivateEnvironmentChange": [
+    "RDG_AGENT_ENABLED"
+  ],
+  "activeDesktopsBeforeRestart": {
+    "vnc": 0,
+    "agent": 0
+  },
+  "agentPortReachableFromGateway": true,
+  "publicEdgeAfter": {
+    "status": 302,
+    "locationHost": "kb-api.cloudflareaccess.com"
+  },
+  "unrelatedContainersPreserved": true,
+  "preservedContainerCount": 9,
+  "backupPath": "/Users/yapweijun/.cloudflared/rdg-current-mac-pilot/owner-setup.env.before-agent-on-202610051254",
+  "accessPolicyChanged": false,
+  "tunnelConfigChanged": false
+}
