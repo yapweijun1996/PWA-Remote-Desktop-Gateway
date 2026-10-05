@@ -16,7 +16,10 @@ const image='sha256:0ace2d4884d28fabb9da82ccb9bad3c28ffd1c0a63af0f95c3cd5abb1b9d
 const previousImage='sha256:2f011cf8747b87a93d1e47997169d402cf4b21168770446af98cfff69d8ef913';
 const gateway='rdg-current-mac-pilot-gateway-1',guacd='rdg-current-mac-pilot-guacd-1',project='rdg-current-mac-pilot';
 const envPath=homedir()+'/.cloudflared/rdg-current-mac-pilot/owner-setup.env';
-const rollbackPath=envPath+'.before-agent-1.3.0-20261005';
+// Attempt 1 (13:25) was rolled back automatically because of a bug in this script's environment comparison (it compared objects by
+// key order); its backup is kept untouched as evidence, and this attempt gets its own.
+const firstAttemptBackup=envPath+'.before-agent-1.3.0-20261005';
+const rollbackPath=envPath+'.before-agent-1.3.0-20261005-attempt2';
 const tokenSource=homedir()+'/Library/Application Support/RDG/agent.token';
 const branch='codex/host-agent-stage2-20261004',receiptPath='qa/implementation/stage2-s4b-20261005/deployment.json';
 const expected={version:'1.3.0',build:'045b4c19eb27f440'};
@@ -33,6 +36,7 @@ const envMap=container=>Object.fromEntries([...container.Config.Env].sort().map(
 const fingerprint=container=>({id:container.Id,image:container.Image,startedAt:container.State.StartedAt});
 const mounts=container=>container.Mounts.map(({Type,Name,Source,Destination,RW})=>({Type,Destination,RW,Identity:Type==='volume'?Name:Source.replace(/^\/host_mnt(?=\/)/,'')})).sort((a,b)=>a.Destination.localeCompare(b.Destination));
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const byKey=object=>Object.fromEntries(Object.entries(object).sort(([a],[b])=>a<b?-1:a>b?1:0));
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function atomicPrivate(target,data){
   const temp=target+'.pwa-'+randomBytes(12).toString('hex');let handle;
@@ -83,6 +87,7 @@ const tokenInfo=await lstat(tokenSource);
 refused(tokenInfo.isFile()&&!tokenInfo.isSymbolicLink()&&tokenInfo.uid===process.getuid()&&(tokenInfo.mode&0o777)===0o600&&/^[A-Za-z0-9_-]{43}$/.test((await readFile(tokenSource,'utf8')).trim()),'AGENT_TOKEN_FILE_REFUSED');
 const metadata=await lstat(envPath);refused(metadata.isFile()&&!metadata.isSymbolicLink()&&metadata.uid===process.getuid()&&(metadata.mode&0o777)===0o600,'PRIVATE_ENV_FILE_REQUIRED');
 const original=await readFile(envPath,'utf8');
+refused((await readFile(firstAttemptBackup,'utf8'))===original,'FIRST_ATTEMPT_ROLLBACK_NOT_RESTORED');
 refused(original.split('\n').filter(row=>row.startsWith('GATEWAY_IMAGE=')).length===1,'IMAGE_ASSIGNMENT_AMBIGUOUS');
 refused(!/^RDG_AGENT_/m.test(original),'AGENT_SETTINGS_ALREADY_PRESENT');
 const updated=original.replace(/^GATEWAY_IMAGE=.*$/m,'GATEWAY_IMAGE='+image).replace(/\n*$/,'\n')+`RDG_AGENT_ENABLED=false\nRDG_AGENT_TOKEN_SOURCE="${tokenSource}"\n`;
@@ -105,6 +110,8 @@ const backup=await open(rollbackPath,'wx',0o600);try{await backup.writeFile(orig
 
 // ---- apply, verify, and roll back automatically on any failure ---------------------------------------------------------------
 async function rollBack(reason){
+  console.log(JSON.stringify({status:'ROLLING_BACK',failure:reason}));
+  await writeArtifact(receiptPath,JSON.stringify({status:'ROLLING_BACK',failure:reason,recordedAt:new Date().toISOString(),sourceCommit,attemptedImage:image,previousImage,rollbackEnvironmentPath:rollbackPath},null,2)+'\n').catch(()=>{});
   const outcome={status:'ROLLED_BACK',failure:reason,recordedAt:new Date().toISOString(),sourceCommit,attemptedImage:image,previousImage,rollbackEnvironmentPath:rollbackPath};
   try{
     await atomicPrivate(envPath,original);
@@ -124,7 +131,7 @@ try{
   refused(!composeResult.includes('Error'),'COMPOSE_REPLACEMENT_FAILED');
   after=await healthy(gateway,image,60);
   refused(after,'DEPLOYED_GATEWAY_NOT_HEALTHY');
-  refused(same(envMap(after),{...environment,...Object.fromEntries(agentKeys.map(key=>[key,service.environment[key]]))}),'GATEWAY_ENVIRONMENT_UNEXPECTED');
+  refused(same(byKey(envMap(after)),byKey({...environment,...Object.fromEntries(agentKeys.map(key=>[key,service.environment[key]]))})),'GATEWAY_ENVIRONMENT_UNEXPECTED');
   refused(after.Config.Env.includes('RDG_AGENT_ENABLED=false'),'AGENT_NOT_OFF');
   refused(same(mounts(after),sortedMounts([...approvedMounts,tokenMount]))&&same(after.HostConfig.PortBindings,priorPorts),'MOUNTS_OR_PORTS_CHANGED');
   refused(after.Config.User==='10001:10001'&&after.HostConfig.ReadonlyRootfs===true,'NONROOT_READONLY_REQUIRED');
