@@ -177,3 +177,13 @@ test('Only a plain Command+V is intercepted, and only when automatic paste is en
   const off=pasteFixture(null);off.key('keydown','MetaLeft','Meta',{metaKey:true});off.key('keydown','KeyV','v',{metaKey:true});
   assert.equal(off.timers.size,0);assert.deepEqual(off.reachedGuacamole,['MetaLeft','KeyV'],'the VNC path is unchanged');
 });
+
+test('A plain V (no Command) is typed normally and its key-up is never swallowed, so the key cannot stick',()=>{
+  const f=pasteFixture(async()=>{});const up=[];f.surface.addEventListener('keyup',e=>up.push(e.code));
+  f.key('keydown','KeyV','v');assert.equal(f.timers.size,0,'a plain V is not held back');assert.deepEqual(f.reachedGuacamole,['KeyV']);
+  f.key('keyup','KeyV','v');assert.deepEqual(up,['KeyV'],'its key-up reaches the normal key path');
+  // Command+V then plain V: only the held-back V's key-up is consumed.
+  f.key('keydown','MetaLeft','Meta',{metaKey:true});f.key('keydown','KeyV','v',{metaKey:true});f.runTimers();up.length=0;
+  f.key('keyup','KeyV','v',{metaKey:true});assert.deepEqual(up,[],'the held-back V key-up is consumed once');
+  f.key('keyup','KeyV','v');assert.deepEqual(up,['KeyV'],'the next V key-up is not');
+});

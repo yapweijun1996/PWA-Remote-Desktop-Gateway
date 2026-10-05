@@ -37,7 +37,7 @@ export const WHEEL_BURST=40,WHEEL_CLICKS_PER_SECOND=250,WHEEL_BACKLOG_CLICKS=200
 /** One normalized engine stream attached only to the focused remote surface. */
 export class RemoteInput {
   constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,onWheel=null,onPasteText=null,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
-    this.onWheel=onWheel;this.onPasteText=onPasteText;this.pasteHold=null;this.metaHeld=false;this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
+    this.onWheel=onWheel;this.onPasteText=onPasteText;this.pasteHold=null;this.pasteKeyHeld=false;this.metaHeld=false;this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
     this.serverKeysyms=Object.freeze({...keysyms});this.keysyms={...keysyms};
     this.clock=clock;this.schedule=schedule;this.cancel=cancel;this.pointerSurface=pointerSurface;this.scrollWindowStart=-Infinity;this.scrollClicks=0;this.droppedWheelPress=false;
     this.pixelsPerClick=SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED];this.wheelPixels=0;this.wheelTokens=WHEEL_BURST;this.wheelStamp=-Infinity;this.wheelTimer=null;this.wheelPoint={x:0,y:0};
@@ -58,7 +58,7 @@ export class RemoteInput {
       // Automatic clipboard: Command+V is held back until the browser hands over the local text (paste event), which is sent to the
       // Mac first. Guacamole.Keyboard never sees this V, so it is not typed early and the browser's paste default is kept.
       if(this.onPasteText&&this.active()&&e.code==='KeyV'&&e.metaKey&&!e.ctrlKey&&!e.altKey&&!e.shiftKey&&!e.repeat&&!this.pasteHold) {
-        e.stopImmediatePropagation();this.pasteHold={timer:this.schedule(()=>this.settlePaste(''),PASTE_WAIT_MS)};return;
+        e.stopImmediatePropagation();this.pasteKeyHeld=true;this.pasteHold={timer:this.schedule(()=>this.settlePaste(''),PASTE_WAIT_MS)};return;
       }
       // Keep a usable browser keyboard escape, without forwarding a half-owned chord.
       if(e.code==='Escape' && e.shiftKey){e.stopImmediatePropagation();e.preventDefault();this.pause();surface.blur();}
@@ -66,7 +66,7 @@ export class RemoteInput {
     listen(surface,'keyup',e=>{
       if(e.code==='AltLeft')this.leftAltPhysical=false;
       if(e.key==='Meta')this.metaHeld=false;
-      if(e.code==='KeyV'&&this.onPasteText)e.stopImmediatePropagation();   // its keydown was never forwarded
+      if(e.code==='KeyV'&&this.pasteKeyHeld){this.pasteKeyHeld=false;e.stopImmediatePropagation();}   // only the V whose keydown was held back
     },true);
     // The text is read only from this user-initiated paste, never in the background. Without a pending Command+V it is ignored.
     listen(document,'paste',e=>{
@@ -162,7 +162,7 @@ export class RemoteInput {
     Promise.resolve(sent).then(paste,error=>this.onPause(t(error?.message==='CLIPBOARD_TOO_LARGE'?'clipboard.tooLarge':'input.pasteFailed')));
   }
   release(){
-    this.metaHeld=false;if(this.pasteHold){this.cancel(this.pasteHold.timer);this.pasteHold=null;}
+    this.metaHeld=false;this.pasteKeyHeld=false;if(this.pasteHold){this.cancel(this.pasteHold.timer);this.pasteHold=null;}
     this.cancel(this.wheelTimer);this.wheelTimer=null;this.wheelPixels=0;
     this.run(()=>this.keys.releaseAll());this.latches.clear();this.leftAltPhysical=false;this.altGraph=false;this.keyboard.reset();
     if(this.mode==='control')this.run(()=>{
