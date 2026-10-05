@@ -134,6 +134,8 @@ final class Session {
             input?.releaseAll()
         case "kf":
             requestKeyframe()
+        case "rate":
+            if let kbps = message["kbps"] as? Int { encoder?.setBitrate(kbps * 1000) }
         case "clip":
             if control, clipboardEnabled, let text = message["text"] as? String {
                 send(json: ["t": "clip-result", "ok": clipboard.set(text)])

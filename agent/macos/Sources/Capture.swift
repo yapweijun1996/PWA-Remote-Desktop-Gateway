@@ -58,6 +58,8 @@ final class Capture: NSObject, SCStreamOutput, SCStreamDelegate {
               let raw = attachments.first?[.status] as? Int, SCFrameStatus(rawValue: raw) == .complete,
               let pixelBuffer = CMSampleBufferGetImageBuffer(sample) else { return }
         latestLock.lock(); latest = pixelBuffer; latestLock.unlock()
+        // ScreenCaptureKit reports which regions changed; a frame with none is a repeat and costs encoder time and bytes.
+        if let rects = attachments.first?[.dirtyRects] as? [Any], rects.isEmpty { return }
         onFrame(pixelBuffer, Date().timeIntervalSince1970 * 1000)
     }
 

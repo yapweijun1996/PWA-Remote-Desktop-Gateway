@@ -56,7 +56,7 @@ function onVideo(buffer){
 $('connect').onclick=()=>{
   const token=$('token').value.trim();if(!token)return;
   ws=new WebSocket(`ws://127.0.0.1:${port}`);ws.binaryType='arraybuffer';state('connecting');
-  ws.onopen=()=>{send({t:'hello',token,control:$('control').checked,clipboard:$('clipboard').checked});$('token').value='';};
+  ws.onopen=()=>{send({t:'hello',token,control:$('control').checked,clipboard:$('clipboard').checked});$('token').value='';send({t:'rate',kbps:Number($('rate').value)});};
   ws.onmessage=e=>{
     if(typeof e.data!=='string')return onVideo(e.data);
     const m=JSON.parse(e.data);
@@ -74,6 +74,7 @@ $('disconnect').onclick=()=>{send({t:'release'});ws?.close();};
 $('release').onclick=()=>send({t:'release'});
 $('sendClip').onclick=()=>send({t:'clip',text:$('toMac').value});
 $('typeText').onclick=()=>send({t:'type',text:$('toMac').value});
+$('rate').onchange=()=>send({t:'rate',kbps:Number($('rate').value)});
 $('profile').onchange=()=>input?.setProfile($('profile').value);
 setInterval(()=>{
   const now=performance.now(),seconds=(now-metrics.windowStart)/1000;

@@ -43,12 +43,23 @@ final class Encoder {
             kVTCompressionPropertyKey_ProfileLevel: kVTProfileLevel_H264_Main_AutoLevel,
             kVTCompressionPropertyKey_ExpectedFrameRate: fps,
             kVTCompressionPropertyKey_AverageBitRate: bitrate,
-            kVTCompressionPropertyKey_MaxKeyFrameInterval: fps * 4,
-            kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration: 4,
+            // Measured: a keyframe every 4 s was about 75% of the idle bitrate. The transport is lossless TCP and the
+            // session already forces a keyframe on request (new client, dropped frame, decoder error), so a long interval is safe.
+            kVTCompressionPropertyKey_MaxKeyFrameInterval: fps * 30,
+            kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration: 30,
         ]
         for (key, value) in properties { VTSessionSetProperty(session, key: key, value: value as CFTypeRef) }
         VTCompressionSessionPrepareToEncodeFrames(session)
         self.session = session
+    }
+
+    /// Adjusts the target while streaming (the client picks Smooth / Balanced / Sharp from its own network measurements).
+    func setBitrate(_ bitsPerSecond: Int) {
+        guard let session else { return }
+        let bps = max(500_000, min(12_000_000, bitsPerSecond))
+        VTSessionSetProperty(session, key: kVTCompressionPropertyKey_AverageBitRate, value: bps as CFTypeRef)
+        // Peak: 1.5 x the average over one second, in bytes.
+        VTSessionSetProperty(session, key: kVTCompressionPropertyKey_DataRateLimits, value: [bps * 3 / 16, 1] as CFArray)
     }
 
     func encode(_ pixelBuffer: CVPixelBuffer, captureMillis: Double, forceKeyframe: Bool) {
