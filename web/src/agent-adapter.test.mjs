@@ -65,6 +65,13 @@ test('ready decides the effective capabilities: control and clipboard are grante
   r=rig({clipboard:false});await r.connect();assert.equal(r.log.readies.at(-1).clipboard,false);
 });
 
+test('automatic Command+V paste exists only when the agent confirmed clipboard for a control session',async()=>{
+  let r=rig();await r.connect();assert.equal(typeof r.adapter.input.onPasteText,'function','consent, control and the agent all allow it');
+  r=rig({mode:'view'});await r.connect();assert.equal(r.adapter.input.onPasteText,null,'view only never sends clipboard');
+  r=rig({clipboard:false});await r.connect();assert.equal(r.adapter.input.onPasteText,null,'no clipboard consent: Command+V stays an ordinary key chord');
+  r=rig();r.adapter.connect('A'.repeat(43),'control');r.log.socket.open();r.log.socket.receive(ready({clipboard:false}));assert.equal(r.adapter.input.onPasteText,null,'the agent declined clipboard');
+});
+
 test('a missing Accessibility grant downgrades the session to view only and says so, never claiming control',async()=>{
   const r=rig();r.adapter.connect('A'.repeat(43),'control');r.log.socket.open();
   r.log.socket.receive(ready({control:false,controlReason:'ACCESSIBILITY_NOT_PERMITTED',clipboard:false}));

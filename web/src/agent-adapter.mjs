@@ -67,7 +67,9 @@ export class AgentAdapter {
     this.sink=new AgentInputSink({send:text=>this.socket.send(text),isOpen:()=>this.isOpen(),bufferedAmount:()=>this.socket?.bufferedAmount??0,
       video:()=>({width:this.dimensions.width,height:this.dimensions.height,scale:this.scale}),frame:this.deps.frame,cancelFrame:this.deps.cancelFrame,now:this.deps.now,
       onSent:text=>this.metrics?.record('outbound',text.length)});
-    this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:canvas,client:this.sink,Guacamole:globalThis.Guacamole,onWheel:(x,y,dy)=>this.sink.wheel(x,y,dy)});
+    this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:canvas,client:this.sink,Guacamole:globalThis.Guacamole,onWheel:(x,y,dy)=>this.sink.wheel(x,y,dy),
+      // Automatic clipboard: only when the agent confirmed clipboard for this connection (consent given, control granted).
+      onPasteText:this.effective.clipboard?text=>this.sendClipboard(text):null});
     if(this.scrollSpeed)this.input.setScrollSpeed(this.scrollSpeed);
     this.input.start(this.effective.control?'control':'view');
     this.fit();
