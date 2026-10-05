@@ -1,0 +1,62 @@
+{
+  "status": "LIVE_OWNER_CONNECTION_OBSERVED",
+  "recordedAt": "2026-10-05",
+  "sourceCommit": "26a75b95a9cc748c8500992d206e6fd5a4c6aaae",
+  "scope": "OWNER_APPROVED_CURRENT_MAC_MINI_ONLY",
+  "url": "https://remote.yapweijun1996.com",
+  "mode": {
+    "desktopPolicy": "OWNER_SETUP",
+    "trustedDevices": false,
+    "hostAgent": false
+  },
+  "build": {
+    "web": "1.3.0 (045b4c19eb27f440)",
+    "javaTests": "149 run, 0 failures, 0 errors, 0 skipped",
+    "dependencyLock": "11 runtime JAR digests, SQLite natives, official browser artifact and 393 Ubuntu package records verified",
+    "gatewayImageId": "sha256:0d09886676819e8e97b1009b07a9bb61abaef5a1b279cc9a66282919b1b41a8b",
+    "guacdImageId": "sha256:c52f11ce402225db80a8ccf4b2436ecca0b37e2ae70013a7ef54ef776b8759b1",
+    "architecture": "linux/arm64",
+    "buildNote": "Host has no Java; jar built in eclipse-temurin:17-jdk-jammy with a sha512sum shim for shasum; dependency verification run in node:22-bookworm with the same Maven cache volume."
+  },
+  "runtime": {
+    "composeProject": "rdg-mac-mini",
+    "composeFile": "deployment/compose.owner-setup.yaml",
+    "published": "127.0.0.1:32120 only; guacd 4822 and VNC 5900 not published",
+    "privateConfigDir": "~/rdg-mac-mini (0700; device.json, rdg.env, tunnel.yml all 0600, outside Git)",
+    "vncKey": "docker volume rdg-mac-mini_rdg-vnc-key, 32 bytes, 0600, uid 10001, value never displayed",
+    "encryptedCredential": "present at credentials/vnc.json, 0600, entered by the owner through the authenticated web UI"
+  },
+  "access": {
+    "application": "RDG Mac mini remote",
+    "hostScope": "ENTIRE_REMOTE_HOSTNAME",
+    "team": "kb-api.cloudflareaccess.com",
+    "policy": "RDG Mac mini owner only (allow, exact email only)",
+    "loginMethods": "One-time PIN only",
+    "sessionDurationMinutes": 30,
+    "otherApplicationsChanged": 0
+  },
+  "tunnel": {
+    "name": "rdg-mac-mini",
+    "id": "037e7765-f5a9-4f0c-b62d-f939398b23db",
+    "route": "EXACT_HOST_HTTP_LOOPBACK_PLUS_404_FALLBACK",
+    "supervision": "user LaunchAgent com.rdg.mac-mini.cloudflared, metrics 127.0.0.1:32124",
+    "haConnections": 4,
+    "unrelatedTunnelsChanged": 0,
+    "incident": "The first DNS add omitted --config, so ~/.cloudflared/config.yml (tunnel: yapweijun1996tunnel) overrode the name and the new CNAME pointed at the main tunnel for about one minute. Detected from the tunnelID in the CLI log, repointed with --config and --overwrite-dns. The main tunnel ingress had no rule for this hostname, its config file was unchanged and its connector stayed connected."
+  },
+  "verification": {
+    "localUnauthenticatedApi": "401",
+    "localForgedJwt": "401",
+    "localWebSocketUpgradeWithoutJwt": "401",
+    "publicUnauthenticatedRootApiHealthManifest": "302 to Access login",
+    "publicForgedJwtAndWebSocketUpgrade": "302 to Access login",
+    "ownerOtpLoginAndDesktopConnection": "OBSERVED_BY_OWNER (owner reported a successful connection)"
+  },
+  "notObserved": [
+    "Keyboard, Command/Option/Control behavior, AltGr and IME on any controller platform",
+    "Clipboard delivery",
+    "Safari, iOS and Windows controller acceptance",
+    "External-network and sleep, reboot and FileVault recovery",
+    "Trusted-device login-only Access migration (trust stays disabled)"
+  ]
+}
