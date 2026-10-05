@@ -9,7 +9,7 @@ import {readFileSync,writeFileSync,mkdtempSync,rmSync,statSync,chmodSync} from '
 import {tmpdir,homedir} from 'node:os';import path from 'node:path';import {randomBytes} from 'node:crypto';
 import {writeArtifact} from '../../../scripts/atomic-artifact.mjs';
 
-const live='rdg-current-mac-pilot-gateway-1',candidate='rdg-gateway-agent-candidate:s4a',tokenPath=path.join(homedir(),'Library/Application Support/RDG/agent.token');
+const live='rdg-current-mac-pilot-gateway-1',candidate=process.env.RDG_CANDIDATE_IMAGE??'rdg-gateway-agent-candidate:s4a',tokenPath=path.join(homedir(),'Library/Application Support/RDG/agent.token');
 const envPath=path.join(homedir(),'.cloudflared/rdg-current-mac-pilot/owner-setup.env'),project='rdg-current-mac-pilot';
 const names={state:'rdg-s4a-check-state',key:'rdg-s4a-check-key',ok:'rdg-s4a-check-ok'};
 const refused=(condition,code)=>{if(!condition)throw new Error(code);};
