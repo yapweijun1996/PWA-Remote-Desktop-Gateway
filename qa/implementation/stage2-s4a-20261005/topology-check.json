@@ -1,0 +1,36 @@
+{
+  "recordedAt": "2026-10-05T05:08:23.069Z",
+  "results": [
+    {
+      "name": "stand-in listener is bound to 127.0.0.1 only",
+      "ok": true
+    },
+    {
+      "name": "a container on the default bridge reaches host.docker.internal:5960 (listener bound to loopback)",
+      "ok": true,
+      "result": "connected"
+    },
+    {
+      "name": "so does a container on a user-defined bridge network (like the compose backend network)",
+      "ok": true,
+      "result": "connected"
+    },
+    {
+      "name": "control: a port nobody listens on is refused (the probe can fail)",
+      "ok": true,
+      "result": "refused"
+    },
+    {
+      "name": "the listener saw the connections arrive from the host loopback side",
+      "ok": true,
+      "connections": 2,
+      "sources": [
+        "127.0.0.1"
+      ]
+    },
+    {
+      "name": "throwaway network removed and nothing listens on 5960 any more",
+      "ok": true
+    }
+  ]
+}

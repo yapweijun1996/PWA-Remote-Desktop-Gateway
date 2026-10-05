@@ -1,0 +1,20 @@
+# Opt-in host agent backend (docs/19). Merge over the base file; the base file is unchanged, so deploying without this
+# override keeps the gateway exactly as it is today (VNC only, no agent route):
+#   docker compose -f deployment/compose.owner-setup.yaml -f deployment/compose.agent.yaml ...
+# The agent token is the credential that controls the Mac: a read-only bind of the agent's own 0600 file, never copied into
+# an image, volume, environment variable or log. Rotate it by deleting the file, restarting the agent and recreating the gateway.
+services:
+  gateway:
+    environment:
+      RDG_AGENT_ENABLED: "true"
+      RDG_AGENT_HOST: host.docker.internal
+      RDG_AGENT_PORT: "5960"
+      RDG_AGENT_TOKEN_FILE: /run/secrets/rdg_agent_token
+    volumes:
+      - type: bind
+        source: ${RDG_AGENT_TOKEN_SOURCE:?Set the absolute path of the agent token file on this Mac}
+        target: /run/secrets/rdg_agent_token
+        read_only: true
+        # A missing file must stop the deployment, not become an empty directory owned by Docker.
+        bind:
+          create_host_path: false
