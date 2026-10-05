@@ -61,9 +61,12 @@ final class GatewayFilter implements Filter {
                 request.setAttribute("app",app);
                 if(mutation)Sessions.csrf(app,single(request,"X-RDG-CSRF"));
                 if(socket) {
+                    // Each backend owns its path and subprotocol; an intent issued for the other backend is refused unconsumed.
+                    boolean agent=path.startsWith("/ws/agent/");
+                    String prefix=agent?"/ws/agent/":"/ws/sessions/";
                     if(!request.getMethod().equals("GET") || !"websocket".equalsIgnoreCase(single(request,"Upgrade"))
-                        || !"guacamole".equals(single(request,"Sec-WebSocket-Protocol")) || !path.matches("/ws/sessions/[A-Za-z0-9_-]{43}"))throw new Failure(400,"INVALID_REQUEST");
-                    sessions.begin(app,path.substring("/ws/sessions/".length()));
+                        || !(agent?AgentPolicy.PROTOCOL:"guacamole").equals(single(request,"Sec-WebSocket-Protocol")) || !path.matches(prefix+"[A-Za-z0-9_-]{43}"))throw new Failure(400,"INVALID_REQUEST");
+                    sessions.begin(app,path.substring(prefix.length()),agent?"agent":"vnc");
                     // Tomcat copies this principal into the WebSocket session; the endpoint refuses upgrades without it.
                     req=new HttpServletRequestWrapper(request){@Override public java.security.Principal getUserPrincipal(){return ()->app.subject;}};
                 }

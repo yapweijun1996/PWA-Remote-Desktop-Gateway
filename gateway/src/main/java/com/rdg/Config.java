@@ -10,13 +10,51 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
               String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
               Path secret, String guacdHost, int guacdPort, String listenAddress, int listenPort,
               Path stateDir, Path webDir, JsonNode bookmarks, Map<String,Integer> keysyms,
-              DesktopPolicy desktopPolicy, DesktopCredentialStore credentialStore) {
+              DesktopPolicy desktopPolicy, DesktopCredentialStore credentialStore, AgentSettings agent) {
     enum DesktopPolicy { FULL, BLOCKED, OWNER_SETUP }
+    /** Optional host agent backend (docs/19). Disabled unless the owner turns it on; the VNC backend is unaffected. */
+    record AgentSettings(boolean enabled, String host, int port, Path tokenFile) {
+        static final AgentSettings DISABLED=new AgentSettings(false,"",0,null);
+        static final int FIXED_PORT=5960;
+        static AgentSettings load(Map<String,String> env) {
+            String flag=env.getOrDefault("RDG_AGENT_ENABLED","false");
+            if(!Set.of("true","false").contains(flag))throw new IllegalArgumentException("Invalid agent flag");
+            if(flag.equals("false"))return DISABLED;
+            String host=env.getOrDefault("RDG_AGENT_HOST","host.docker.internal");
+            if(!Set.of("host.docker.internal","127.0.0.1").contains(host))throw new IllegalArgumentException("Agent host outside supported local boundary");
+            if(!String.valueOf(FIXED_PORT).equals(env.getOrDefault("RDG_AGENT_PORT",String.valueOf(FIXED_PORT))))throw new IllegalArgumentException("Agent port is fixed");
+            String file=env.get("RDG_AGENT_TOKEN_FILE");
+            if(file==null||!file.matches("/run/secrets/[a-z0-9_-]+"))throw new IllegalArgumentException("Invalid agent token path");
+            var settings=new AgentSettings(true,host,FIXED_PORT,Path.of(file));
+            settings.token();   // refuse startup when the secret is unusable
+            return settings;
+        }
+        /** The shared secret: a regular, owner-only file holding 32 bytes as 43 base64url characters. Never logged or sent to a browser. */
+        String token() {
+            try {
+                if(!enabled||tokenFile==null||Files.isSymbolicLink(tokenFile)||!Files.isRegularFile(tokenFile,LinkOption.NOFOLLOW_LINKS)||Files.size(tokenFile)>256)throw new IllegalArgumentException();
+                if(Files.getPosixFilePermissions(tokenFile,LinkOption.NOFOLLOW_LINKS).stream().anyMatch(p->p.name().startsWith("GROUP")||p.name().startsWith("OTHERS")))throw new IllegalArgumentException();
+                String value=Files.readString(tokenFile).strip();
+                if(!value.matches("[A-Za-z0-9_-]{43}"))throw new IllegalArgumentException();
+                return value;
+            }catch(Exception e){throw new Failure(503,"AGENT_UNAVAILABLE");}
+        }
+    }
     static final String DESKTOP_BLOCKED_REASON = "DESKTOP_BLOCKED_BY_POLICY";
     Config {
         Objects.requireNonNull(desktopPolicy, "Explicit desktop policy required");
         if ((desktopPolicy == DesktopPolicy.OWNER_SETUP) != (credentialStore != null))
             throw new IllegalArgumentException("Invalid credential policy");
+        Objects.requireNonNull(agent, "Explicit agent settings required");
+    }
+    Config(String nodeId, String origin, String issuer, String audience, String ownerEmail,
+           String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
+           Path secret, String guacdHost, int guacdPort, String listenAddress, int listenPort,
+           Path stateDir, Path webDir, JsonNode bookmarks, Map<String,Integer> keysyms,
+           DesktopPolicy desktopPolicy, DesktopCredentialStore credentialStore) {
+        this(nodeId, origin, issuer, audience, ownerEmail, ownerSubject, deviceId, label,
+            targetHost, targetPort, secret, guacdHost, guacdPort, listenAddress, listenPort,
+            stateDir, webDir, bookmarks, keysyms, desktopPolicy, credentialStore, AgentSettings.DISABLED);
     }
     Config(String nodeId, String origin, String issuer, String audience, String ownerEmail,
            String ownerSubject, String deviceId, String label, String targetHost, int targetPort,
@@ -35,6 +73,8 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
             targetHost, targetPort, secret, guacdHost, guacdPort, listenAddress, listenPort,
             stateDir, webDir, bookmarks, keysyms, DesktopPolicy.FULL);
     }
+    boolean agentEnabled() { return agent.enabled(); }
+    List<String> backends() { return agent.enabled() ? List.of("vnc","agent") : List.of("vnc"); }
     boolean credentialSetupEnabled() { return desktopPolicy == DesktopPolicy.OWNER_SETUP; }
     boolean credentialConfigured() {
         return desktopPolicy == DesktopPolicy.FULL || (credentialSetupEnabled() && credentialStore.configured());
@@ -53,6 +93,11 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
         return Map.of("credentialSetupEnabled",credentialSetupEnabled(),"credentialConfigured",configured,
             "desktopEnabled",desktopPolicy == DesktopPolicy.FULL || configured,"desktopPolicy",desktopPolicy.name(),
             "keyboardCalibration",keyboardCalibration());
+    }
+    /** The agent backend needs no VNC credential, but an owner-blocked desktop stays blocked for every backend. */
+    void requireAgent() {
+        if (!agentEnabled()) throw new Failure(503, "AGENT_DISABLED");
+        if (desktopPolicy == DesktopPolicy.BLOCKED) throw new Failure(503, desktopBlockedReason());
     }
     void requireDesktop() {
         if (!desktopEnabled()) throw new Failure(503, desktopBlockedReason());
@@ -126,7 +171,7 @@ record Config(String nodeId, String origin, String issuer, String audience, Stri
         return new Config(node,origin,issuer,audience,email,env.getOrDefault("RDG_OWNER_SUBJECT",""),device,label,host,5900,
             secret,env.getOrDefault("RDG_GUACD_HOST","127.0.0.1"),port(env.getOrDefault("RDG_GUACD_PORT","4822")),
             address,port(env.getOrDefault("RDG_LISTEN_PORT","32120")),stateDir,
-            Path.of(env.getOrDefault("RDG_WEB_DIR","web/dist")),bookmarks,Map.copyOf(keysyms),desktopPolicy,store);
+            Path.of(env.getOrDefault("RDG_WEB_DIR","web/dist")),bookmarks,Map.copyOf(keysyms),desktopPolicy,store,AgentSettings.load(env));
     }
     static void fields(JsonNode node, Set<String> allowed) {
         if (!node.isObject()) throw new Failure(400,"INVALID_REQUEST");

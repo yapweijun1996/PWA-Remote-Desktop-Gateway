@@ -25,14 +25,14 @@ final class Sessions implements AutoCloseable {
         }
     }
     static final class Intent {
-        final String id, appIndex, mode, profile;
+        final String id, appIndex, mode, profile, backend;
         final DisplayQuality displayQuality;
         final long expires;
         final Instant publicExpiry;
         final boolean clipboard;
         boolean consumed;
-        Intent(String id,App app,String mode,String profile,DisplayQuality displayQuality,long now,Instant wall) {
-            this.id=id;appIndex=app.index;this.mode=mode;this.profile=profile;this.displayQuality=displayQuality;expires=now+Duration.ofSeconds(30).toNanos();
+        Intent(String id,App app,String mode,String profile,String backend,DisplayQuality displayQuality,long now,Instant wall) {
+            this.id=id;appIndex=app.index;this.mode=mode;this.profile=profile;this.backend=backend;this.displayQuality=displayQuality;expires=now+Duration.ofSeconds(30).toNanos();
             publicExpiry=wall.plusSeconds(30);clipboard=app.clipboard && mode.equals("control");
         }
     }
@@ -40,6 +40,9 @@ final class Sessions implements AutoCloseable {
         final String intentId;
         final App app;
         final String mode;
+        final String backend;
+        private AutoCloseable upstream;
+        private boolean upstreamReady;
         final DisplayQuality displayQuality;
         final boolean clipboard;
         final long connectingDeadline;
@@ -48,7 +51,7 @@ final class Sessions implements AutoCloseable {
         private GuacamoleTunnel tunnel;
         private Session socket;
         private AutoCloseable pending;
-        Desktop(Intent i,App app) { intentId=i.id;this.app=app;mode=i.mode;displayQuality=i.displayQuality;clipboard=i.clipboard;lastInput=ticker.getAsLong();connectingDeadline=lastInput+Duration.ofSeconds(10).toNanos(); }
+        Desktop(Intent i,App app) { intentId=i.id;this.app=app;mode=i.mode;backend=i.backend;displayQuality=i.displayQuality;clipboard=i.clipboard;lastInput=ticker.getAsLong();connectingDeadline=lastInput+Duration.ofSeconds(10).toNanos(); }
         synchronized void pending(AutoCloseable resource) throws Exception {
             if(ended.get()) {resource.close();throw new Failure(401,"SESSION_EXPIRED");}pending=resource;
         }
@@ -59,6 +62,11 @@ final class Sessions implements AutoCloseable {
         synchronized void attach(GuacamoleTunnel t,Session ws) throws Exception {
             if(ended.get()){t.close();ws.close();throw new Failure(401,"SESSION_EXPIRED");}
             tunnel=t;socket=ws;pending=null;
+        }
+        /** Agent backend: the relay becomes the upstream resource, closed with the desktop (like the tunnel for VNC). */
+        synchronized void attachUpstream(AutoCloseable resource) throws Exception {
+            if(ended.get()){resource.close();throw new Failure(401,"SESSION_EXPIRED");}
+            upstream=resource;upstreamReady=true;pending=null;
         }
         void checkActive() {
             requireTrusted(app);
@@ -73,12 +81,13 @@ final class Sessions implements AutoCloseable {
             synchronized(this) {
                 try {if(pending!=null)pending.close();}catch(Exception ignored){upstreamClosed=false;}
                 try {if(tunnel!=null)tunnel.close();}catch(Exception ignored){upstreamClosed=false;}
+                try {if(upstream!=null)upstream.close();}catch(Exception ignored){upstreamClosed=false;}
                 try {if(socket!=null && socket.isOpen())socket.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE,reason));}catch(Exception ignored){}
             }
             synchronized(Sessions.this){if(upstreamClosed)desktops.remove(intentId,this);else cleanupUncertain=true;}
             try{audit.record(app.ref,"END",reason);}catch(Failure ignored){}
         }
-        synchronized boolean connected() {return tunnel!=null && !ended.get();}
+        synchronized boolean connected() {return (tunnel!=null||upstreamReady) && !ended.get();}
     }
     final Config config;
     final Clock clock;
@@ -146,7 +155,16 @@ final class Sessions implements AutoCloseable {
         return intent(app,device,mode,profile,DisplayQuality.BALANCED.id);
     }
     synchronized Intent intent(App app,String device,String mode,String profile,String qualityId) {
-        requireApp(app);config.requireDesktop();limit(app.subject+":intent",20);
+        return intent(app,device,mode,profile,qualityId,"vnc");
+    }
+    synchronized Intent intent(App app,String device,String mode,String profile,String qualityId,String backend) {
+        requireApp(app);limit(app.subject+":intent",20);
+        if(!Set.of("vnc","agent").contains(backend))throw new Failure(400,"INVALID_REQUEST");
+        if(backend.equals("agent")) {
+            // The agent backend is opt-in server-side and serves exactly one client, so no other desktop may exist.
+            config.requireAgent();
+            if(!desktops.isEmpty())throw new Failure(409,"CONTROL_BUSY");
+        } else config.requireDesktop();
         DisplayQuality quality=DisplayQuality.parse(qualityId);
         if(cleanupUncertain)throw new Failure(503,"CLEANUP_UNCERTAIN");
         if(ticker.getAsLong()<maintenanceUntil)throw new Failure(409,"UPDATE_IN_PROGRESS");
@@ -155,18 +173,26 @@ final class Sessions implements AutoCloseable {
         if(intents.size()>=64)throw new Failure(429,"RATE_LIMITED");
         if(desktops.values().stream().anyMatch(d->d.app==app))throw new Failure(409,"CONTROL_BUSY");
         if(mode.equals("control") && desktops.values().stream().anyMatch(d->d.mode.equals("control")))throw new Failure(409,"CONTROL_BUSY");
-        Intent i=new Intent(random(),app,mode,profile,quality,ticker.getAsLong(),clock.instant());intents.put(i.id,i);return i;
+        Intent i=new Intent(random(),app,mode,profile,backend,quality,ticker.getAsLong(),clock.instant());intents.put(i.id,i);return i;
     }
     synchronized Desktop begin(App app,String id) {
-        requireApp(app);config.requireDesktop();
+        return begin(app,id,"vnc");
+    }
+    /** `expected` is the backend of the WebSocket route; an intent for the other backend is refused without being consumed. */
+    synchronized Desktop begin(App app,String id,String expected) {
+        requireApp(app);
+        if(expected.equals("vnc"))config.requireDesktop();
+        else config.requireAgent();
         if(cleanupUncertain)throw new Failure(503,"CLEANUP_UNCERTAIN");
         if(ticker.getAsLong()<maintenanceUntil)throw new Failure(409,"UPDATE_IN_PROGRESS");
         Intent i=intents.get(id);
         if(i==null)throw new Failure(410,"INTENT_EXPIRED");
         if(!i.appIndex.equals(app.index))throw new Failure(403,"ACCESS_DENIED");
+        if(!i.backend.equals(expected))throw new Failure(400,"INVALID_REQUEST");
         if(i.consumed)throw new Failure(409,"INTENT_USED");
         if(ticker.getAsLong()>=i.expires)throw new Failure(410,"INTENT_EXPIRED");
         if(desktops.size()>=2 || desktops.values().stream().anyMatch(d->d.app==app || (i.mode.equals("control")&&d.mode.equals("control"))))throw new Failure(409,"CONTROL_BUSY");
+        if(i.backend.equals("agent")&&!desktops.isEmpty())throw new Failure(409,"CONTROL_BUSY");
         i.consumed=true;Desktop desktop=new Desktop(i,app);desktops.put(id,desktop);return desktop;
     }
     /** The caller must be the subject GatewayFilter authenticated for this very upgrade; the intent ID alone is not enough. */

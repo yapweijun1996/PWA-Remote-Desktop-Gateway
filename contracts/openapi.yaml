@@ -178,6 +178,11 @@ paths:
                   enum: [low, balanced, clear]
                   default: balanced
                   description: Server-owned VNC quality preset, negotiated with the target. Requires a new connection; no FPS cap.
+                backend:
+                  type: string
+                  enum: [vnc, agent]
+                  default: vnc
+                  description: Desktop transport. `agent` is the optional host agent backend (docs/19), enabled only by server configuration; otherwise 503 AGENT_DISABLED. The intent is valid only on that backend's WebSocket route.
       responses:
         '201':
           description: Owner-bound one-use 30-second intent; ID alone does not authorize a connection.
@@ -186,11 +191,12 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [intentId, expiresAt, displayQuality]
+                required: [intentId, expiresAt, displayQuality, backend]
                 properties:
                   intentId: {type: string, minLength: 32, maxLength: 128}
                   expiresAt: {type: string, format: date-time}
                   displayQuality: {type: string, enum: [low, balanced, clear]}
+                  backend: {type: string, enum: [vnc, agent]}
         '404':
           description: Unknown deviceId or a kind=bookmark device. Bookmarks only link to another node and are never connectable here.
           content:
@@ -267,7 +273,7 @@ paths:
     get:
       operationId: getSanitizedDiagnostics
       responses:
-        '200': {description: Build/library versions, node alias, configured keysyms, desktopEnabled/desktopPolicy and capability limits; no upstream address or credentials.}
+        '200': {description: Build/library versions, node alias, configured keysyms, desktopEnabled/desktopPolicy, the enabled `backends` (vnc, plus agent when configured) and capability limits; no upstream address or credentials.}
         default:
           $ref: '#/components/responses/Error'
   /api/history:
@@ -275,6 +281,24 @@ paths:
       operationId: getSessionMetadataHistory
       responses:
         '200': {description: Up to 50 metadata-only audit events for the bound identity; no input, clipboard, frames or tokens.}
+        default:
+          $ref: '#/components/responses/Error'
+  /ws/agent/{intentId}:
+    get:
+      operationId: upgradeAgentRelay
+      description: >-
+        WebSocket upgrade for the host agent backend (docs/19), subprotocol `rdg-agent.v1`.
+        Same guards as /ws/sessions/{intentId}: exact Origin/Host, signed identity, owner app
+        cookie, unexpired intent of backend `agent`, atomic consume. Frames are JSON text and
+        binary video defined in docs/19; the gateway validates and re-serialises every browser
+        message and never forwards raw bytes. Refused with 503 AGENT_DISABLED unless enabled.
+      parameters:
+        - name: intentId
+          in: path
+          required: true
+          schema: {type: string, pattern: '^[A-Za-z0-9_-]{43}$'}
+      responses:
+        '101': {description: Switching protocols.}
         default:
           $ref: '#/components/responses/Error'
   /ws/sessions/{intentId}:
