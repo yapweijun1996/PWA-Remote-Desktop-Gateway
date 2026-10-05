@@ -1,0 +1,40 @@
+{
+ "scope": "REAL_MAC_PROTOCOL_V1_AGENT",
+ "agentBinary": "protocol v1 build (cdhash changes on every rebuild)",
+ "owner_watched": true,
+ "inputAndClipboard": "15/15 passed (same checks as stage 1, no regression)",
+ "pixelScroll": {
+  "passed": "6/6",
+  "observed": [
+   "dy +300 moved the page exactly 300 px (0 -> 300)",
+   "two more +300 -> 900",
+   "dy -300 -> 600",
+   "zero, oversized and out-of-range messages ignored"
+  ],
+  "method": "a local page reports its own window.scrollY; no screen content read"
+ },
+ "securityChecks": "16/16 (adds version refusal and no-data-on-wrong-token with a valid version)",
+ "videoIdleLoopback": {
+  "resolution": "1470x956",
+  "fps": {
+   "avg": 2.1,
+   "max": 4
+  },
+  "kbit_per_s": {
+   "avg": 8,
+   "peak": 14
+  },
+  "latency_ms": {
+   "p50_median": 13.912109375,
+   "p95_median": 14.654052734375,
+   "worst_second_max": 16.467041015625
+  },
+  "dropped_total": 0,
+  "decode_errors": 0,
+  "agent_cpu_percent_of_one_core": 0.9
+ },
+ "notes": [
+  "The idle screen was truly static in this run: 2.1 fps and 8 kbit/s, so skipping unchanged frames works.",
+  "Loopback only; no network, gateway or PWA involved yet."
+ ]
+}
