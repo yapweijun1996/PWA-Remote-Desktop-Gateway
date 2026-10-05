@@ -3,9 +3,14 @@ import Foundation
 import Network
 
 struct StreamSettings {
-    let maxWidth: Int
-    let fps: Int
-    let bitrate: Int
+    var maxWidth = 1920
+    var fps = 30
+    var bitrate = 4_000_000
+    /// Tried in order; each attempt has `encoderTimeout` seconds (VideoToolbox creation was seen to hang on the owner's Mac).
+    var encoderModes: [EncoderMode] = [.lowLatencyHardware, .hardware, .software]
+    /// true: create the encoder before ScreenCaptureKit starts; false: after (the order of the first working build).
+    var encoderBeforeCapture = false
+    var encoderTimeout: TimeInterval = 5
 }
 
 /// Loopback-only WebSocket server for exactly one authenticated client at a time.
@@ -154,10 +159,33 @@ final class Session {
             self?.queue.async { self?.close(reason) }
         })
         self.capture = capture
+        let plan = Capture.plan(maxWidth: settings.maxWidth)
+        let settings = self.settings
+        let makeEncoder: () async -> Encoder? = { [weak self] in
+            await withCheckedContinuation { continuation in
+                DispatchQueue.global().async {
+                    continuation.resume(returning: Encoder.make(width: plan.width, height: plan.height, fps: settings.fps, bitrate: settings.bitrate,
+                                                                modes: settings.encoderModes, timeout: settings.encoderTimeout) { frame in
+                        self?.queue.async { self?.send(frame: frame) }
+                    })
+                }
+            }
+        }
         Task {
             do {
-                let geometry = try await capture.start(maxWidth: settings.maxWidth, fps: settings.fps)
-                queue.async { self.ready(geometry: geometry, wantsControl: wantsControl) }
+                var made: Encoder?
+                if settings.encoderBeforeCapture {
+                    made = await makeEncoder()
+                    if made == nil { queue.async { self.fail("ENCODER_UNAVAILABLE") }; return }
+                }
+                let geometry = try await capture.start(width: plan.width, height: plan.height, fps: settings.fps)
+                log("capture started (\(geometry.width)x\(geometry.height), encoder \(settings.encoderBeforeCapture ? "before" : "after") capture)")
+                if made == nil {
+                    made = await makeEncoder()
+                    if made == nil { queue.async { self.fail("ENCODER_UNAVAILABLE") }; return }
+                }
+                let encoder = made!
+                queue.async { self.ready(geometry: geometry, wantsControl: wantsControl, encoder: encoder) }
             } catch AgentError.captureUnavailable(let code) {
                 queue.async { self.fail(code) }
             } catch {
@@ -166,15 +194,9 @@ final class Session {
         }
     }
 
-    private func ready(geometry: CaptureGeometry, wantsControl: Bool) {
-        guard !closed else { return }
-        do {
-            encoder = try Encoder(width: geometry.width, height: geometry.height, fps: settings.fps, bitrate: settings.bitrate) { [weak self] frame in
-                self?.queue.async { self?.send(frame: frame) }
-            }
-        } catch {
-            fail("ENCODER_UNAVAILABLE"); return
-        }
+    private func ready(geometry: CaptureGeometry, wantsControl: Bool, encoder: Encoder) {
+        guard !closed else { encoder.stop(); return }
+        self.encoder = encoder
         var controlReason = "VIEW_ONLY"
         if wantsControl {
             if Input.permitted { control = true; controlReason = "GRANTED"; input = Input(geometry: geometry) }
@@ -185,7 +207,7 @@ final class Session {
             clipboard.watch(queue: queue) { [weak self] text in self?.send(json: ["t": "clip", "text": text]) }
         }
         send(json: ["t": "ready", "width": geometry.width, "height": geometry.height, "control": control,
-                    "controlReason": controlReason, "clipboard": clipboardEnabled])
+                    "controlReason": controlReason, "clipboard": clipboardEnabled, "encoder": encoder.mode.rawValue])
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + 1, repeating: 1)
         timer.setEventHandler { [weak self] in

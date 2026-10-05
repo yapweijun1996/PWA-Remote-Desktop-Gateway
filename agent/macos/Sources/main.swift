@@ -6,7 +6,7 @@ import Foundation
 var port: UInt16 = 5960
 var tokenPath = Token.defaultPath()
 var origins = Set<String>()
-var settings = StreamSettings(maxWidth: 1920, fps: 30, bitrate: 4_000_000)
+var settings = StreamSettings()
 var initTokenOnly = false
 var requestPermissions = false
 var arguments = CommandLine.arguments.dropFirst().makeIterator()
@@ -15,9 +15,13 @@ while let argument = arguments.next() {
     case "--port": port = UInt16(arguments.next() ?? "") ?? port
     case "--token-file": tokenPath = arguments.next() ?? tokenPath
     case "--allow-origin": if let origin = arguments.next(), origin.hasPrefix("http://127.0.0.1:") || origin.hasPrefix("http://localhost:") { origins.insert(origin) }
-    case "--max-width": settings = StreamSettings(maxWidth: Int(arguments.next() ?? "") ?? settings.maxWidth, fps: settings.fps, bitrate: settings.bitrate)
-    case "--fps": settings = StreamSettings(maxWidth: settings.maxWidth, fps: max(1, min(60, Int(arguments.next() ?? "") ?? settings.fps)), bitrate: settings.bitrate)
-    case "--bitrate": settings = StreamSettings(maxWidth: settings.maxWidth, fps: settings.fps, bitrate: Int(arguments.next() ?? "") ?? settings.bitrate)
+    case "--max-width": settings.maxWidth = Int(arguments.next() ?? "") ?? settings.maxWidth
+    case "--fps": settings.fps = max(1, min(60, Int(arguments.next() ?? "") ?? settings.fps))
+    case "--bitrate": settings.bitrate = Int(arguments.next() ?? "") ?? settings.bitrate
+    // Diagnostics for the VideoToolbox hang: --encoder-modes ll,hw,sw  --encoder-order before|after  --create-timeout 5
+    case "--encoder-modes": settings.encoderModes = (arguments.next() ?? "").split(separator: ",").compactMap { EncoderMode(rawValue: String($0)) }
+    case "--encoder-order": settings.encoderBeforeCapture = (arguments.next() == "before")
+    case "--create-timeout": settings.encoderTimeout = TimeInterval(arguments.next() ?? "") ?? settings.encoderTimeout
     case "--init-token": initTokenOnly = true
     case "--request-permissions": requestPermissions = true
     default: log("unknown argument refused"); exit(2)

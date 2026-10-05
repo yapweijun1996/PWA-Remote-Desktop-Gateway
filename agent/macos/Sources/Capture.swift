@@ -22,7 +22,14 @@ final class Capture: NSObject, SCStreamOutput, SCStreamDelegate {
         self.onFrame = onFrame; self.onStop = onStop
     }
 
-    func start(maxWidth: Int, fps: Int) async throws -> CaptureGeometry {
+    /// Even encoded size for the main display, derived without any permission so the encoder can exist before capture starts.
+    static func plan(maxWidth: Int) -> (width: Int, height: Int) {
+        let bounds = CGDisplayBounds(CGMainDisplayID())
+        let scale = min(1.0, Double(maxWidth) / Double(bounds.width))
+        return (Int(Double(bounds.width) * scale) & ~1, Int(Double(bounds.height) * scale) & ~1)
+    }
+
+    func start(width: Int, height: Int, fps: Int) async throws -> CaptureGeometry {
         // Preflight never prompts: a remote session must not raise a system dialog. Granting is the explicit
         // --request-permissions setup step.
         guard CGPreflightScreenCaptureAccess() else { throw AgentError.captureUnavailable("SCREEN_RECORDING_NOT_PERMITTED") }
@@ -33,10 +40,6 @@ final class Capture: NSObject, SCStreamOutput, SCStreamDelegate {
             throw AgentError.captureUnavailable("NO_DISPLAY")
         }
         let bounds = CGDisplayBounds(display.displayID)
-        // Points keep text legible at a fraction of Retina pixel cost; cap the width for bandwidth. Even sizes for H.264.
-        let scale = min(1.0, Double(maxWidth) / Double(display.width))
-        let width = Int(Double(display.width) * scale) & ~1
-        let height = Int(Double(display.height) * scale) & ~1
         let config = SCStreamConfiguration()
         config.width = width
         config.height = height

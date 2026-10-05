@@ -2,6 +2,8 @@ import CoreMedia
 import Foundation
 import VideoToolbox
 
+final class EncoderBox { var result: Result<Encoder, Error>? }
+
 struct EncodedFrame {
     let data: Data            // AVCC (length-prefixed NAL units), as WebCodecs expects with an avcC description
     let isKeyframe: Bool
@@ -16,26 +18,35 @@ struct StreamConfig: Equatable {
     let height: Int
 }
 
-/// Real-time hardware H.264: no frame reordering, low-latency rate control when available, keyframes on request.
+enum EncoderMode: String {
+    case lowLatencyHardware = "ll"   // hardware, low-latency rate control
+    case hardware = "hw"             // hardware, default rate control
+    case software = "sw"             // software encoder (no hardware encoder service involved)
+
+    var specification: CFDictionary? {
+        switch self {
+        case .lowLatencyHardware: return [kVTVideoEncoderSpecification_EnableLowLatencyRateControl as String: true] as CFDictionary
+        case .hardware: return nil
+        case .software: return [kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder as String: false] as CFDictionary
+        }
+    }
+}
+
+/// Real-time H.264: no frame reordering, keyframes on request. Hardware low-latency by default.
 final class Encoder {
+    private(set) var mode = EncoderMode.lowLatencyHardware
     private var session: VTCompressionSession?
     private let width: Int32, height: Int32
     private let output: (EncodedFrame) -> Void
     private var lastConfig: StreamConfig?
     private let lock = NSLock()
 
-    init(width: Int, height: Int, fps: Int, bitrate: Int, output: @escaping (EncodedFrame) -> Void) throws {
-        self.width = Int32(width); self.height = Int32(height); self.output = output
+    init(width: Int, height: Int, fps: Int, bitrate: Int, mode: EncoderMode, output: @escaping (EncodedFrame) -> Void) throws {
+        self.width = Int32(width); self.height = Int32(height); self.output = output; self.mode = mode
         var created: VTCompressionSession?
-        let lowLatency = [kVTVideoEncoderSpecification_EnableLowLatencyRateControl as String: true] as CFDictionary
-        var status = VTCompressionSessionCreate(allocator: nil, width: self.width, height: self.height, codecType: kCMVideoCodecType_H264,
-                                                encoderSpecification: lowLatency, imageBufferAttributes: nil, compressedDataAllocator: nil,
+        let status = VTCompressionSessionCreate(allocator: nil, width: self.width, height: self.height, codecType: kCMVideoCodecType_H264,
+                                                encoderSpecification: mode.specification, imageBufferAttributes: nil, compressedDataAllocator: nil,
                                                 outputCallback: nil, refcon: nil, compressionSessionOut: &created)
-        if status != noErr {
-            status = VTCompressionSessionCreate(allocator: nil, width: self.width, height: self.height, codecType: kCMVideoCodecType_H264,
-                                                encoderSpecification: nil, imageBufferAttributes: nil, compressedDataAllocator: nil,
-                                                outputCallback: nil, refcon: nil, compressionSessionOut: &created)
-        }
         guard status == noErr, let session = created else { throw AgentError.encoderUnavailable(status) }
         let properties: [CFString: Any] = [
             kVTCompressionPropertyKey_RealTime: true,
@@ -51,6 +62,34 @@ final class Encoder {
         for (key, value) in properties { VTSessionSetProperty(session, key: key, value: value as CFTypeRef) }
         VTCompressionSessionPrepareToEncodeFrames(session)
         self.session = session
+    }
+
+    /// Tries each mode in order on its own thread. VTCompressionSessionCreate waits synchronously on a system XPC service; on
+    /// the owner's Mac it was seen never to return, so each attempt has a deadline and a stuck attempt is abandoned, not awaited.
+    static func make(width: Int, height: Int, fps: Int, bitrate: Int, modes: [EncoderMode], timeout: TimeInterval,
+                     output: @escaping (EncodedFrame) -> Void) -> Encoder? {
+        for mode in modes {
+            let started = Date()
+            let done = DispatchSemaphore(value: 0)
+            let box = EncoderBox()
+            let thread = Thread {
+                box.result = Result { try Encoder(width: width, height: height, fps: fps, bitrate: bitrate, mode: mode, output: output) }
+                done.signal()
+            }
+            thread.stackSize = 1 << 20
+            thread.start()
+            let elapsed = { Int(Date().timeIntervalSince(started) * 1000) }
+            if done.wait(timeout: .now() + timeout) == .timedOut {
+                log("encoder \(mode.rawValue): no reply within \(Int(timeout)) s, abandoned")
+                continue
+            }
+            switch box.result {
+            case .success(let encoder): log("encoder \(mode.rawValue): created in \(elapsed()) ms"); return encoder
+            case .failure(let error): log("encoder \(mode.rawValue): failed in \(elapsed()) ms (\(error))")
+            case nil: break
+            }
+        }
+        return nil
     }
 
     /// Adjusts the target while streaming (the client picks Smooth / Balanced / Sharp from its own network measurements).
