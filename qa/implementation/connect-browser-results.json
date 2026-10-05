@@ -2,7 +2,7 @@
   "status": "PASS",
   "scope": "LOCAL_BROWSER_CONNECTION_LIFECYCLE_FIXTURE",
   "browser": "151.0.7922.34",
-  "build": "cd9e82a7addbabfe",
+  "build": "045b4c19eb27f440",
   "fixture": true,
   "simulatedAPI": true,
   "simulatedGuacamole": true,

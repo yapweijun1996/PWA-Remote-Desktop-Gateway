@@ -39,13 +39,15 @@ try {
   // ---- compose merge: the override adds exactly the agent settings ------------------------------------------------------
   const composeFiles=['-f','deployment/compose.owner-setup.yaml','-f','deployment/compose.agent.yaml'];
   const composeEnv={...process.env,GATEWAY_IMAGE:candidate,RDG_AGENT_TOKEN_SOURCE:tokenPath};delete composeEnv.DOCKER_CONTEXT;
-  const render=files=>JSON.parse(docker(['compose','--project-name',project,'--env-file',envPath,...files,'config','--format','json'],{env:composeEnv})).services.gateway;
+  const render=(files,env=composeEnv)=>JSON.parse(docker(['compose','--project-name',project,'--env-file',envPath,...files,'config','--format','json'],{env})).services.gateway;
   const base=render(['-f','deployment/compose.owner-setup.yaml']),merged=render(composeFiles);
   const added=Object.keys(merged.environment).filter(key=>!(key in base.environment)).sort();
   const tokenMount=merged.volumes.find(volume=>volume.target==='/run/secrets/rdg_agent_token');
   record('override adds only the four agent variables and one read-only token bind that must exist',
     JSON.stringify(added)===JSON.stringify(['RDG_AGENT_ENABLED','RDG_AGENT_HOST','RDG_AGENT_PORT','RDG_AGENT_TOKEN_FILE'])&&merged.volumes.length===base.volumes.length+1
     &&tokenMount?.type==='bind'&&tokenMount.read_only===true&&tokenMount.bind?.create_host_path!==true&&tokenMount.source===tokenPath,{added,mounts:merged.volumes.length,tokenMount:tokenMount&&{type:tokenMount.type,read_only:tokenMount.read_only,bind:tokenMount.bind,sourceMatches:tokenMount.source===tokenPath}});
+  record('the flag defaults to off in the override and turns on only when the environment says so',
+    merged.environment.RDG_AGENT_ENABLED==='false'&&render(composeFiles,{...composeEnv,RDG_AGENT_ENABLED:'true'}).environment.RDG_AGENT_ENABLED==='true');
   record('every other service setting is identical with and without the override',
     JSON.stringify({...merged,environment:null,volumes:null})===JSON.stringify({...base,environment:null,volumes:null})
     &&JSON.stringify(base.volumes)===JSON.stringify(merged.volumes.filter(volume=>volume.target!=='/run/secrets/rdg_agent_token')));

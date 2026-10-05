@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "browser": "151.0.7922.34",
-  "build": "cd9e82a7addbabfe",
+  "build": "045b4c19eb27f440",
   "fixture": true,
   "realMac": false,
   "realAgent": false,
@@ -27,8 +27,8 @@
       "test": "A wheel/mouse flood stays under the gateway limits and the session survives",
       "status": "PASS",
       "level": "LOCAL_AGENT_FIXTURE",
-      "wheelPerSecond": 51.3,
-      "movePerSecond": 56.8
+      "wheelPerSecond": 51.7,
+      "movePerSecond": 56.6
     },
     {
       "test": "Clipboard text is sent once and confirmed by the agent’s result",
