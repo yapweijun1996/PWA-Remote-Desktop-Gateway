@@ -29,6 +29,9 @@ Launch with `open` so macOS attributes permissions to RDG Agent. Started from a 
 grants (this happened once during development: a test captured about two seconds of the screen to a local headless
 browser; nothing was stored). `test/security-checks.mjs` therefore launches the app with `open`.
 
+## Results on the owner's Mac
+15/15 real input and clipboard checks pass (modifiers, Spotlight, Chinese, both clipboard directions, key release on disconnect); see `qa/implementation/host-agent-20261004/REPORT.md`. Encoder creation once stalled and could not be reproduced, so each attempt has a deadline with hardware, then software, fallback.
+
 ## Known limits
 - macOS 15+ asks again about once a month for Screen Recording unless an app has Apple's
   `com.apple.developer.persistent-content-capture` entitlement, which an ad-hoc build cannot have. Answer the prompt

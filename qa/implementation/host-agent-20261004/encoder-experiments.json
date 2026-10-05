@@ -1,0 +1,79 @@
+{
+ "exp-before-capture": {
+  "fps": {
+   "avg": 29.3,
+   "max": 30
+  },
+  "kbit_per_s": {
+   "avg": 126,
+   "peak": 130
+  },
+  "dropped_total": 0
+ },
+ "exp-default-2": {
+  "fps": {
+   "avg": 29.7,
+   "max": 31
+  },
+  "kbit_per_s": {
+   "avg": 128,
+   "peak": 131
+  },
+  "dropped_total": 0
+ },
+ "exp-default-3": {
+  "fps": {
+   "avg": 29.3,
+   "max": 30
+  },
+  "kbit_per_s": {
+   "avg": 122,
+   "peak": 123
+  },
+  "dropped_total": 0
+ },
+ "exp-default": {
+  "fps": {
+   "avg": 29.3,
+   "max": 30
+  },
+  "kbit_per_s": {
+   "avg": 123,
+   "peak": 148
+  },
+  "dropped_total": 0
+ },
+ "exp-hardware-plain": {
+  "fps": {
+   "avg": 7.3,
+   "max": 15
+  },
+  "kbit_per_s": {
+   "avg": 230,
+   "peak": 308
+  },
+  "dropped_total": 1
+ },
+ "exp-software-only": {
+  "fps": {
+   "avg": 29.3,
+   "max": 30
+  },
+  "kbit_per_s": {
+   "avg": 451,
+   "peak": 459
+  },
+  "dropped_total": 0
+ },
+ "terminal-launch": {
+  "fps": {
+   "avg": 29.4,
+   "max": 30
+  },
+  "kbit_per_s": {
+   "avg": 254,
+   "peak": 585
+  },
+  "dropped_total": 5
+ }
+}

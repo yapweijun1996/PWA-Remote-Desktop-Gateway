@@ -1,0 +1,77 @@
+[
+ {
+  "name": "TextEdit is frontmost with the throwaway file",
+  "ok": true,
+  "detail": "TextEdit"
+ },
+ {
+  "name": "agent grants control and clipboard",
+  "ok": true,
+  "detail": "{\"control\":true,\"reason\":\"GRANTED\",\"clipboard\":true}"
+ },
+ {
+  "name": "plain typing works (baseline)",
+  "ok": true,
+  "detail": "\"abc\""
+ },
+ {
+  "name": "Control held 1 s + A moves to line start (expect xabc)",
+  "ok": true,
+  "detail": "\"xabc\""
+ },
+ {
+  "name": "Command held 150 ms + A selects all, then x replaces it (expect x)",
+  "ok": true,
+  "detail": "\"x\""
+ },
+ {
+  "name": "Command held 1000 ms + A selects all, then x replaces it (expect x)",
+  "ok": true,
+  "detail": "\"x\""
+ },
+ {
+  "name": "Command+Space opens Spotlight",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Escape closes Spotlight",
+  "ok": true,
+  "detail": "TextEdit"
+ },
+ {
+  "name": "typing Chinese as text (expect 你好 rdg)",
+  "ok": true,
+  "detail": "\"你好 rdg\""
+ },
+ {
+  "name": "client → Mac clipboard reaches the pasteboard (incl. Chinese and é)",
+  "ok": true,
+  "detail": "\"剪贴板 rdg-123 café\""
+ },
+ {
+  "name": "Command+V pastes it into TextEdit",
+  "ok": true,
+  "detail": "\"剪贴板 rdg-123 café\""
+ },
+ {
+  "name": "Mac → client: copying in TextEdit arrives at the client",
+  "ok": true,
+  "detail": "\"456-MAC-TO-CLIENT 出 RDG\""
+ },
+ {
+  "name": "held modifiers are visible to macOS while held",
+  "ok": true,
+  "detail": "true true false false"
+ },
+ {
+  "name": "closing the client mid-chord releases every key (no stuck modifier)",
+  "ok": true,
+  "detail": "false false false false"
+ },
+ {
+  "name": "no modifier is stuck at the end",
+  "ok": true,
+  "detail": "false false false false"
+ }
+]

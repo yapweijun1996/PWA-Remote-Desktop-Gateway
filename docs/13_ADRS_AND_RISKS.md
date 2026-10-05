@@ -36,4 +36,10 @@ The selected remote transport is HTTPS/WebSocket + Guacamole. A custom ScreenCap
 | Wrong hostname certificate | Browser TLS failure | First-level examples; verify actual cert coverage |
 | False Online/acceptance claims | Owner relies on unavailable access | Evidence levels, truthful status and NOT_RUN defaults |
 
+## ADR-015: host agent prototype beside the VNC path (2026-10-05, owner decision)
+Context: on the owner's Mac (macOS 26.6.2) the built-in Screen Sharing in classic VNC password mode applied no modifier keys and ignored client-to-Mac clipboard text, and VNC image streaming scrolled poorly ([diagnosis](../qa/implementation/mac-input-diagnosis-20261004/REPORT.md)). The owner chose to build a free host agent from Apple frameworks rather than add a third-party VNC server.
+Decision: prototype `agent/macos` (ScreenCaptureKit, hardware H.264, CGEvent input, plain-text clipboard, loopback WebSocket with token and Origin allowlist). The Guacamole/VNC path stays the supported path and fallback until the exit criteria below are met; nothing is integrated or deployed.
+Result so far: modifiers, Spotlight, Chinese text and both clipboard directions work on the real Mac, and no key stays down after a disconnect ([report](../qa/implementation/host-agent-20261004/REPORT.md)).
+Exit criteria before any integration: authentication through the existing Access/trusted-device boundary, viewer in the PWA, adaptive bitrate over a real network, measured end-to-end latency, no stuck keys on network loss, recovery after sleep or restart, and an owner decision on the monthly Screen Recording prompt and signing. This changes the project's "official maintained components only" stance for the Mac side and is recorded here for that reason.
+
 No risk score or readiness percentage is assigned without test evidence.
