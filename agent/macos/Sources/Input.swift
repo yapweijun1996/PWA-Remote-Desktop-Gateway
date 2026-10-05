@@ -189,6 +189,19 @@ final class Input {
         event.post(tap: .cgSessionEventTap)
     }
 
+    /// Protocol `w`: continuous pixel scrolling at a video position. Positive `dy` scrolls down (content moves up), which is a
+    /// negative CGEvent wheel value. The pointer is moved there first so the window under it receives the scroll.
+    func scroll(x: Int, y: Int, dy: Int) {
+        pointer(x: x, y: y, mask: buttons)
+        guard let event = CGEvent(scrollWheelEvent2Source: source, units: .pixel, wheelCount: 1, wheel1: Int32(-dy), wheel2: 0, wheel3: 0) else { return }
+        event.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
+        event.location = pointerPoint
+        event.flags = flags
+        event.post(tap: .cgSessionEventTap)
+    }
+
+    private var pointerPoint: CGPoint { pointer }
+
     /// Server-side release on disconnect, failure or explicit request: no key or button stays down on the Mac.
     func releaseAll() {
         for code in pressedKeys { postKey(code, down: false, extra: []) }

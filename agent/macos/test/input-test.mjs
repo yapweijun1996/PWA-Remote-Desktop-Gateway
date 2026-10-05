@@ -37,7 +37,7 @@ try{
   ws=new WebSocket('ws://127.0.0.1:5960');ws.binaryType='arraybuffer';
   ws.onmessage=e=>{if(typeof e.data!=='string')return;const m=JSON.parse(e.data);if(m.t==='ready')ready=m;if(m.t==='clip')clipFromMac=m.text;if(m.t==='error')abort='agent error '+m.code;};
   await new Promise((res,rej)=>{ws.onopen=res;ws.onerror=()=>rej(new Error('connect failed'));});
-  send({t:'hello',token,control:true,clipboard:true});
+  send({t:'hello',v:1,token,control:true,clipboard:true});
   for(let i=0;i<60&&!ready&&!abort;i++)await sleep(100);
   if(abort)throw new Error(abort);
   record('agent grants control and clipboard',ready?.control===true&&ready?.clipboard===true,JSON.stringify({control:ready?.control,reason:ready?.controlReason,clipboard:ready?.clipboard}));

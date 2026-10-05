@@ -14,7 +14,7 @@ try{
   if(front()!=='TextEdit')throw new Error('TextEdit is not frontmost: '+front());
   console.log('before: Spotlight windows =',JSON.stringify(spot()));
   let ready=null;ws=new WebSocket('ws://127.0.0.1:5960');ws.onmessage=e=>{if(typeof e.data==='string'){const m=JSON.parse(e.data);if(m.t==='ready')ready=m;}};
-  await new Promise(r=>ws.onopen=r);ws.send(JSON.stringify({t:'hello',token,control:true}));
+  await new Promise(r=>ws.onopen=r);ws.send(JSON.stringify({t:'hello',v:1,token,control:true}));
   for(let i=0;i<80&&!ready;i++)await sleep(100);
   if(!ready?.control)throw new Error('no control');
   const k=(s,d)=>ws.send(JSON.stringify({t:'k',s,d}));

@@ -20,7 +20,7 @@ await page.evaluate(([port,tok])=>{
   const m=globalThis.m={t0:performance.now(),frames:0,bytes:0,keys:0,lat:[],series:[],status:null,err:null,decErrors:0,config:null,ready:null,secure:null};
   const ws=new WebSocket(`ws://127.0.0.1:${port}`);ws.binaryType='arraybuffer';let dec=null,need=true;
   const send=o=>ws.readyState===1&&ws.send(JSON.stringify(o));
-  ws.onopen=()=>send({t:'hello',token:tok,control:false,clipboard:false});
+  ws.onopen=()=>send({t:'hello',v:1,token:tok,control:false,clipboard:false});
   ws.onmessage=e=>{
     if(typeof e.data!=='string'){
       const v=new DataView(e.data),key=v.getUint8(1)===1,ms=v.getFloat64(2,false);m.bytes+=e.data.byteLength;if(key)m.keys++;

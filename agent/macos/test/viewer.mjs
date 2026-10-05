@@ -56,7 +56,7 @@ function onVideo(buffer){
 $('connect').onclick=()=>{
   const token=$('token').value.trim();if(!token)return;
   ws=new WebSocket(`ws://127.0.0.1:${port}`);ws.binaryType='arraybuffer';state('connecting');
-  ws.onopen=()=>{send({t:'hello',token,control:$('control').checked,clipboard:$('clipboard').checked});$('token').value='';send({t:'rate',kbps:Number($('rate').value)});};
+  ws.onopen=()=>{send({t:'hello',v:1,token,control:$('control').checked,clipboard:$('clipboard').checked});$('token').value='';send({t:'rate',kbps:Number($('rate').value)});};
   ws.onmessage=e=>{
     if(typeof e.data!=='string')return onVideo(e.data);
     const m=JSON.parse(e.data);

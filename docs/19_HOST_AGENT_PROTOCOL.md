@@ -18,9 +18,9 @@ Client → agent (browser messages after gateway validation; `hello` is gateway-
 | `hello` | `v`=1, `token`, `control`, `clipboard` | first message within 2 s, otherwise the agent closes |
 | `k` | `s` keysym, `d` down | `s` 1..0x1fffffff; control only |
 | `m` | `x`,`y` video pixels, `b` button mask | 0..32767, mask 0..31 (1 left, 2 middle, 4 right); control only |
-| `w` | `x`,`y`, optional `dx`,`dy` pixels | −4000..4000; positive `dy` scrolls down (content moves up); control only; ≤ 120/s |
+| `w` | `x`,`y` video pixels, `dy` pixels | `dy` −4000..4000 and non-zero; positive scrolls down (content moves up); posted as continuous pixel scrolling at `x`,`y`; control only; ≤ 120/s. Horizontal scrolling is not part of v1 |
 | `clip` | `text` | ≤ 16 KiB, non-empty; control and clipboard consent |
-| `type` | `text` | ≤ 4096 UTF-8 bytes; control only |
+| `type` | `text` | non-empty, ≤ 4096 UTF-8 bytes; control only |
 | `release` | – | releases every key and button |
 | `kf` | – | requests a keyframe |
 | `rate` | `kbps` | 500..12000 |
@@ -39,7 +39,7 @@ Agent → client:
 Capture timestamps share a clock with the browser only on loopback. Over a network they are not a latency measurement; the UI uses RTT or shows nothing.
 
 ## Fixed error codes (the UI maps each to fixed text; no free text)
-Agent: `AUTH_FAILED`, `AUTH_TIMEOUT`, `PROTOCOL_UNSUPPORTED`, `SCREEN_RECORDING_NOT_PERMITTED`, `NO_DISPLAY`, `CAPTURE_FAILED`, `ENCODER_UNAVAILABLE`. Gateway adds `AGENT_UNAVAILABLE` (cannot connect), `AGENT_AUTH_FAILED` (closed after `hello` without `ready`), `AGENT_PROTOCOL` (invalid or oversized agent message), `TRANSPORT_FAILED`, `INPUT_DENIED`, `READ_ONLY`, `RATE_LIMITED`, and the existing session codes (`SESSION_EXPIRED`, `CONTROL_BUSY`, …). A missing Accessibility grant is reported as `controlReason` and the UI shows view only; it never claims control.
+Agent, sent as `error` after a valid token: `PROTOCOL_UNSUPPORTED`, `SCREEN_RECORDING_NOT_PERMITTED`, `NO_DISPLAY`, `CAPTURE_FAILED`, `ENCODER_UNAVAILABLE`. A wrong token, a missing or late `hello` and a non-`hello` first message are closed with no data at all (the agent logs `AUTH_FAILED` or `AUTH_TIMEOUT` only), so an unauthenticated peer learns nothing. Gateway adds `AGENT_UNAVAILABLE` (cannot connect), `AGENT_AUTH_FAILED` (closed after `hello` without `ready`), `AGENT_PROTOCOL` (invalid or oversized agent message), `TRANSPORT_FAILED`, `INPUT_DENIED`, `READ_ONLY`, `RATE_LIMITED`, and the existing session codes (`SESSION_EXPIRED`, `CONTROL_BUSY`, …). A missing Accessibility grant is reported as `controlReason` and the UI shows view only; it never claims control.
 
 ## Gateway validation rules
 - Browser → agent: allowlisted `t` only, unknown or extra fields rejected, types and ranges checked, per-type size caps (≤ 256 B for `k`/`m`/`w`/`release`/`kf`/`rate`, ≤ 20 KiB for `clip`, ≤ 6 KiB for `type`), at most 1000 messages/s, input only in control mode, `clip`/`type` only with consent. Input and clipboard call `desktop.activity()` so the idle timeout works; video and status never do.

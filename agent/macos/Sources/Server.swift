@@ -63,6 +63,7 @@ final class Server {
 
 /// One client: authenticate, then stream video and accept input under the granted capabilities.
 final class Session {
+    static let protocolVersion = 1
     private let connection: NWConnection
     private let queue: DispatchQueue
     private let token: Data
@@ -119,6 +120,8 @@ final class Session {
             guard type == "hello", let candidate = message["token"] as? String, Token.matches(candidate, expected: token) else {
                 close("AUTH_FAILED"); return
             }
+            // The token proved the peer; only now may it learn why it is refused.
+            guard message["v"] as? Int == Session.protocolVersion else { fail("PROTOCOL_UNSUPPORTED"); return }
             authenticated = true
             let wantsControl = message["control"] as? Bool ?? false
             clipboardEnabled = wantsControl && (message["clipboard"] as? Bool ?? false)
@@ -132,21 +135,27 @@ final class Session {
                 input?.key(keysym: UInt32(keysym), down: down)
             }
         case "m":
-            if control, let x = message["x"] as? Int, let y = message["y"] as? Int, let mask = message["b"] as? Int, (0...31).contains(mask) {
+            if control, let x = message["x"] as? Int, let y = message["y"] as? Int, let mask = message["b"] as? Int,
+               (0...32767).contains(x), (0...32767).contains(y), (0...31).contains(mask) {
                 input?.pointer(x: x, y: y, mask: mask)
+            }
+        case "w":
+            if control, let x = message["x"] as? Int, let y = message["y"] as? Int, let dy = message["dy"] as? Int,
+               (0...32767).contains(x), (0...32767).contains(y), dy != 0, (-4000...4000).contains(dy) {
+                input?.scroll(x: x, y: y, dy: dy)
             }
         case "release":
             input?.releaseAll()
         case "kf":
             requestKeyframe()
         case "rate":
-            if let kbps = message["kbps"] as? Int { encoder?.setBitrate(kbps * 1000) }
+            if let kbps = message["kbps"] as? Int, (500...12000).contains(kbps) { encoder?.setBitrate(kbps * 1000) }
         case "clip":
             if control, clipboardEnabled, let text = message["text"] as? String {
                 send(json: ["t": "clip-result", "ok": clipboard.set(text)])
             }
         case "type":
-            if control, let text = message["text"] as? String, text.utf8.count <= Clipboard.maxBytes { input?.type(text: text) }
+            if control, let text = message["text"] as? String, !text.isEmpty, text.utf8.count <= 4096 { input?.type(text: text) }
         default:
             break
         }
@@ -206,7 +215,7 @@ final class Session {
         if clipboardEnabled {
             clipboard.watch(queue: queue) { [weak self] text in self?.send(json: ["t": "clip", "text": text]) }
         }
-        send(json: ["t": "ready", "width": geometry.width, "height": geometry.height, "control": control,
+        send(json: ["t": "ready", "v": Session.protocolVersion, "width": geometry.width, "height": geometry.height, "control": control,
                     "controlReason": controlReason, "clipboard": clipboardEnabled, "encoder": encoder.mode.rawValue])
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + 1, repeating: 1)

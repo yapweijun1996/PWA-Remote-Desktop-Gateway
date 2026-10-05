@@ -32,17 +32,24 @@ try{
     ws.onopen=()=>{opened=true;send?.(ws);};ws.onmessage=e=>messages.push(typeof e.data==='string'?JSON.parse(e.data):'binary');
     const done=()=>resolve({opened,messages,closedAfterMs:Date.now()-t0});ws.onclose=done;setTimeout(()=>{ws.close();done();},waitMs);
   });
-  let r=await session(ws=>ws.send(JSON.stringify({t:'hello',token:'A'.repeat(43)})));
+  let r=await session(ws=>ws.send(JSON.stringify({t:'hello',v:1,token:'A'.repeat(43)})));
   check('wrong token is disconnected without data',r.opened&&r.messages.length===0&&r.closedAfterMs<1500,JSON.stringify(r));
   r=await session(null,4000);
   check('silence is disconnected after the 2 s auth deadline',r.opened&&r.messages.length===0&&r.closedAfterMs>=1800&&r.closedAfterMs<3500,String(r.closedAfterMs));
   r=await session(ws=>ws.send('not json'));
   check('a non-hello first message is disconnected',r.messages.length===0&&r.closedAfterMs<1500);
-  r=await session(ws=>ws.send(JSON.stringify({t:'hello',token,control:true})));
+  r=await session(ws=>ws.send(JSON.stringify({t:'hello',v:1,token,control:true})));
   check('valid token authenticates; missing Screen Recording is reported, not prompted',
     r.messages.some(m=>m.t==='error'&&m.code==='SCREEN_RECORDING_NOT_PERMITTED'),JSON.stringify(r.messages));
+  r=await session(ws=>ws.send(JSON.stringify({t:'hello',token,control:true})));
+  check('a valid token with no protocol version is refused with PROTOCOL_UNSUPPORTED',
+    r.messages.some(m=>m.t==='error'&&m.code==='PROTOCOL_UNSUPPORTED')&&!r.messages.some(m=>m.t==='ready'),JSON.stringify(r.messages));
+  r=await session(ws=>ws.send(JSON.stringify({t:'hello',v:2,token,control:true})));
+  check('an unknown protocol version is refused with PROTOCOL_UNSUPPORTED',r.messages.some(m=>m.t==='error'&&m.code==='PROTOCOL_UNSUPPORTED'),JSON.stringify(r.messages));
+  r=await session(ws=>ws.send(JSON.stringify({t:'hello',v:1,token:'A'.repeat(43)})));
+  check('a wrong token still learns nothing, even with a valid version',r.messages.length===0,JSON.stringify(r.messages));
   const holder=new WebSocket(`ws://127.0.0.1:${port}`);await new Promise(res=>holder.onopen=res);
-  r=await session(ws=>ws.send(JSON.stringify({t:'hello',token})),1500);
+  r=await session(ws=>ws.send(JSON.stringify({t:'hello',v:1,token})),1500);
   check('a second client is refused while one is connected',!r.opened&&r.messages.length===0,JSON.stringify(r));
   holder.close();await new Promise(res=>setTimeout(res,2300));
   const {chromium}=createRequire(import.meta.url)(process.env.RDG_PLAYWRIGHT_MODULE);
@@ -52,7 +59,7 @@ try{
   for(const [label,pport,expectOpen] of [['allowed local test origin',pagePort,true],['any other web page',otherPort,false]]){
     const server=await servePage(pport);const page=await browser.newPage();await page.goto(`http://127.0.0.1:${pport}/`);
     const out=await page.evaluate(([p,tok])=>new Promise(res=>{const ws=new WebSocket(`ws://127.0.0.1:${p}`);const m=[];let opened=false;
-      ws.onopen=()=>{opened=true;ws.send(JSON.stringify({t:'hello',token:tok}));};ws.onmessage=e=>m.push(typeof e.data==='string'?JSON.parse(e.data):{t:'binary'});
+      ws.onopen=()=>{opened=true;ws.send(JSON.stringify({t:'hello',v:1,token:tok}));};ws.onmessage=e=>m.push(typeof e.data==='string'?JSON.parse(e.data):{t:'binary'});
       ws.onclose=()=>res({opened,m});setTimeout(()=>res({opened,m}),2500);}),[port,token]);
     check(`browser from ${label} ${expectOpen?'connects':'is refused at the handshake'}`,out.opened===expectOpen,JSON.stringify(out));
     if(expectOpen)check('no ready, config or video without the app\'s own Screen Recording grant',
