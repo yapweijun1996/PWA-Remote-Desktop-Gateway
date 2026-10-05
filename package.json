@@ -17,6 +17,7 @@
     "verify": "node scripts/verify-pack.mjs --handoff",
     "verify:handoff": "node scripts/verify-pack.mjs --handoff",
     "test:browser": "./scripts/test-browser.sh",
+    "test:agent-browser": "RDG_BROWSER_FIXTURE_AGENT=true ./scripts/test-browser.sh",
     "test:backup": "python3 qa/test-metadata-backup.py",
     "verify:dependencies": "node scripts/verify-dependencies.mjs",
     "test:container": "./qa/test-container.sh",

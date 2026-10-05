@@ -23,6 +23,7 @@ export function useFastImageStreams(display,G,nativeBase64=typeof Uint8Array.fro
 
 /** Official Guacamole display, keyboard, pointer, tunnel and clipboard objects. */
 export class DesktopAdapter {
+  backend='vnc';
   constructor({surface,profile,keysyms,onState,onFailure,onInput,onClipboard,clipboard}) {
     this.surface=surface;this.clipboard=clipboard;this.onFailure=onFailure;
     this.tunnel=null;this.client=null;this.input=null;this.clipboardSettleMs=300;

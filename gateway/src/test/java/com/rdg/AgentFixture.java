@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * protocol, not the Mac: no capture, no encoder, no real input. Never a claim about the real agent.
  */
 final class AgentFixture implements AutoCloseable {
-    enum Mode {NORMAL, CLOSE_AFTER_HELLO, ERROR_AFTER_HELLO, OVERSIZED_STATUS, BAD_VIDEO, BLAST}
+    enum Mode {NORMAL, CLOSE_AFTER_HELLO, ERROR_AFTER_HELLO, OVERSIZED_STATUS, BAD_VIDEO, BLAST, VIDEO}
     final Tomcat tomcat=new Tomcat();
     final int port;
     final String token;
@@ -33,6 +33,8 @@ final class AgentFixture implements AutoCloseable {
     volatile String errorCode="SCREEN_RECORDING_NOT_PERMITTED";
     volatile String readyOverride;
     volatile int blastBytes=512*1024;
+    /** Mirror of everything the gateway forwarded after `hello`, one message per line, for a browser test to read back. */
+    volatile Path receivedLog;
 
     AgentFixture(Path dir,String token) throws Exception {
         this.token=token;
@@ -58,8 +60,9 @@ final class AgentFixture implements AutoCloseable {
         ByteBuffer b=ByteBuffer.allocate(14+payload);b.put((byte)1).put((byte)(key?1:0)).putDouble((double)System.currentTimeMillis()).putInt((int)sequence);
         return b.array();
     }
-    static String ready(boolean control,boolean clipboard) {
-        return "{\"t\":\"ready\",\"v\":1,\"width\":1280,\"height\":720,\"control\":"+control+",\"controlReason\":\""+(control?"GRANTED":"VIEW_ONLY")+"\",\"clipboard\":"+clipboard+",\"encoder\":\"hw\"}";
+    static String ready(boolean control,boolean clipboard) {return ready(control,clipboard,1280,720);}
+    static String ready(boolean control,boolean clipboard,int width,int height) {
+        return "{\"t\":\"ready\",\"v\":1,\"width\":"+width+",\"height\":"+height+",\"control\":"+control+",\"controlReason\":\""+(control?"GRANTED":"VIEW_ONLY")+"\",\"clipboard\":"+clipboard+",\"encoder\":\"hw\"}";
     }
     static final String CONFIG="{\"t\":\"config\",\"codec\":\"avc1.4D0028\",\"avcc\":\"AU1EKP/hABRnTQAo2oBQAW5AtQYGhoAAAAMAgA==\",\"width\":1280,\"height\":720}";
 
@@ -84,6 +87,13 @@ final class AgentFixture implements AutoCloseable {
                     if(mode==Mode.CLOSE_AFTER_HELLO){session.close();return;}
                     if(mode==Mode.ERROR_AFTER_HELLO){session.getBasicRemote().sendText("{\"t\":\"error\",\"code\":\""+errorCode+"\"}");session.close();return;}
                     boolean control=hello.path("control").asBoolean(),clipboard=hello.path("clipboard").asBoolean();
+                    if(mode==Mode.VIDEO) {
+                        var clip=Config.JSON.readTree(AgentFixture.class.getResourceAsStream("/agent-test-video.json"));
+                        session.getBasicRemote().sendText(ready(control,clipboard,640,360));
+                        session.getBasicRemote().sendText("{\"t\":\"config\",\"codec\":\""+clip.path("codec").asText()+"\",\"avcc\":\""+clip.path("avcc").asText()+"\",\"width\":640,\"height\":360}");
+                        new Thread(this::playVideo,"agent-fixture-video").start();
+                        return;
+                    }
                     session.getBasicRemote().sendText(readyOverride!=null?readyOverride:ready(control,clipboard));
                     session.getBasicRemote().sendText(CONFIG);
                     session.getBasicRemote().sendBinary(ByteBuffer.wrap(frame(true,0,64)));framesSent.incrementAndGet();
@@ -96,8 +106,29 @@ final class AgentFixture implements AutoCloseable {
                     return;
                 }
                 received.add(text);
+                if(receivedLog!=null)Files.writeString(receivedLog,text+"\n",java.nio.file.StandardOpenOption.CREATE,java.nio.file.StandardOpenOption.APPEND);
+                if(text.contains("\"t\":\"clip\""))session.getBasicRemote().sendText("{\"t\":\"clip-result\",\"ok\":true}");
+                if(text.contains("\"t\":\"kf\"")&&mode==Mode.VIDEO){restart=true;return;}
                 if(text.contains("\"t\":\"kf\""))session.getBasicRemote().sendBinary(ByteBuffer.wrap(frame(true,framesSent.incrementAndGet(),64)));
             }catch(Exception e){try{session.close();}catch(Exception ignored){}}
+        }
+        volatile boolean restart;
+        /** Plays the synthetic clip (qa/make-agent-test-video.mjs) in a loop: config, a keyframe, then deltas, with a status each second. */
+        private void playVideo() {
+            try {
+                var clip=Config.JSON.readTree(AgentFixture.class.getResourceAsStream("/agent-test-video.json"));
+                var frames=clip.path("frames");long sequence=0;int fps=clip.path("fps").asInt(15);long statusAt=System.nanoTime();
+                while(session.isOpen()) {
+                    for(int i=0;i<frames.size()&&session.isOpen();i++) {
+                        if(restart){restart=false;break;}
+                        var frame=frames.get(i);byte[] data=java.util.Base64.getDecoder().decode(frame.path("data").asText());
+                        ByteBuffer b=ByteBuffer.allocate(14+data.length);b.put((byte)1).put((byte)(frame.path("key").asBoolean()?1:0)).putDouble((double)System.currentTimeMillis()).putInt((int)sequence++).put(data);
+                        synchronized(Peer.this){session.getBasicRemote().sendBinary(ByteBuffer.wrap(b.array()));framesSent.incrementAndGet();
+                            if(System.nanoTime()-statusAt>1_000_000_000L){statusAt=System.nanoTime();session.getBasicRemote().sendText("{\"t\":\"status\",\"secureInput\":false,\"sent\":"+framesSent.get()+",\"dropped\":0,\"bytes\":1}");}}
+                        Thread.sleep(1000/fps);
+                    }
+                }
+            }catch(Exception ignored){}
         }
         /** Blocking sends: when the gateway stops requesting, TCP fills and these calls stall, which is the observable back-pressure. */
         private void blast() {

@@ -6,6 +6,9 @@ root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$root"
 manual_mode=${RDG_BROWSER_FIXTURE_MANUAL:-false}
 case "$manual_mode" in true|false) ;; *) printf '%s\n' 'BROWSER_FIXTURE_MANUAL_FLAG_REFUSED' >&2; exit 2 ;; esac
+# The host agent check starts the same disposable gateway with a disposable agent peer and runs its own checks.
+agent_mode=${RDG_BROWSER_FIXTURE_AGENT:-false}
+case "$agent_mode" in true) fixture_agent=agent; checks=qa/agent-browser-checks.mjs ;; false) fixture_agent=; checks=qa/browser-checks.mjs ;; *) printf '%s\n' 'BROWSER_FIXTURE_AGENT_FLAG_REFUSED' >&2; exit 2 ;; esac
 node scripts/build-web.mjs
 ./scripts/maven.sh -B -q -f gateway/pom.xml test-compile dependency:build-classpath -Dmdep.outputFile=target/test-classpath.txt -Dmdep.includeScope=test
 mkdir -p .tools
@@ -26,7 +29,7 @@ if [ "$manual_mode" = true ]; then
   deadline_pid=$!
 fi
 openssl req -x509 -newkey rsa:2048 -nodes -keyout "$fixture_dir/key.pem" -out "$fixture_dir/cert.pem" -days 1 -subj /CN=127.0.0.1 -addext 'subjectAltName=IP:127.0.0.1' > "$fixture_dir/cert-build.log" 2>&1
-java -cp "gateway/target/test-classes:gateway/target/classes:$(cat gateway/target/test-classpath.txt)" com.rdg.BrowserFixtureMain "$fixture_dir" "https://127.0.0.1:$fixture_port" > "$fixture_dir/gateway.log" 2>&1 &
+java -cp "gateway/target/test-classes:gateway/target/classes:$(cat gateway/target/test-classpath.txt)" com.rdg.BrowserFixtureMain "$fixture_dir" "https://127.0.0.1:$fixture_port" $fixture_agent > "$fixture_dir/gateway.log" 2>&1 &
 java_pid=$!
 i=0
 while [ ! -f "$fixture_dir/proxy.json" ]; do
@@ -69,5 +72,6 @@ JS
   printf 'MANUAL_UI_FIXTURE_READY: %s — disposable protocol test data, up to15 minutes, no real Mac connection.\n' "$RDG_FIXTURE_URL"
   wait "$java_pid"
 else
-  node qa/browser-checks.mjs
+  export RDG_FIXTURE_DIR="$fixture_dir"
+  node "$checks"
 fi
