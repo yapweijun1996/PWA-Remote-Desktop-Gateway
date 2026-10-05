@@ -33,8 +33,8 @@ export const WHEEL_BURST=40,WHEEL_CLICKS_PER_SECOND=250,WHEEL_BACKLOG_CLICKS=200
 
 /** One normalized engine stream attached only to the focused remote surface. */
 export class RemoteInput {
-  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
-    this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
+  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,onWheel=null,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
+    this.onWheel=onWheel;this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
     this.serverKeysyms=Object.freeze({...keysyms});this.keysyms={...keysyms};
     this.clock=clock;this.schedule=schedule;this.cancel=cancel;this.pointerSurface=pointerSurface;this.scrollWindowStart=-Infinity;this.scrollClicks=0;this.droppedWheelPress=false;
     this.pixelsPerClick=SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED];this.wheelPixels=0;this.wheelTokens=WHEEL_BURST;this.wheelStamp=-Infinity;this.wheelTimer=null;this.wheelPoint={x:0,y:0};
@@ -103,6 +103,11 @@ export class RemoteInput {
     this.wheelPixels=Math.max(-limit,Math.min(limit,this.wheelPixels+(Number.isFinite(event.deltaY)?event.deltaY:0)*unit));
     const box=this.pointerSurface.getBoundingClientRect?.();
     this.wheelPoint=box?{x:event.clientX-box.left,y:event.clientY-box.top}:{x:this.pointer.x,y:this.pointer.y};
+    if(this.onWheel){
+      // Pixel scrolling (host agent): hand the travel over as pixels; the receiver paces it. The speed setting scales it around 1:1 at the default.
+      const pixels=(Number.isFinite(event.deltaY)?event.deltaY:0)*unit*SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED]/this.pixelsPerClick;
+      this.wheelPixels=0;this.run(()=>this.onWheel(this.wheelPoint.x,this.wheelPoint.y,pixels));return;
+    }
     this.flushWheel();
   }
   flushWheel() {
@@ -136,6 +141,7 @@ export class RemoteInput {
       const s=this.pointer;this.client.sendMouseState(new this.Guacamole.Mouse.State(s.x,s.y,false,false,false,false,false),true);
     });
     this.pointer=new this.Guacamole.Mouse.State(0,0,false,false,false,false,false);
+    this.client.releaseAll?.();   // host agent: also drop anything the sender still holds back
   }
   pause(message=this.mode==='view'?t('input.viewOnly'):t('input.paused')){this.release();this.enabled=false;this.onPause(message);}
   setProfile(profile){this.pause();this.run(()=>this.keys.setProfile(profile));}

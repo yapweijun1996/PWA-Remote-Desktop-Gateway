@@ -37,10 +37,11 @@ final class ApiServlet extends HttpServlet {
                 send(res,200,sessions.desktopCredential(app,b.path("password").textValue()));
             }
             else if(method.equals("POST")&&path.equals("/api/connect-intents")) {
-                JsonNode b=body(r);Config.fields(b,Set.of("deviceId","mode","keyboardProfile","displayQuality"));
+                JsonNode b=body(r);Config.fields(b,Set.of("deviceId","mode","keyboardProfile","displayQuality","backend"));
                 String quality=b.has("displayQuality")?text(b,"displayQuality"):DisplayQuality.BALANCED.id;
-                var i=sessions.intent(app,text(b,"deviceId"),text(b,"mode"),text(b,"keyboardProfile"),quality);
-                send(res,201,Map.of("intentId",i.id,"expiresAt",i.publicExpiry.toString(),"displayQuality",i.displayQuality.id));
+                String backend=b.has("backend")?text(b,"backend"):"vnc";
+                var i=sessions.intent(app,text(b,"deviceId"),text(b,"mode"),text(b,"keyboardProfile"),quality,backend);
+                send(res,201,Map.of("intentId",i.id,"expiresAt",i.publicExpiry.toString(),"displayQuality",i.displayQuality.id,"backend",i.backend));
             }else if(method.equals("POST")&&path.equals("/api/clipboard-consent")) {
                 JsonNode b=body(r);Config.fields(b,Set.of("enabled"));if(!b.path("enabled").isBoolean())throw new Failure(400,"INVALID_REQUEST");
                 sessions.clipboard(app,b.path("enabled").booleanValue());send(res,200,Map.of("enabled",app.clipboard));
@@ -51,7 +52,7 @@ final class ApiServlet extends HttpServlet {
                 var status=config.desktopStatus();boolean enabled=(Boolean)status.get("desktopEnabled");
                 var local=new LinkedHashMap<String,Object>(Map.of("id",config.deviceId(),"label",config.label(),"kind","local",
                     "status",enabled?"GATEWAY_REACHABLE":"BLOCKED","checkedAt",sessions.clock.instant().toString(),"launchUrl",config.origin()+"/"));
-                local.putAll(status);
+                local.putAll(status);local.put("backends",config.backends());
                 if(!enabled)local.put("blockedReason",config.desktopBlockedReason());
                 list.add(local);
                 for(JsonNode b:config.bookmarks())list.add(Map.of("id",b.path("id").asText(),"label",b.path("label").asText(),"kind","bookmark","status","UNVERIFIED","launchUrl",b.path("url").asText()));
@@ -59,7 +60,7 @@ final class ApiServlet extends HttpServlet {
             }else if(method.equals("GET")&&path.equals("/api/diagnostics")) {
                 var diagnostics=new LinkedHashMap<String,Object>(Map.of("build","1.0.0","guacamole","1.6.0","nodeId",config.nodeId(),"keysyms",config.keysyms(),"clipboardLimit",16384,"remoteResize",false,"directLocalIME",false));
                 diagnostics.putAll(config.desktopStatus());diagnostics.put("trustedDevicesEnabled",trusted!=null);
-                diagnostics.put("displayQualities",DisplayQuality.ids());diagnostics.put("displayQualityRequiresReconnect",true);send(res,200,diagnostics);
+                diagnostics.put("backends",config.backends());diagnostics.put("displayQualities",DisplayQuality.ids());diagnostics.put("displayQualityRequiresReconnect",true);send(res,200,diagnostics);
             }
             else if(method.equals("GET")&&path.equals("/api/history"))send(res,200,sessions.audit.history(app.ref));
             else throw new Failure(404,"NOT_FOUND");

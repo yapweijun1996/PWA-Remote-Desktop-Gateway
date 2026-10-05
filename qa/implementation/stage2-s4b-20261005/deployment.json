@@ -1,0 +1,57 @@
+{
+  "status": "DEPLOYED_AGENT_OFF_LOCAL_RUNTIME_VERIFIED",
+  "recordedAt": "2026-10-05T05:30:28.298Z",
+  "sourceCommit": "42d573cc0521ebacea3e887de1bcddc8de12cd70",
+  "branch": "codex/host-agent-stage2-20261004",
+  "webVersion": "1.3.0",
+  "webBuild": "045b4c19eb27f440",
+  "url": "https://remote.gmb01.xyz",
+  "image": "sha256:0ace2d4884d28fabb9da82ccb9bad3c28ffd1c0a63af0f95c3cd5abb1b9d43c4",
+  "previousImage": "sha256:2f011cf8747b87a93d1e47997169d402cf4b21168770446af98cfff69d8ef913",
+  "containerId": "8860ff81fe22c09e1077e70005785a0710da1d49cf0aa3f9552a47b0ad9e239d",
+  "health": "healthy",
+  "architecture": "linux/arm64",
+  "activeUpstreamConnectionsBeforeReplacement": 0,
+  "agentEnabled": false,
+  "agentSettingsAdded": [
+    "RDG_AGENT_ENABLED",
+    "RDG_AGENT_HOST",
+    "RDG_AGENT_PORT",
+    "RDG_AGENT_TOKEN_FILE"
+  ],
+  "tokenMountedReadOnly": true,
+  "tokenInsideGateway": {
+    "mode": "600",
+    "owner": "10001:10001",
+    "bytes": 43
+  },
+  "tokenValueRecorded": false,
+  "gatewayStartedReady": true,
+  "gatewayRefusedStartup": false,
+  "onlyPrivateEnvironmentChange": [
+    "GATEWAY_IMAGE",
+    "RDG_AGENT_ENABLED",
+    "RDG_AGENT_TOKEN_SOURCE"
+  ],
+  "stateAndKeyMountsPreserved": true,
+  "unrelatedContainersPreserved": true,
+  "preservedContainerCount": 9,
+  "rollbackEnvironmentSaved": true,
+  "rollbackEnvironmentPath": "/Users/yapweijun/.cloudflared/rdg-current-mac-pilot/owner-setup.env.before-agent-1.3.0-20261005-attempt2",
+  "gatewayLoopbackOnly": true,
+  "publicEdgeAfterDeploy": {
+    "status": 302,
+    "locationHost": "kb-api.cloudflareaccess.com"
+  },
+  "artifactHashes": {
+    "/app/rdg-gateway.jar": "37255cc98add54a0355cceb75341aa6ea3305e5827884c3948b256a48c89dbac",
+    "/app/web/sw.js": "7d51db792d61f5e9d32cc413fd0c3076a705908adc59d7560904d03cf4629ad9",
+    "/app/web/index.html": "c86446981ebe93aaced5d117df9bf3acb82a01f8ecd1090ac3907866497976f8",
+    "/app/web/build.json": "4b42f0e8295fec805496364ac242d80f877dc760d3bf0e5d80be404787b4b76a"
+  },
+  "accessPolicyChanged": false,
+  "tunnelConfigChanged": false,
+  "realDesktopVerified": false,
+  "agentExercised": false,
+  "newVulnerabilityScanPerformed": false
+}

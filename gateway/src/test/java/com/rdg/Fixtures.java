@@ -29,6 +29,18 @@ final class Fixtures {
             "fixture-mac","Disposable protocol fixture","127.0.0.1",5900,secret,"127.0.0.1",guacdPort,"127.0.0.1",0,dir.resolve("state"),web,
             Config.JSON.createArrayNode(),Map.of("CommandLeft",0xffe7,"CommandRight",0xffe8,"OptionLeft",0xffe9,"OptionRight",0xffea,"ControlLeft",0xffe3,"ControlRight",0xffe4));
     }
+    /** A token file the way the owner provisions it: 32 random bytes, base64url, owner-only. */
+    static Path agentTokenFile(Path dir) throws Exception {
+        Files.createDirectories(dir);Path file=dir.resolve("agent-token");
+        Files.writeString(file,Sessions.random()+"\n");Files.setPosixFilePermissions(file,PosixFilePermissions.fromString("rw-------"));return file;
+    }
+    /** Same as {@link #config} with the host agent backend enabled against a disposable local peer (the port is not the production port). */
+    static Config agentConfig(Path dir,int guacdPort,String origin,int agentPort,Path tokenFile) throws Exception {
+        var base=config(dir,guacdPort,origin);
+        return new Config(base.nodeId(),base.origin(),base.issuer(),base.audience(),base.ownerEmail(),base.ownerSubject(),base.deviceId(),base.label(),
+            base.targetHost(),base.targetPort(),base.secret(),base.guacdHost(),base.guacdPort(),base.listenAddress(),base.listenPort(),base.stateDir(),
+            base.webDir(),base.bookmarks(),base.keysyms(),base.desktopPolicy(),base.credentialStore(),new Config.AgentSettings(true,"127.0.0.1",agentPort,tokenFile));
+    }
     static Config blockedConfig(Path dir,String origin) {
         Path web=Files.isDirectory(Path.of("web/dist"))?Path.of("web/dist"):Path.of("../web/dist");
         return new Config("fixture-node",origin,"https://fixture-team.cloudflareaccess.com","a".repeat(64),"owner@fixture.test","",

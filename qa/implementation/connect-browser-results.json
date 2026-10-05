@@ -1,8 +1,8 @@
 {
   "status": "PASS",
   "scope": "LOCAL_BROWSER_CONNECTION_LIFECYCLE_FIXTURE",
-  "browser": "154.0.8037.97",
-  "build": "d3d201de7cabda02",
+  "browser": "151.0.7922.34",
+  "build": "045b4c19eb27f440",
   "fixture": true,
   "simulatedAPI": true,
   "simulatedGuacamole": true,
@@ -86,154 +86,139 @@
       "unscopedDeletes": 0
     },
     {
-      "test": "Requested 862x844 workspace uses one compact header and visible 44px safety controls",
+      "test": "FPS uses enabled official statistics; recent HTTP samples assess stability and opt-in polling stops with the panel",
       "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
-      "simulatedAPI": true,
-      "simulatedGuacamole": true,
-      "realMac": false,
-      "viewport": {
-        "width": 862,
-        "height": 844
-      },
-      "headerHeight": 65,
-      "surfaceHeight": 728
+      "simulatedStats": true,
+      "clientFps": 10,
+      "desktopFpsUnavailable": true,
+      "livePollMilliseconds": 5000,
+      "noInputLatencyClaim": true
     },
     {
-      "test": "Connected layout fits mobile portrait, landscape, tablet and desktop without document overflow",
+      "test": "Expired HTTP samples clear the latest RTT without disconnecting the stream; a new sample replaces expired history",
       "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
+      "freshnessMilliseconds": 15000,
+      "realTimer": true
+    },
+    {
+      "test": "One failed authorization GET recovers without ending the desktop; overlapping visibility checks share one flight",
+      "status": "PASS",
+      "attempts": 2,
+      "noMutationReplay": true
+    },
+    {
+      "test": "Low/balanced/clear requests require explicit scoped reconnect; live payload/HTTP metrics localize and clear without stale probe writes",
+      "status": "PASS",
+      "profiles": [
+        "low",
+        "clear",
+        "balanced"
+      ],
+      "noSelectionSideEffect": true,
+      "scopedReconnects": 2,
+      "metricsStayInMemory": true,
+      "syntheticMetrics": true,
+      "realInputLatency": false
+    },
+    {
+      "test": "Queued close events preserve reopened controls and explicit probe authorization failure immediately clears only the owned desktop",
+      "status": "PASS",
+      "syntheticRapidReopen": true,
+      "authDenial": 401,
+      "scopedCleanup": true
+    },
+    {
+      "test": "Light, dark and live system theme changes keep opaque chrome and controls coherent",
+      "status": "PASS",
+      "scope": "LOCAL_PWA_UI_FIXTURE",
+      "realMac": false,
+      "realIOS": false
+    },
+    {
+      "test": "Simplified Chinese launcher and preferences fit phone, tablet and desktop; language changes preserve session ownership",
+      "status": "PASS",
+      "scope": "LOCAL_PWA_UI_FIXTURE",
+      "realMac": false,
+      "realIOS": false
+    },
+    {
+      "test": "Theme and locale controls release input without terminating or recapturing the active fixture desktop",
+      "status": "PASS",
+      "scope": "LOCAL_PWA_UI_FIXTURE",
+      "realMac": false,
+      "realIOS": false
+    },
+    {
+      "test": "Full viewport desktop and modal controls fit nine mobile/desktop sizes in both themes without reflow; only panel content scrolls",
+      "status": "PASS",
+      "scope": "LOCAL_SIDEBAR_UI_FIXTURE",
       "simulatedAPI": true,
       "simulatedGuacamole": true,
       "realMac": false,
       "viewports": [
         {
           "width": 320,
-          "height": 850,
-          "headerHeight": 110.5,
-          "surfaceHeight": 646.5
+          "height": 850
         },
         {
           "width": 390,
-          "height": 850,
-          "headerHeight": 110.5,
-          "surfaceHeight": 646.5
+          "height": 850
         },
         {
           "width": 430,
-          "height": 850,
-          "headerHeight": 110.5,
-          "surfaceHeight": 664.5
-        },
-        {
-          "width": 760,
-          "height": 850,
-          "headerHeight": 113.09375,
-          "surfaceHeight": 685.90625
-        },
-        {
-          "width": 761,
-          "height": 850,
-          "headerHeight": 113.09375,
-          "surfaceHeight": 685.90625
+          "height": 850
         },
         {
           "width": 768,
-          "height": 850,
-          "headerHeight": 113.09375,
-          "surfaceHeight": 685.90625
+          "height": 850
         },
         {
-          "width": 780,
-          "height": 850,
-          "headerHeight": 113.09375,
-          "surfaceHeight": 685.90625
-        },
-        {
-          "width": 800,
-          "height": 850,
-          "headerHeight": 113.09375,
-          "surfaceHeight": 685.90625
-        },
-        {
-          "width": 820,
-          "height": 850,
-          "headerHeight": 113.09375,
-          "surfaceHeight": 685.90625
-        },
-        {
-          "width": 840,
-          "height": 850,
-          "headerHeight": 113.09375,
-          "surfaceHeight": 685.90625
-        },
-        {
-          "width": 841,
-          "height": 850,
-          "headerHeight": 65,
-          "surfaceHeight": 734
+          "width": 862,
+          "height": 844
         },
         {
           "width": 1024,
-          "height": 850,
-          "headerHeight": 65,
-          "surfaceHeight": 734
+          "height": 850
         },
         {
           "width": 1440,
-          "height": 1000,
-          "headerHeight": 65,
-          "surfaceHeight": 884
+          "height": 1000
         },
         {
           "width": 850,
-          "height": 390,
-          "headerHeight": 57,
-          "surfaceHeight": 282
+          "height": 390
+        },
+        {
+          "width": 320,
+          "height": 390
         }
       ],
-      "realSafeAreaVerified": false
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "realSafeAreas": false
     },
     {
-      "test": "Synthetic long device and input labels preserve action visibility and viewport bounds",
+      "test": "Enter/Space open the modal, Tab stays inside, Escape/backdrop restore local focus and input stays paused",
       "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
-      "simulatedAPI": true,
-      "simulatedGuacamole": true,
-      "realMac": false,
-      "syntheticDOMText": true
-    },
-    {
-      "test": "Workspace disclosure supports Enter, Space and Escape with focus restoration and paused input",
-      "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
-      "simulatedAPI": true,
-      "simulatedGuacamole": true,
-      "realMac": false,
-      "inputPayloadVerified": false
-    },
-    {
-      "test": "Scale selection and workspace diagnostics/profile dialogs preserve paused input and return focus",
-      "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
-      "simulatedAPI": true,
-      "simulatedGuacamole": true,
-      "realMac": false,
-      "actualScaleRenderingVerified": false,
-      "remoteKeyboardMappingVerified": false
-    },
-    {
-      "test": "Outside click dismisses workspace options without resuming remote input",
-      "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
+      "scope": "LOCAL_SIDEBAR_UI_FIXTURE",
       "simulatedAPI": true,
       "simulatedGuacamole": true,
       "realMac": false
     },
     {
-      "test": "Native Chromium fullscreen contains the compact safety header",
+      "test": "Scale, keyboard, diagnostics and language dialogs retain the parent controls panel and release input",
       "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
+      "scope": "LOCAL_SIDEBAR_UI_FIXTURE",
+      "simulatedAPI": true,
+      "simulatedGuacamole": true,
+      "realMac": false
+    },
+    {
+      "test": "Native Chromium fullscreen retains the overlay entry and reachable End action",
+      "status": "PASS",
+      "scope": "LOCAL_SIDEBAR_UI_FIXTURE",
       "simulatedAPI": true,
       "simulatedGuacamole": true,
       "realMac": false,
@@ -241,32 +226,119 @@
       "realSafari": false
     },
     {
-      "test": "Disconnect resets options and returns signout to the launcher; view-only reconnect disables keys and clipboard",
+      "test": "End returns shared controls to launcher; view-only reconnect keeps input and clipboard disabled",
       "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
+      "scope": "LOCAL_SIDEBAR_UI_FIXTURE",
       "simulatedAPI": true,
       "simulatedGuacamole": true,
-      "realMac": false,
-      "clipboardConsentSelected": true,
-      "remoteInputPayloadVerified": false
+      "realMac": false
     },
     {
-      "test": "Workspace signout clears the simulated session display and resets launcher layout",
+      "test": "Sign-out closes controls and clears the simulated display",
       "status": "PASS",
-      "scope": "LOCAL_UI_ROUTE_FIXTURE",
+      "scope": "LOCAL_SIDEBAR_UI_FIXTURE",
       "simulatedAPI": true,
       "simulatedGuacamole": true,
+      "realMac": false
+    },
+    {
+      "test": "Light, dark and live system theme changes keep opaque chrome and controls coherent",
+      "status": "PASS",
+      "scope": "LOCAL_PWA_UI_FIXTURE",
       "realMac": false,
-      "realRevocationVerified": false
+      "realIOS": false
+    },
+    {
+      "test": "Simplified Chinese launcher and preferences fit phone, tablet and desktop; language changes preserve session ownership",
+      "status": "PASS",
+      "scope": "LOCAL_PWA_UI_FIXTURE",
+      "realMac": false,
+      "realIOS": false
+    },
+    {
+      "test": "Preferences persist only nonsecret theme/locale values and restore after reload",
+      "status": "PASS",
+      "scope": "LOCAL_PWA_UI_FIXTURE",
+      "realMac": false,
+      "realIOS": false
+    },
+    {
+      "test": "Local clipboard read resolving after End cannot repopulate text or status",
+      "status": "PASS",
+      "scope": "LOCAL_PRIVACY_LIFECYCLE_FIXTURE",
+      "simulatedAPI": true,
+      "simulatedGuacamole": true,
+      "syntheticClipboard": true,
+      "realMac": false,
+      "realClipboard": false,
+      "localPermissionAndPayloadSimulated": true
+    },
+    {
+      "test": "A clipboard stream ending after its adapter disconnects cannot repopulate received text",
+      "status": "PASS",
+      "scope": "LOCAL_PRIVACY_LIFECYCLE_FIXTURE",
+      "simulatedAPI": true,
+      "simulatedGuacamole": true,
+      "syntheticClipboard": true,
+      "realMac": false,
+      "realClipboard": false,
+      "streamCompletionSimulated": true
+    },
+    {
+      "test": "Send result and local-copy completion after End cannot replace cleared clipboard status",
+      "status": "PASS",
+      "scope": "LOCAL_PRIVACY_LIFECYCLE_FIXTURE",
+      "simulatedAPI": true,
+      "simulatedGuacamole": true,
+      "syntheticClipboard": true,
+      "realMac": false,
+      "realClipboard": false,
+      "sendResultAfterSettleTime": true,
+      "localCopyPermissionSimulated": true
+    },
+    {
+      "test": "Diagnostics and history resolving after dialog close are discarded",
+      "status": "PASS",
+      "scope": "LOCAL_PRIVACY_LIFECYCLE_FIXTURE",
+      "simulatedAPI": true,
+      "simulatedGuacamole": true,
+      "syntheticClipboard": true,
+      "realMac": false,
+      "realClipboard": false,
+      "responseLifecycle": "DIALOG_CLOSED"
+    },
+    {
+      "test": "Diagnostics and history resolving after End are discarded",
+      "status": "PASS",
+      "scope": "LOCAL_PRIVACY_LIFECYCLE_FIXTURE",
+      "simulatedAPI": true,
+      "simulatedGuacamole": true,
+      "syntheticClipboard": true,
+      "realMac": false,
+      "realClipboard": false,
+      "responseLifecycle": "DISCONNECTED"
+    },
+    {
+      "test": "Unknown API failure codes become localized Error without rendering an arbitrary server reason",
+      "status": "PASS",
+      "scope": "LOCAL_PRIVACY_LIFECYCLE_FIXTURE",
+      "simulatedAPI": true,
+      "simulatedGuacamole": true,
+      "syntheticClipboard": true,
+      "realMac": false,
+      "realClipboard": false,
+      "locale": "zh-CN",
+      "displayedState": "ERROR",
+      "responseStatus": 409
     }
   ],
   "totals": {
-    "clipboardRequests": 18,
-    "intentRequests": 15,
-    "scopedDeletes": 14,
+    "clipboardRequests": 25,
+    "intentRequests": 21,
+    "scopedDeletes": 20,
     "unscopedDeletes": 0,
-    "expected409ConsoleErrors": 6,
-    "expectedStale401ConsoleErrors": 1,
+    "expected409ConsoleErrors": 7,
+    "expectedStale401ConsoleErrors": 2,
     "pageErrors": 0,
     "unexpectedConsoleErrors": 0,
     "webSockets": 0,

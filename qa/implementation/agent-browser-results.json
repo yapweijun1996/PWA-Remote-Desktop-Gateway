@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "browser": "151.0.7922.34",
+  "build": "045b4c19eb27f440",
+  "fixture": true,
+  "realMac": false,
+  "realAgent": false,
+  "results": [
+    {
+      "test": "Engine selector, defaults, backend-specific picture mode text and capability advertisement",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE"
+    },
+    {
+      "test": "Real H.264 over the gateway relay is decoded and drawn; first frame sets CONNECTED; bitrate follows the picture mode",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE",
+      "colors": 332,
+      "size": "640x360"
+    },
+    {
+      "test": "Keys, modifiers and clicks arrive in the protocol shape through the relay",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE"
+    },
+    {
+      "test": "A wheel/mouse flood stays under the gateway limits and the session survives",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE",
+      "wheelPerSecond": 51.7,
+      "movePerSecond": 56.6
+    },
+    {
+      "test": "Clipboard text is sent once and confirmed by the agent’s result",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE"
+    },
+    {
+      "test": "Ending the session releases everything on the agent",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE"
+    },
+    {
+      "test": "A missing Accessibility grant is shown and the UI never claims control",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE"
+    },
+    {
+      "test": "A fixed agent error code becomes fixed explanatory text that points to the Screen Sharing fallback",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE"
+    },
+    {
+      "test": "Choosing Screen Sharing leaves the VNC request unchanged and still connects",
+      "status": "PASS",
+      "level": "LOCAL_AGENT_FIXTURE"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": 0
+}

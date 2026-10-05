@@ -218,6 +218,7 @@ body.viewing .update-banner button { width: 100%; }
 /* View-only never sends touch input, so let the browser pan an Actual-size display. */
 .capture[data-mode="view"] { touch-action: pan-x pan-y; }
 .capture > div { margin: auto; }
+.agent-display canvas { display: block; }
 
 @media (max-width: 840px) {
   .launcher-grid { grid-template-columns: minmax(0, 270px) minmax(0, 1fr); }

@@ -49,6 +49,13 @@ public final class Main {
                             @Override public boolean checkOrigin(String origin){return c.origin().equals(origin);}
                             @Override public <T> T getEndpointInstance(Class<T> clazz){return clazz.cast(new DesktopEndpoint(sessions,connector));}
                         }).build());
+                    if(c.agentEnabled()) {
+                        container.addEndpoint(ServerEndpointConfig.Builder.create(AgentEndpoint.class,"/ws/agent/{intentId}")
+                            .subprotocols(List.of(AgentPolicy.PROTOCOL)).configurator(new ServerEndpointConfig.Configurator() {
+                                @Override public boolean checkOrigin(String origin){return c.origin().equals(origin);}
+                                @Override public <T> T getEndpointInstance(Class<T> clazz){return clazz.cast(new AgentEndpoint(sessions,c));}
+                            }).build());
+                    }
                 }catch(DeploymentException e){throw new ServletException("WebSocket initialization failed");}
             },null);
             tomcat.start();

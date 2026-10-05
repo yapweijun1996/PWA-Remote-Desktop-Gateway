@@ -1,7 +1,7 @@
 {
   "status": "PASS",
-  "version": "154.0.8037.93",
-  "build": "fed92dc04e51b378",
+  "version": "151.0.7922.34",
+  "build": "045b4c19eb27f440",
   "fixture": true,
   "realMac": false,
   "results": [
@@ -98,6 +98,6 @@
   ],
   "errors": [],
   "unexpectedConsoleErrors": 0,
-  "expectedOfflineErrors": 1,
+  "expectedOfflineErrors": 0,
   "expectedUiErrors": 8
 }

@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-10-05T14:00:00+08:00",
+  "what": "Protocol-only probe of the real agent on loopback, owner watching; no key, pointer, clipboard or text message was sent and no frame was kept.",
+  "agent": "RDGAgent.app com.rdg.local.agent, ad-hoc signed, build of 2026-10-05 11:35, launched with open, 127.0.0.1:5960",
+  "ready": {"width": 1470, "height": 956, "control": true, "controlReason": "GRANTED", "clipboard": false, "encoder": "ll"},
+  "config": {"codec": "avc1.4D0028", "width": 1470, "height": 956},
+  "frames": 89, "keyframes": 1, "bytes": 233587, "maxFrameBytes": 83531, "avgFrameBytes": 2625, "statusMessages": 3,
+  "secureInputReportedByAgent": true,
+  "note": "Secure input was held by another application's focused text field at the time; macOS may block synthetic typing while it is on. Loopback numbers only, not a network measurement."
+}

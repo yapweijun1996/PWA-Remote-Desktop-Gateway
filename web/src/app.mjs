@@ -1,5 +1,6 @@
 import {GatewayAPI} from './api.mjs';
 import {DesktopAdapter} from './adapter.mjs';
+import {AgentAdapter} from './agent-adapter.mjs';
 import {setupUpdates} from './pwa.mjs';
 import {release} from './release.mjs';
 import {t,applyTranslations,onLocaleChange,formatDate,TRANSLATIONS} from './i18n.mjs';
@@ -16,6 +17,33 @@ let diagnosticsRequest=0,clipboardActivity=0;
 let activeDisplayQuality=null,metricsTimer=null,latencyRequest=0;
 const networkHealth=new NetworkHealth();let nextNetworkProbe=0;
 const displayQualities=['low','balanced','clear'];
+const backendNames=['agent','vnc'];
+/** The host agent needs a server opt-in (diagnostics list it) and a browser that can decode H.264 with WebCodecs. */
+function agentAvailable(){return Array.isArray(diag?.backends)&&diag.backends.includes('agent')&&typeof VideoDecoder==='function'&&typeof EncodedVideoChunk==='function';}
+function selectedBackend(){return agentAvailable()&&$('backend').value==='agent'?'agent':'vnc';}
+function loadBackend(){
+  let value='agent';try{const stored=localStorage.getItem(`rdg:backend:${nodeId}`);if(backendNames.includes(stored))value=stored;}catch{}
+  $('backend').value=value;
+}
+function rememberBackend(){try{localStorage.setItem(`rdg:backend:${nodeId}`,$('backend').value);}catch{}}
+/** Picture mode, help and key-trial texts describe the engine in use; the choice shown before connecting, the live one while connected. */
+function renderBackend(){
+  const available=agentAvailable(),agent=(adapter?.backend??selectedBackend())==='agent';
+  $('backendField').hidden=!available;$('backendHelp').hidden=!available||selectedBackend()!=='agent';
+  for(const id of ['displayQuality','liveDisplayQuality'])for(const option of $(id).options)option.setAttribute('data-i18n','network.'+option.value+(agent?'Agent':''));
+  $('launchHelp').setAttribute('data-i18n',agent?'network.launchHelpAgent':'network.launchHelp');
+  $('reconnectHelp').setAttribute('data-i18n',agent?'network.reconnectHelpAgent':'network.reconnectHelp');
+  $('measureHelp').setAttribute('data-i18n',agent?'network.measureHelpAgent':'network.measureHelp');
+  $('clipboardHelp').setAttribute('data-i18n',agent?'clipboard.helpAgent':'clipboard.help');
+  // The Command key code trial is a VNC experiment; the agent takes explicit modifier flags.
+  $('commandKeyField').hidden=agent;$('commandKeyHelp').hidden=agent;
+  applyTranslations();
+}
+function applyCapabilities({control,clipboard}){
+  $('clipboardBtn').disabled=!clipboard;$('clipboardBtn').dataset.i18nTitle=clipboard?'clipboard.transferTitle':'clipboard.enableTitle';$('clipboardBtn').title=t($('clipboardBtn').dataset.i18nTitle);
+  $('keysBtn').disabled=!control;$('keysBtn').dataset.i18nTitle=control?'workspace.remoteKeys':'workspace.viewInputUnavailable';$('keysBtn').title=t($('keysBtn').dataset.i18nTitle);
+  setMessage('clipboardStatus',clipboard?'clipboard.enabled':'clipboard.disabled');
+}
 function cancelNetworkProbe(){
   ++latencyRequest;if($('measureNetwork').disabled)setMessage('networkLatency','network.unavailable');$('measureNetwork').disabled=false;
 }
@@ -96,7 +124,7 @@ function clearPrivate(){
   adapter?.disconnect();adapter=null;device=null;$('localText').value='';$('remoteText').value='';setMessage('clipboardStatus','app.clipboardStatus.clipboard_cleared');
   $('surface').replaceChildren();$('deviceList').replaceChildren();messages.delete($('diagnostics'));$('diagnostics').textContent='';$('history').replaceChildren();
   for(const d of document.querySelectorAll('dialog[open]'))d.close();
-  $('workspace').hidden=true;$('launcher').hidden=false;$('prepare').hidden=true;pruneMessages();
+  $('workspace').hidden=true;$('launcher').hidden=false;$('prepare').hidden=true;pruneMessages();renderBackend();
 }
 function trustedLoginRequired(error){
   if(error?.message!=='TRUSTED_DEVICE_REQUIRED')return false;
@@ -173,7 +201,7 @@ async function initialize(){
   try {
     const session=await api.bootstrap();if(request!==epoch)return;nodeId=session.nodeId;
     const [devices,diagnostics]=await Promise.all([api.request('/api/devices'),api.request('/api/diagnostics')]);
-    if(request!==epoch)return;diag=diagnostics;trustedDevicesEnabled=diag.trustedDevicesEnabled===true;loadProfile();renderCredentialSetup();$('trustedDevicesBtn').hidden=!trustedDevicesEnabled;$('workspaceTrustedDevices').hidden=!trustedDevicesEnabled;
+    if(request!==epoch)return;diag=diagnostics;trustedDevicesEnabled=diag.trustedDevicesEnabled===true;loadProfile();loadBackend();renderBackend();renderCredentialSetup();$('trustedDevicesBtn').hidden=!trustedDevicesEnabled;$('workspaceTrustedDevices').hidden=!trustedDevicesEnabled;
     for(const item of devices){
       const article=document.createElement('article');article.className='device';
       const title=document.createElement('h2');title.textContent=item.label;article.append(title);
@@ -206,7 +234,7 @@ async function end(reason='READY',message){
   for(const d of document.querySelectorAll('dialog[open]'))d.close();
   setMessage('clipboardStatus','clipboard.cleared');
   messages.delete($('diagnostics'));$('diagnostics').textContent='';$('history').replaceChildren();pruneMessages();
-  workspaceLayout(false);recoveryIntentId=null;$('recoverConnection').hidden=true;state(reason,message);
+  workspaceLayout(false);recoveryIntentId=null;$('recoverConnection').hidden=true;renderBackend();state(reason,message);
   try{if(intentId)await cancelIntent(intentId);}
   catch(error){if(request!==epoch)return false;if(trustedLoginRequired(error))return false;state(navigator.onLine?'REAUTH_REQUIRED':'OFFLINE','notice.cleanupFailed');$('reauth').hidden=false;return false;}
   finally{if(request===epoch){busy=false;syncConnectButton();}}
@@ -215,7 +243,7 @@ async function end(reason='READY',message){
   return true;
 }
 async function connectionFailure(error){
-  const keys={CONTROL_BUSY:'connection.busy',UPDATE_IN_PROGRESS:'connection.updateInProgress'};
+  const keys={CONTROL_BUSY:'connection.busy',UPDATE_IN_PROGRESS:'connection.updateInProgress',AGENT_DISABLED:'connection.AGENT_DISABLED'};
   if(!await end(error.message,keys[error.message]??'error.unavailable'))return;
   const request=epoch;
   if(error.message==='CONTROL_BUSY'){
@@ -240,18 +268,24 @@ async function connect(){
     const clipboard=$('clipboardConsent').checked&&$('mode').value==='control';
     await api.request('/api/clipboard-consent',{method:'POST',body:{enabled:clipboard}});if(request!==epoch)return;
     const quality=$('displayQuality').value;
-    const intent=await api.request('/api/connect-intents',{method:'POST',body:{deviceId:device.id,mode:$('mode').value,keyboardProfile:$('profile').value,displayQuality:quality}});
+    const engine=selectedBackend(),body={deviceId:device.id,mode:$('mode').value,keyboardProfile:$('profile').value,displayQuality:quality};
+    // Only the agent names its backend, so every VNC request stays exactly as before.
+    if(engine==='agent')body.backend='agent';
+    const intent=await api.request('/api/connect-intents',{method:'POST',body});
     if(request!==epoch){await cancelIntent(intent.intentId);return;}
     desktopIntentId=intent.intentId;
     activeDisplayQuality=displayQualities.includes(intent.displayQuality)?intent.displayQuality:null;
     $('liveDisplayQuality').value=activeDisplayQuality??quality;$('applyDisplayQuality').disabled=true;rememberDisplayQuality();setMessage('networkLatency','network.unavailable');
     rememberProfile();updateWorkspaceIdentity();
     $('liveProfile').value=$('profile').value;workspaceLayout(true);
-    const connectingAdapter=new DesktopAdapter({surface:$('surface'),profile:$('profile').value,keysyms:diag.keysyms,clipboard,
+    const connectingAdapter=new (engine==='agent'?AgentAdapter:DesktopAdapter)({surface:$('surface'),profile:$('profile').value,keysyms:diag.keysyms,clipboard,scrollSpeed:$('scrollSpeed').value,
+      onReady:capabilities=>{if(request!==epoch||adapter!==connectingAdapter)return;applyCapabilities(capabilities);},
       onState:value=>{if(request!==epoch||adapter!==connectingAdapter)return;state(value);if(value==='CONNECTED'){busy=false;syncConnectButton();}},onFailure:reason=>{if(request===epoch&&adapter===connectingAdapter)void end(reason,'connection.'+reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
       onClipboard:text=>{if(request!==epoch||adapter!==connectingAdapter)return;$('remoteText').value=text;setMessage('clipboardStatus','app.clipboardStatus.received_text_held_in_memory_copy');}});
-    adapter=connectingAdapter;adapter.connect(intent.intentId,$('mode').value);adapter.input?.setScrollSpeed($('scrollSpeed').value);adapter.input?.setCommandKey($('commandKey').value);$('clipboardBtn').disabled=!clipboard;$('clipboardBtn').dataset.i18nTitle=clipboard?'clipboard.transferTitle':'clipboard.enableTitle';$('clipboardBtn').title=t($('clipboardBtn').dataset.i18nTitle);$('keysBtn').disabled=$('mode').value==='view';$('keysBtn').dataset.i18nTitle=$('mode').value==='view'?'workspace.viewInputUnavailable':'workspace.remoteKeys';$('keysBtn').title=t($('keysBtn').dataset.i18nTitle);
-    setMessage('clipboardStatus',clipboard?'clipboard.enabled':'clipboard.disabled');
+    adapter=connectingAdapter;adapter.connect(intent.intentId,$('mode').value);renderBackend();
+    if(engine==='vnc'){adapter.input?.setScrollSpeed($('scrollSpeed').value);adapter.input?.setCommandKey($('commandKey').value);applyCapabilities({control:$('mode').value==='control',clipboard});}
+    // The agent decides what it really grants once it answers; nothing is claimed before that.
+    else applyCapabilities({control:false,clipboard:false});
   }catch(error){if(request===epoch){if(trustedLoginRequired(error))return;await connectionFailure(error);}}
 }
 function dialog(id){
@@ -331,6 +365,7 @@ $('workspaceMenu').addEventListener('click',event=>{
   if(event.target===$('workspaceMenu')&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom))closeWorkspaceMenu(true);
 });
 $('workspaceProfileBtn').onclick=()=>dialog('keysDialog');
+$('backend').onchange=()=>{rememberBackend();renderBackend();};
 $('profile').onchange=()=>{rememberProfile();updateProfileHelp();};
 $('liveProfile').onchange=()=>{adapter?.input?.setProfile($('liveProfile').value);$('profile').value=$('liveProfile').value;rememberProfile();updateProfileHelp();updateWorkspaceIdentity();};
 $('scale').onchange=()=>adapter?.fit($('scale').value);$('scrollSpeed').onchange=()=>adapter?.input?.setScrollSpeed($('scrollSpeed').value);$('commandKey').onchange=()=>adapter?.input?.setCommandKey($('commandKey').value);window.addEventListener('resize',()=>adapter?.fit($('scale').value));
@@ -349,7 +384,7 @@ function clipboardContext(){return {request:epoch,current:adapter,activity:clipb
 function clipboardCurrent(context){return context.request===epoch&&context.current!==null&&context.current===adapter&&context.activity===clipboardActivity&&$('clipboardDialog').open;}
 $('clipboardDialog').addEventListener('close',()=>{++clipboardActivity;});
 $('readLocal').onclick=async()=>{const context=clipboardContext();if(!clipboardCurrent(context))return;try{const text=await navigator.clipboard.readText();if(!clipboardCurrent(context))return;if(new TextEncoder().encode(text).length>16384)throw new Error('TOO_LARGE');$('localText').value=text;setMessage('clipboardStatus','app.clipboardStatus.local_text_ready_click_send_to');}catch(e){if(clipboardCurrent(context))setMessage('clipboardStatus',e?.message==='TOO_LARGE'?'clipboard.tooLarge':'app.clipboardStatus.clipboard_permission_unavailable_paste_manually_into');}};
-$('sendText').onclick=async()=>{const context=clipboardContext();if(!clipboardCurrent(context))return;const sent=$('localText').value;try{await context.current.sendClipboard(sent);if(clipboardCurrent(context))setMessage('clipboardStatus',/[^\u0000-\u00ff]/.test(sent)?'clipboard.sentNonLatin':'app.clipboardStatus.clipboard_stream_acknowledged_verify_the_remote');}catch(e){if(clipboardCurrent(context))setMessage('clipboardStatus',({CLIPBOARD_DISABLED:'clipboard.notEnabled',CLIPBOARD_EMPTY:'clipboard.empty',CLIPBOARD_TOO_LARGE:'clipboard.tooLarge',CLIPBOARD_TIMEOUT:'clipboard.timedOut',CLIPBOARD_UNAVAILABLE:'clipboard.unavailable'})[e.message]??'clipboard.unavailable');}};
+$('sendText').onclick=async()=>{const context=clipboardContext();if(!clipboardCurrent(context))return;const sent=$('localText').value;try{await context.current.sendClipboard(sent);if(clipboardCurrent(context))setMessage('clipboardStatus',context.current.backend==='agent'?'clipboard.sentAgent':/[^\u0000-\u00ff]/.test(sent)?'clipboard.sentNonLatin':'app.clipboardStatus.clipboard_stream_acknowledged_verify_the_remote');}catch(e){if(clipboardCurrent(context))setMessage('clipboardStatus',({CLIPBOARD_DISABLED:'clipboard.notEnabled',CLIPBOARD_EMPTY:'clipboard.empty',CLIPBOARD_TOO_LARGE:'clipboard.tooLarge',CLIPBOARD_TIMEOUT:'clipboard.timedOut',CLIPBOARD_UNAVAILABLE:'clipboard.unavailable'})[e.message]??'clipboard.unavailable');}};
 $('copyRemote').onclick=async()=>{const context=clipboardContext();if(!clipboardCurrent(context))return;try{await navigator.clipboard.writeText($('remoteText').value);if(clipboardCurrent(context))setMessage('clipboardStatus','app.clipboardStatus.copied_received_text_locally');}catch{if(!clipboardCurrent(context))return;$('remoteText').focus();$('remoteText').select();setMessage('clipboardStatus','app.clipboardStatus.permission_unavailable_copy_the_selected_text');}};
 $('diagnosticsDialog').addEventListener('close',()=>{++diagnosticsRequest;});
 async function showDiagnostics(){dialog('diagnosticsDialog');const request=epoch,generation=++diagnosticsRequest,current=()=>request===epoch&&generation===diagnosticsRequest&&$('diagnosticsDialog').open;try{const [d,h]=await Promise.all([api.request('/api/diagnostics'),api.request('/api/history')]);if(!current())return;messages.delete($('diagnostics'));$('diagnostics').textContent=JSON.stringify(d,null,2);$('history').replaceChildren();pruneMessages();for(const entry of h){const li=document.createElement('li');setMessage(li,'diagnostics.historyEntry',()=>({date:formatDate(entry.at),event:entry.event,reason:entry.reason}));$('history').append(li);}}catch(error){if(current()&&!trustedLoginRequired(error))setMessage('diagnostics','app.diagnostics.diagnostics_unavailable_verify_access');}}
