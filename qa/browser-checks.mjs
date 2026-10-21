@@ -149,6 +149,16 @@ async function checkMobileWorkspace(){
     await p.locator('#keyboardBtn').click();
     await p.waitForFunction(()=>document.activeElement?.id==='softKeyboard');
     check(await p.locator('#softKeys').isVisible(),'Keyboard action focuses off-screen textarea and exposes extra keys');
+    const softKeyRow=await p.locator('#softKeys').evaluate(row=>{
+      const keys=[...row.querySelectorAll('button')].map(button=>{
+        const rect=button.getBoundingClientRect();return {top:rect.top,height:rect.height};
+      });
+      return {keys,clientWidth:row.clientWidth,scrollWidth:row.scrollWidth,overflowX:getComputedStyle(row).overflowX};
+    });
+    check(softKeyRow.keys.length===9&&softKeyRow.keys.every(key=>key.height>=40&&Math.abs(key.top-softKeyRow.keys[0].top)<1)
+      &&(softKeyRow.scrollWidth<=softKeyRow.clientWidth+1||['auto','scroll'].includes(softKeyRow.overflowX)),
+      '393x659 extra keys stay on one row, scrolling horizontally if needed, with >=40px tap height');
+    results.push({test:'393x659 extra keys stay on one row or scroll horizontally with >=40px tap height',status:'PASS',level:'LOCAL_UI_ROUTE_FIXTURE',measurements:softKeyRow});
     await p.evaluate(()=>{
       Object.defineProperty(visualViewport,'height',{configurable:true,value:459});
       visualViewport.dispatchEvent(new Event('resize'));

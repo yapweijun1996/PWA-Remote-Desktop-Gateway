@@ -220,8 +220,8 @@ body.viewing .update-banner button { width: 100%; }
 .capture > div { margin: 0; left: 0; top: 0; }
 .soft-keyboard-input { position: fixed; left: -100px; top: 0; width: 1px; height: 1px; min-height: 0; opacity: 0; padding: 0; border: 0; resize: none; font-size: 16px; }
 body:not(.viewing) .soft-keyboard-input { display: none; }
-.soft-keys { position: fixed; z-index: 16; inset-inline: 0; bottom: var(--soft-keyboard-bottom, 0px); display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; padding: 6px max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); background: var(--panel); border-top: 1px solid var(--line); }
-.soft-keys button { min-width: 44px; padding: 6px 10px; }
+.soft-keys { position: fixed; z-index: 16; inset-inline: 0; bottom: var(--soft-keyboard-bottom, 0px); display: flex; gap: 4px; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 6px max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); background: var(--panel); border-top: 1px solid var(--line); }
+.soft-keys button { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-width: 36px; min-height: 44px; padding: 6px; font-size: 14px; white-space: nowrap; }
 .soft-keys button[aria-pressed=true] { color: var(--accent-ink); background: var(--accent); }
 body.soft-keyboard-open #workspace { top: var(--soft-viewport-top, 0px); height: calc(var(--soft-viewport-height, 100dvh) - var(--soft-keyboard-height, 0px)); bottom: auto; }
 body.soft-keyboard-open .controls-trigger { bottom: calc(var(--soft-keyboard-bottom, 0px) + var(--soft-keyboard-height, 0px) + 12px); }

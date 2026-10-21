@@ -7,6 +7,12 @@ const ROW_KEYS=Object.freeze([
   ['keyboard.command','CommandLeft',true],['keyboard.left','keysym:65361'],
   ['keyboard.up','keysym:65362'],['keyboard.down','keysym:65364'],['keyboard.right','keysym:65363']
 ]);
+const ARROW_PATHS=Object.freeze({
+  'keyboard.left':'M19 12H5m6-6-6 6 6 6',
+  'keyboard.up':'M12 19V5m-6 6 6-6 6 6',
+  'keyboard.down':'M12 5v14m-6-6 6 6 6-6',
+  'keyboard.right':'M5 12h14m-6-6 6 6-6 6'
+});
 
 /** A whole commit is accepted or rejected; never send a Latin-1 prefix of unsupported text. */
 export function translateSoftInput(inputType,data=null,value='') {
@@ -83,7 +89,9 @@ export function setupSoftKeyboard({textarea,row,getInput,onNotice=()=>{},onResiz
   });
   const updateButtons=()=>{
     for(const {button,label,key,latch} of buttons){
-      button.textContent=t(label==='keyboard.command'&&!String(getProfile()).startsWith('mac')?'keyboard.super':label);
+      const name=t(label==='keyboard.command'&&!String(getProfile()).startsWith('mac')?'keyboard.super':label);
+      if(!ARROW_PATHS[label])button.textContent=name;
+      button.setAttribute('aria-label',name);button.title=name;
       button.disabled=!opened;
       if(latch)button.setAttribute('aria-pressed',String(Boolean(opened&&owner?.latches?.has(key))));
     }
@@ -128,6 +136,7 @@ export function setupSoftKeyboard({textarea,row,getInput,onNotice=()=>{},onResiz
   row.setAttribute('role','toolbar');
   for(const [label,key,latch=false] of ROW_KEYS){
     const button=doc.createElement('button');button.type='button';button.dataset.softKey=key;
+    if(ARROW_PATHS[label])button.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ARROW_PATHS[label]}"/></svg>`;
     row.append(button);buttons.push({button,label,key,latch});
     // Keep the hidden text sink focused while touching an extra key.
     listen(button,'pointerdown',event=>event.preventDefault());

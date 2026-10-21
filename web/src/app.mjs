@@ -25,9 +25,12 @@ const softKeyboard=setupSoftKeyboard({textarea:$('softKeyboard'),row:$('softKeys
   getProfile:()=>$('profile').value,onNotice:message=>{$('inputStatus').textContent=message;$('keyboardNotice').textContent=message;$('keyboardNotice').hidden=false;},
   onResize:()=>adapter?.resize?.()});
 function renderTouchMode(){
-  $('touchModeBtn').dataset.i18n=touchMode==='touch'?'mobile.touch':'mobile.trackpad';
-  $('touchModeBtn').textContent=t($('touchModeBtn').dataset.i18n);
-  $('touchModeBtn').setAttribute('aria-label',t('mobile.mode',{mode:$('touchModeBtn').textContent}));
+  const button=$('touchModeBtn'),label=button.querySelector('.action-label');
+  label.dataset.i18n=touchMode==='touch'?'mobile.touch':'mobile.trackpad';
+  label.textContent=t(label.dataset.i18n);
+  for(const icon of button.querySelectorAll('[data-touch-mode-icon]'))icon.toggleAttribute('hidden',icon.dataset.touchModeIcon!==touchMode);
+  const description=t('mobile.mode',{mode:label.textContent});
+  button.setAttribute('aria-label',description);button.title=description;
 }
 /** The host agent needs a server opt-in (diagnostics list it) and a browser that can decode H.264 with WebCodecs. */
 function agentAvailable(){return Array.isArray(diag?.backends)&&diag.backends.includes('agent')&&typeof VideoDecoder==='function'&&typeof EncodedVideoChunk==='function';}
