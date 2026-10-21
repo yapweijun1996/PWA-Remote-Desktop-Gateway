@@ -21,6 +21,9 @@ export const CHORDS=Object.freeze({copy:['CommandLeft','keysym:99'],paste:['Comm
   cut:['CommandLeft','keysym:120'],undo:['CommandLeft','keysym:122'],select:['CommandLeft','keysym:97'],
   save:['CommandLeft','keysym:115'],switch:['CommandLeft','keysym:65289'],search:['CommandLeft','keysym:32']});
 
+/** How long a Command+V waits for the browser's paste event before it is forwarded as a plain key chord (browsers without the event). */
+export const PASTE_WAIT_MS=150;
+
 /** Touch scrolling: clicks per window (40/s). Far below the gateway's 1000 messages/s hard limit (two messages per click). */
 export const SCROLL_WINDOW_MS=250,SCROLL_MAX_CLICKS=10;
 /**
@@ -33,8 +36,8 @@ export const WHEEL_BURST=40,WHEEL_CLICKS_PER_SECOND=250,WHEEL_BACKLOG_CLICKS=200
 
 /** One normalized engine stream attached only to the focused remote surface. */
 export class RemoteInput {
-  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,onWheel=null,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
-    this.onWheel=onWheel;this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
+  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,onWheel=null,onPasteText=null,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
+    this.onWheel=onWheel;this.onPasteText=onPasteText;this.pasteHold=null;this.pasteKeyHeld=false;this.metaHeld=false;this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
     this.serverKeysyms=Object.freeze({...keysyms});this.keysyms={...keysyms};
     this.clock=clock;this.schedule=schedule;this.cancel=cancel;this.pointerSurface=pointerSurface;this.scrollWindowStart=-Infinity;this.scrollClicks=0;this.droppedWheelPress=false;
     this.pixelsPerClick=SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED];this.wheelPixels=0;this.wheelTokens=WHEEL_BURST;this.wheelStamp=-Infinity;this.wheelTimer=null;this.wheelPoint={x:0,y:0};
@@ -51,10 +54,25 @@ export class RemoteInput {
     listen(surface,'keydown',e=>{
       this.altGraph=e.getModifierState('AltGraph');
       if(e.code==='AltLeft')this.leftAltPhysical=true;
+      if(e.key==='Meta')this.metaHeld=true;
+      // Automatic clipboard: Command+V is held back until the browser hands over the local text (paste event), which is sent to the
+      // Mac first. Guacamole.Keyboard never sees this V, so it is not typed early and the browser's paste default is kept.
+      if(this.onPasteText&&this.active()&&e.code==='KeyV'&&e.metaKey&&!e.ctrlKey&&!e.altKey&&!e.shiftKey&&!e.repeat&&!this.pasteHold) {
+        e.stopImmediatePropagation();this.pasteKeyHeld=true;this.pasteHold={timer:this.schedule(()=>this.settlePaste(''),PASTE_WAIT_MS)};return;
+      }
       // Keep a usable browser keyboard escape, without forwarding a half-owned chord.
       if(e.code==='Escape' && e.shiftKey){e.stopImmediatePropagation();e.preventDefault();this.pause();surface.blur();}
     },true);
-    listen(surface,'keyup',e=>{if(e.code==='AltLeft')this.leftAltPhysical=false;},true);
+    listen(surface,'keyup',e=>{
+      if(e.code==='AltLeft')this.leftAltPhysical=false;
+      if(e.key==='Meta')this.metaHeld=false;
+      if(e.code==='KeyV'&&this.pasteKeyHeld){this.pasteKeyHeld=false;e.stopImmediatePropagation();}   // only the V whose keydown was held back
+    },true);
+    // The text is read only from this user-initiated paste, never in the background. Without a pending Command+V it is ignored.
+    listen(document,'paste',e=>{
+      if(!this.pasteHold)return;
+      e.preventDefault();this.settlePaste(e.clipboardData?.getData('text/plain')??'');
+    },true);
     // Guacamole.Mouse/Touchpad always cancel wheel and touch defaults on the display. Wheel is converted here instead (its own
     // conversion drops the remainder); an inactive surface lets the browser scroll the local viewport (Actual size, view-only).
     listen(surface,'wheel',e=>{e.stopPropagation();if(!this.active())return;e.preventDefault();this.wheel(e);},true);
@@ -134,7 +152,17 @@ export class RemoteInput {
   }
   sendPointer(state,limitScroll=false){if(limitScroll&&!this.scrollAllowed(state))return;const display=this.client.getDisplay(),scale=display.getScale();const x=Math.max(0,Math.min(state.x,Math.max(0,display.getWidth()*scale-1))),y=Math.max(0,Math.min(state.y,Math.max(0,display.getHeight()*scale-1)));this.pointer=new this.Guacamole.Mouse.State(x,y,state.left,state.middle,state.right,state.up,state.down);this.run(()=>this.client.sendMouseState(this.pointer,true));}
   start(mode){this.mode=mode;this.enabled=false;this.surface.setAttribute?.('data-mode',mode);this.onPause(mode==='view'?t('input.viewOnly'):t('input.clickToControl'));}
+  /** Ends a held Command+V: send the local text first (when there is any), then the V that pastes it. Nothing is queued or replayed. */
+  settlePaste(text){
+    const hold=this.pasteHold;if(!hold)return;
+    this.pasteHold=null;this.cancel(hold.timer);
+    const paste=()=>{if(this.active()&&this.metaHeld)this.run(()=>{this.keys.down('paste:v','keysym:118',{physical:false});this.keys.up('paste:v');});};
+    if(text===''){paste();return;}   // nothing textual locally (or no paste event): behave like a plain Command+V on the Mac
+    let sent;try{sent=this.onPasteText(text);}catch(error){sent=Promise.reject(error);}
+    Promise.resolve(sent).then(paste,error=>this.onPause(t(error?.message==='CLIPBOARD_TOO_LARGE'?'clipboard.tooLarge':'input.pasteFailed')));
+  }
   release(){
+    this.metaHeld=false;this.pasteKeyHeld=false;if(this.pasteHold){this.cancel(this.pasteHold.timer);this.pasteHold=null;}
     this.cancel(this.wheelTimer);this.wheelTimer=null;this.wheelPixels=0;
     this.run(()=>this.keys.releaseAll());this.latches.clear();this.leftAltPhysical=false;this.altGraph=false;this.keyboard.reset();
     if(this.mode==='control')this.run(()=>{

@@ -113,3 +113,77 @@ test('The Command key code can be trialed per page: chords use it, held keys rel
   f.transitions.length=0;f.input.setCommandKey('bogus');f.input.setCommandKey('server');f.input.enabled=true;f.input.chord('paste');
   assert.deepEqual(f.transitions,[[0xffe7,1],[118,1],[118,0],[0xffe7,0]],'server setting restored; unknown names ignored');
 });
+
+// ---- automatic clipboard: Command+V sends the local text first (host agent) ------------------------------------------------
+function pasteFixture(onPasteText,{keysyms:map=keysyms}={}) {
+  globalThis.window=new EventTarget();const surface=new EventTarget();globalThis.document=new EventTarget();document.hidden=false;document.activeElement=surface;surface.blur=()=>{};surface.focus=()=>{};
+  class Keyboard{reset(){}}
+  class State{constructor(x,y,left,middle,right,up,down){Object.assign(this,{x,y,left,middle,right,up,down});}}
+  class Mouse{static State=State;onEach(){}}Mouse.Touchpad=Mouse;
+  const transitions=[],pauses=[],timers=new Map();let timerId=0;
+  const input=new RemoteInput({surface,client:{sendKeyEvent:(down,key)=>transitions.push([key,down]),sendMouseState:()=>{}},Guacamole:{Keyboard,Mouse},profile:'mac-native',keysyms:map,
+    onPause:message=>pauses.push(message),onFailure:error=>{throw new Error(error);},onPasteText,
+    schedule:fn=>{timers.set(++timerId,fn);return timerId;},cancel:id=>timers.delete(id)});
+  input.start('control');input.enabled=true;
+  const reachedGuacamole=[];surface.addEventListener('keydown',e=>reachedGuacamole.push(e.code));
+  const key=(type,code,keyName,extra={})=>{const e=Object.assign(new Event(type,{cancelable:true}),{code,key:keyName,metaKey:false,ctrlKey:false,altKey:false,shiftKey:false,repeat:false,getModifierState:()=>false},extra);surface.dispatchEvent(e);return e;};
+  const paste=text=>{const e=Object.assign(new Event('paste',{cancelable:true}),{clipboardData:{getData:type=>type==='text/plain'?text:''}});document.dispatchEvent(e);return e;};
+  const runTimers=()=>{for(const [id,fn] of [...timers]){timers.delete(id);fn();}};
+  const settle=()=>new Promise(resolve=>setImmediate(resolve));
+  return {input,surface,transitions,pauses,timers,reachedGuacamole,key,paste,runTimers,settle};
+}
+test('Command+V sends the pasted local text first, then types V while Command is still held',async()=>{
+  const sent=[];const f=pasteFixture(async text=>{sent.push(text);});
+  f.key('keydown','MetaLeft','Meta',{metaKey:true});
+  const down=f.key('keydown','KeyV','v',{metaKey:true});
+  assert.equal(down.defaultPrevented,false,'the browser keeps its paste default so the paste event fires');
+  assert.deepEqual(f.reachedGuacamole,['MetaLeft'],'the held V never reaches the normal key path');
+  assert.equal(f.timers.size,1,'a bounded wait for the paste event is armed');
+  const event=f.paste('hello 你好');assert.equal(event.defaultPrevented,true);assert.deepEqual(sent,['hello 你好']);
+  assert.deepEqual(f.transitions,[],'V waits for the Mac to confirm the text');
+  await f.settle();assert.deepEqual(f.transitions,[[118,1],[118,0]]);assert.equal(f.timers.size,0);
+  f.key('keyup','KeyV','v',{metaKey:true});
+});
+test('Without a paste event Command+V falls back to a plain V after the wait, and an empty clipboard pastes the Mac clipboard',async()=>{
+  const sent=[];const f=pasteFixture(async text=>{sent.push(text);});
+  f.key('keydown','MetaLeft','Meta',{metaKey:true});f.key('keydown','KeyV','v',{metaKey:true});f.runTimers();
+  assert.deepEqual(f.transitions,[[118,1],[118,0]]);assert.deepEqual(sent,[]);
+  f.transitions.length=0;f.key('keyup','KeyV','v',{metaKey:true});f.key('keydown','KeyV','v',{metaKey:true});f.paste('');
+  assert.deepEqual(f.transitions,[[118,1],[118,0]]);assert.deepEqual(sent,[],'nothing textual: no transfer is attempted');
+});
+test('A failed transfer pastes nothing and says so; too-large text uses its own message',async()=>{
+  for(const [code,expected] of [['CLIPBOARD_TIMEOUT','The text could not be sent'],['CLIPBOARD_TOO_LARGE','']]) {
+    const f=pasteFixture(async()=>{throw new Error(code);});
+    f.key('keydown','MetaLeft','Meta',{metaKey:true});f.key('keydown','KeyV','v',{metaKey:true});f.paste('x');await f.settle();
+    assert.deepEqual(f.transitions,[],`${code}: no V is typed after a failed transfer`);
+    assert.equal(f.pauses.length>0,true);if(expected)assert.match(f.pauses.at(-1),new RegExp(expected));
+  }
+});
+test('Releasing Command while the text is in flight, losing focus, or pausing never types a stray V',async()=>{
+  let finish;const f=pasteFixture(()=>new Promise(resolve=>{finish=resolve;}));
+  f.key('keydown','MetaLeft','Meta',{metaKey:true});f.key('keydown','KeyV','v',{metaKey:true});f.paste('x');
+  f.key('keyup','MetaLeft','Meta');finish();await f.settle();
+  assert.deepEqual(f.transitions.filter(([key])=>key===118),[],'Command was released first: V would have been typed alone');
+  const g=pasteFixture(async()=>{});g.key('keydown','MetaLeft','Meta',{metaKey:true});g.key('keydown','KeyV','v',{metaKey:true});
+  g.surface.dispatchEvent(new Event('blur'));assert.equal(g.timers.size,0,'a pending wait is cancelled by blur');g.paste('x');await g.settle();
+  assert.deepEqual(g.transitions.filter(([key])=>key===118),[],'a paste event after the pause is ignored');
+});
+test('Only a plain Command+V is intercepted, and only when automatic paste is enabled and the surface owns input',()=>{
+  const f=pasteFixture(async()=>{});
+  f.key('keydown','MetaLeft','Meta',{metaKey:true});
+  f.key('keydown','KeyV','v',{metaKey:true,shiftKey:true});f.key('keydown','KeyC','c',{metaKey:true});f.key('keydown','KeyV','v',{metaKey:true,repeat:true});
+  assert.equal(f.timers.size,0);assert.deepEqual(f.reachedGuacamole.slice(1),['KeyV','KeyC','KeyV']);
+  document.activeElement=null;f.key('keydown','KeyV','v',{metaKey:true});assert.equal(f.timers.size,0,'an unfocused surface does not hold keys');
+  const off=pasteFixture(null);off.key('keydown','MetaLeft','Meta',{metaKey:true});off.key('keydown','KeyV','v',{metaKey:true});
+  assert.equal(off.timers.size,0);assert.deepEqual(off.reachedGuacamole,['MetaLeft','KeyV'],'the VNC path is unchanged');
+});
+
+test('A plain V (no Command) is typed normally and its key-up is never swallowed, so the key cannot stick',()=>{
+  const f=pasteFixture(async()=>{});const up=[];f.surface.addEventListener('keyup',e=>up.push(e.code));
+  f.key('keydown','KeyV','v');assert.equal(f.timers.size,0,'a plain V is not held back');assert.deepEqual(f.reachedGuacamole,['KeyV']);
+  f.key('keyup','KeyV','v');assert.deepEqual(up,['KeyV'],'its key-up reaches the normal key path');
+  // Command+V then plain V: only the held-back V's key-up is consumed.
+  f.key('keydown','MetaLeft','Meta',{metaKey:true});f.key('keydown','KeyV','v',{metaKey:true});f.runTimers();up.length=0;
+  f.key('keyup','KeyV','v',{metaKey:true});assert.deepEqual(up,[],'the held-back V key-up is consumed once');
+  f.key('keyup','KeyV','v');assert.deepEqual(up,['KeyV'],'the next V key-up is not');
+});

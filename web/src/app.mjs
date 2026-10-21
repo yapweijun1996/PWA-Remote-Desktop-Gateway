@@ -281,7 +281,9 @@ async function connect(){
     const connectingAdapter=new (engine==='agent'?AgentAdapter:DesktopAdapter)({surface:$('surface'),profile:$('profile').value,keysyms:diag.keysyms,clipboard,scrollSpeed:$('scrollSpeed').value,
       onReady:capabilities=>{if(request!==epoch||adapter!==connectingAdapter)return;applyCapabilities(capabilities);},
       onState:value=>{if(request!==epoch||adapter!==connectingAdapter)return;state(value);if(value==='CONNECTED'){busy=false;syncConnectButton();}},onFailure:reason=>{if(request===epoch&&adapter===connectingAdapter)void end(reason,'connection.'+reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
-      onClipboard:text=>{if(request!==epoch||adapter!==connectingAdapter)return;$('remoteText').value=text;setMessage('clipboardStatus','app.clipboardStatus.received_text_held_in_memory_copy');}});
+      onClipboard:text=>{if(request!==epoch||adapter!==connectingAdapter)return;$('remoteText').value=text;setMessage('clipboardStatus','app.clipboardStatus.received_text_held_in_memory_copy');
+        // Host agent: text copied on the Mac is also copied here. Browsers may refuse without a user gesture (Safari); the Copy button remains.
+        if(connectingAdapter.backend==='agent'&&navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>{if(request===epoch&&adapter===connectingAdapter)setMessage('clipboardStatus','clipboard.autoCopied');},()=>{});}});
     adapter=connectingAdapter;adapter.connect(intent.intentId,$('mode').value);renderBackend();
     if(engine==='vnc'){adapter.input?.setScrollSpeed($('scrollSpeed').value);adapter.input?.setCommandKey($('commandKey').value);applyCapabilities({control:$('mode').value==='control',clipboard});}
     // The agent decides what it really grants once it answers; nothing is claimed before that.
