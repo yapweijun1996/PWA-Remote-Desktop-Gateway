@@ -4,6 +4,7 @@ import {TransportMetrics} from './transport-metrics.mjs';
 import {AGENT_SUBPROTOCOL,KEYFRAME_MESSAGE,clipboardMessage,failureCode,LIMITS} from './agent-protocol.mjs';
 import {AgentInputSink} from './agent-input.mjs';
 import {VideoPipeline} from './agent-video.mjs';
+import {ViewZoom} from './view-zoom.mjs';
 
 export const CLIPBOARD_RESULT_MS=3000,FIRST_FRAME_MS=10000,STATUS_STALE_MS=3500;
 
@@ -67,7 +68,12 @@ export class AgentAdapter {
     this.sink=new AgentInputSink({send:text=>this.socket.send(text),isOpen:()=>this.isOpen(),bufferedAmount:()=>this.socket?.bufferedAmount??0,
       video:()=>({width:this.dimensions.width,height:this.dimensions.height,scale:this.scale}),frame:this.deps.frame,cancelFrame:this.deps.cancelFrame,now:this.deps.now,
       onSent:text=>this.metrics?.record('outbound',text.length)});
-    this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:canvas,client:this.sink,Guacamole:globalThis.Guacamole,onWheel:(x,y,dy)=>this.sink.wheel(x,y,dy),
+    this.view=new ViewZoom({surface:this.surface,capture,element:display,size:()=>this.dimensions,applyScale:scale=>{
+      this.input?.scalePointer(scale,this.scale);
+      this.scale=scale;const width=`${this.dimensions.width*scale}px`,height=`${this.dimensions.height*scale}px`;
+      this.canvas.style.width=width;this.canvas.style.height=height;if(display.style){display.style.width=width;display.style.height=height;}
+    }});
+    this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:canvas,client:this.sink,Guacamole:globalThis.Guacamole,view:this.view,onWheel:(x,y,dy)=>this.sink.wheel(x,y,dy),
       // Automatic clipboard: only when the agent confirmed clipboard for this connection (consent given, control granted).
       onPasteText:this.effective.clipboard?text=>this.sendClipboard(text):null});
     if(this.scrollSpeed)this.input.setScrollSpeed(this.scrollSpeed);
@@ -103,13 +109,8 @@ export class AgentAdapter {
     this.clipboardWait=null;this.deps.clearTimer(wait.timer);
     if(message.ok===true)wait.resolve();else wait.reject(new Error('CLIPBOARD_UNAVAILABLE'));
   }
-  fit(mode=this.scaleMode){
-    this.scaleMode=mode;this.input?.pause();
-    if(!this.canvas)return;
-    const {width,height}=this.dimensions;if(!width||!height)return;
-    this.scale=mode==='actual'?1:Math.min(this.surface.clientWidth/width,this.surface.clientHeight/height)||1;
-    this.canvas.style.width=`${Math.round(width*this.scale)}px`;this.canvas.style.height=`${Math.round(height*this.scale)}px`;
-  }
+  fit(mode=this.scaleMode??'fit'){this.scaleMode=mode;this.input?.pause();this.view?.fit(mode);}
+  resize(){this.input?.releasePointer();this.view?.resize();}
   sendClipboard(text){
     if(!this.effective.clipboard||!this.isOpen())throw new Error('CLIPBOARD_DISABLED');
     if(text==='')throw new Error('CLIPBOARD_EMPTY');   // an empty transfer would clear the Mac's clipboard
@@ -143,6 +144,6 @@ export class AgentAdapter {
     this.metrics?.dispose();this.metrics=null;
     const socket=this.socket;this.socket=null;
     if(socket){socket.onmessage=socket.onerror=socket.onclose=null;try{socket.close(1000);}catch{/* already closing */}}
-    this.canvas=null;this.surface.replaceChildren();
+    this.canvas=null;this.view=null;this.surface.replaceChildren();
   }
 }

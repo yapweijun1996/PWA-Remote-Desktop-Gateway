@@ -1,5 +1,6 @@
 import {t} from './i18n.mjs';
 import {KeyboardState} from '../../reference/keyboard-state.mjs';
+import {TouchGestures,HOLD_MS} from './touch-gestures.mjs';
 
 export function logicalKey(keysym) {
   return ({65507:'ControlLeft',65508:'ControlRight',65513:'OptionLeft',65514:'OptionRight',
@@ -36,12 +37,14 @@ export const WHEEL_BURST=40,WHEEL_CLICKS_PER_SECOND=250,WHEEL_BACKLOG_CLICKS=200
 
 /** One normalized engine stream attached only to the focused remote surface. */
 export class RemoteInput {
-  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,onWheel=null,onPasteText=null,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
+  constructor({surface,pointerSurface=surface,client,Guacamole,profile,keysyms,onPause,onFailure,onWheel=null,onPasteText=null,view=null,clock=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
     this.onWheel=onWheel;this.onPasteText=onPasteText;this.pasteHold=null;this.pasteKeyHeld=false;this.metaHeld=false;this.surface=surface;this.client=client;this.Guacamole=Guacamole;this.onPause=onPause;this.onFailure=onFailure;
     this.serverKeysyms=Object.freeze({...keysyms});this.keysyms={...keysyms};
     this.clock=clock;this.schedule=schedule;this.cancel=cancel;this.pointerSurface=pointerSurface;this.scrollWindowStart=-Infinity;this.scrollClicks=0;this.droppedWheelPress=false;
     this.pixelsPerClick=SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED];this.wheelPixels=0;this.wheelTokens=WHEEL_BURST;this.wheelStamp=-Infinity;this.wheelTimer=null;this.wheelPoint={x:0,y:0};
     this.enabled=false;this.mode='view';this.altGraph=false;this.leftAltPhysical=false;this.latches=new Set();this.disposers=[];
+    this.view=view;this.touchMode='trackpad';this.gestures=new TouchGestures();this.touchTimer=null;this.touchPoints=[];this.keyboardSurface=null;this.keyboardDisposers=[];
+    this.ghostUntil=-Infinity;this.mousePoint=null;this.touchBridge=null;this.touch=null;
     this.pointer=new Guacamole.Mouse.State(0,0,false,false,false,false,false);this.protocolCounts=new Map();
     this.keys=new KeyboardState({profile,onTransition:({key,down})=>{
       if(this.mode!=='control')return;
@@ -77,7 +80,11 @@ export class RemoteInput {
     // conversion drops the remainder); an inactive surface lets the browser scroll the local viewport (Actual size, view-only).
     listen(surface,'wheel',e=>{e.stopPropagation();if(!this.active())return;e.preventDefault();this.wheel(e);},true);
     for(const type of ['mousewheel','DOMMouseScroll'])listen(surface,type,e=>{e.stopPropagation();if(this.active())e.preventDefault();},true);
-    for(const type of ['touchstart','touchmove','touchend','touchcancel'])listen(surface,type,e=>{if(this.mode!=='control')e.stopPropagation();},true);
+    for(const type of ['touchstart','touchmove','touchend','touchcancel'])listen(surface,type,e=>this.handleTouch(type,e),{capture:true,passive:false});
+    for(const type of ['mousedown','mouseup','mousemove','click'])listen(surface,type,e=>{
+      if(this.clock()<this.ghostUntil){e.preventDefault();e.stopImmediatePropagation();return;}
+      if(Number.isFinite(e.clientX))this.mousePoint=this.displayPoint(e.clientX,e.clientY);
+    },true);
     this.keyboard=new Guacamole.Keyboard(surface);
     this.keyboard.onkeydown=keysym=>{
       if(!this.active())return true;
@@ -92,21 +99,114 @@ export class RemoteInput {
     this.mouse=new Guacamole.Mouse(pointerSurface);
     this.mouse.onEach(['mousedown','mouseup','mousemove'],event=>{
       if(!this.active())return;
-      this.sendPointer(event.state);
+      this.sendPointer(this.mousePoint?{...event.state,...this.mousePoint}:event.state);
     });
-    this.touch=new Guacamole.Mouse.Touchpad(pointerSurface);
-    this.touch.onEach(['mousedown','mouseup','mousemove'],event=>{
-      if(!this.active())return;this.sendPointer(event.state,true);
-    });
-    listen(surface,'pointerdown',()=>{if(this.mode==='control'){surface.focus({preventScroll:true});this.enabled=true;onPause(t('input.active'));}});
-    listen(surface,'focus',()=>{if(this.mode==='control'){this.enabled=true;onPause(t('input.active'));}});
-    listen(surface,'blur',()=>this.pause());
+    this.resetTouchEngine();
+    listen(surface,'pointerdown',e=>{if(e.pointerType==='touch')return;if(this.mode==='control')this.resume();});
+    listen(surface,'focus',()=>{if(this.mode==='control'&&!document.hidden){this.enabled=true;onPause(t('input.active'));}});
+    listen(surface,'blur',e=>{if(this.keyboardSurface&&e.relatedTarget===this.keyboardSurface){this.release();return;}this.pause();});
     listen(surface,'compositionstart',()=>this.pause(t('input.localIme')),true);
     listen(window,'blur',()=>this.pause());
     listen(document,'visibilitychange',()=>{if(document.hidden)this.pause();});
     listen(window,'pagehide',()=>this.pause());
   }
-  active(){return this.enabled&&this.mode==='control'&&document.activeElement===this.surface&&!document.hidden;}
+  active(){return !!(this.enabled&&this.mode==='control'&&(document.activeElement===this.surface||(this.keyboardSurface&&document.activeElement===this.keyboardSurface))&&!document.hidden);}
+  resume(){if(this.mode!=='control'||document.hidden)return;this.surface.focus({preventScroll:true});this.enabled=true;this.onPause(t('input.active'));}
+  displayPoint(x,y){if(this.view)return this.view.clientToDisplay(x,y);const box=this.pointerSurface.getBoundingClientRect?.();return box?{x:x-box.left,y:y-box.top}:{x:this.pointer.x,y:this.pointer.y};}
+  scalePointer(scale,previous){
+    if(!(previous>0&&scale>0)||scale===previous)return;
+    const ratio=scale/previous;this.pointer.x*=ratio;this.pointer.y*=ratio;this.wheelPoint.x*=ratio;this.wheelPoint.y*=ratio;
+    if(this.mousePoint){this.mousePoint.x*=ratio;this.mousePoint.y*=ratio;}
+    if(this.touch?.currentState)Object.assign(this.touch.currentState,this.pointer);
+  }
+  setTouchMode(mode){if(!['trackpad','touch'].includes(mode)||mode===this.touchMode)return;this.pause();this.touchMode=mode;this.resetTouchEngine();}
+  resetTouchEngine(){
+    const bridge=new EventTarget(),owner=this;
+    Object.defineProperties(bridge,{offsetWidth:{get:()=>owner.client.getDisplay?.().getWidth()*owner.client.getDisplay?.().getScale()||1},
+      offsetHeight:{get:()=>owner.client.getDisplay?.().getHeight()*owner.client.getDisplay?.().getScale()||1}});
+    this.touchBridge=bridge;
+    const Engine=this.touchMode==='touch'?this.Guacamole.Mouse.Touchscreen:this.Guacamole.Mouse.Touchpad;
+    this.touch=Engine?new Engine(bridge):null;
+    if(!this.touch)return;
+    if(this.touch.currentState)Object.assign(this.touch.currentState,this.pointer);
+    this.touch.onEach(['mousedown','mouseup','mousemove'],event=>{
+      if(!this.active())return;
+      this.sendPointer(event.state,true);
+      if(this.touchMode==='trackpad')this.view?.follow(this.pointer.x,this.pointer.y);
+    });
+  }
+  bridgeTouch(type,points){
+    const event=new Event(type,{cancelable:true});Object.assign(event,{touches:points,changedTouches:points});
+    this.touchBridge.dispatchEvent(event);
+  }
+  handleTouch(type,event){
+    if(!event.touches){if(this.mode!=='control')event.stopPropagation();return;}
+    event.stopImmediatePropagation();event.stopPropagation();
+    if(this.mode!=='control'&&(!this.view||(this.view.mode==='actual'&&event.touches.length<=1&&this.gestures.kind==='idle'&&!this.gestures.blocked)))return;
+    event.preventDefault();this.ghostUntil=this.clock()+800;
+    if(type==='touchstart'&&this.gestures.kind==='idle'){
+      this.resume();this.resetTouchEngine();
+      if(this.mode==='control'&&this.touchMode==='trackpad'&&event.touches.length===1)this.bridgeTouch('touchstart',Array.from(event.touches));
+    }
+    this.touchPoints=Array.from(event.touches);this.cancel(this.touchTimer);this.touchTimer=null;
+    if(this.mode==='control'&&!this.active()){this.cancelTouch();return;}
+    this.touchActions(this.gestures.update(type.slice(5),this.touchPoints,this.clock(),{mode:this.touchMode,zoomed:this.view?.zoomed??false}));
+    if(this.mode==='control'&&this.gestures.kind==='pending'&&this.touchPoints.length===1&&this.touchMode==='touch')this.touchTimer=this.schedule(()=>{
+      this.touchTimer=null;if(this.active())this.touchActions(this.gestures.update('hold',this.touchPoints,this.clock(),{mode:this.touchMode,zoomed:this.view?.zoomed??false}));
+    },Math.max(0,HOLD_MS-(this.clock()-this.gestures.started)));
+    if(!this.touchPoints.length)this.resetTouchEngine();
+  }
+  discardPending(){
+    this.cancel(this.wheelTimer);this.wheelTimer=null;this.wheelPixels=0;this.client.discardPending?.();
+  }
+  touchActions(actions){
+    for(const action of actions){
+      if(action.type==='local-start'){this.discardPending();this.releasePointer();}
+      else if(action.type==='pinch'&&this.view){
+        this.discardPending();
+        const anchor=this.view.localPoint(action.point.x,action.point.y),origin=this.view.localPoint(action.origin.x,action.origin.y);
+        this.view.pinch({anchor,origin,scale:this.view.snapshot().scale*action.ratio});
+      }
+      else if(action.type==='pan')this.view?.pan(action.dx,action.dy);
+      else if(!this.active())continue;
+      else if(action.type==='scroll')this.wheel({deltaY:action.dy,clientX:action.point.x,clientY:action.point.y});
+      else if(action.type==='release')this.releasePointer();
+      else if(action.type==='tap'||action.type==='hold'){
+        if(this.touchMode==='touch')this.touch?.move?.(this.displayPoint(action.point.x,action.point.y));
+        if(action.type==='hold')this.touch?.press?.('left');else this.touch?.click?.(action.button);
+      }
+      else if(action.type==='move'){
+        if(this.touchMode==='trackpad')this.bridgeTouch('touchmove',this.touchPoints);
+        else this.touch?.move?.(this.displayPoint(action.point.x,action.point.y));
+      }
+    }
+  }
+  releasePointer(){
+    const s=this.pointer;
+    if(this.mode==='control'&&(s.left||s.middle||s.right||s.up||s.down))this.run(()=>this.client.sendMouseState(new this.Guacamole.Mouse.State(s.x,s.y,false,false,false,false,false),true));
+    this.pointer=new this.Guacamole.Mouse.State(s.x,s.y,false,false,false,false,false);
+    if(this.touch?.currentState)Object.assign(this.touch.currentState,this.pointer);
+  }
+  cancelTouch(){this.cancel(this.touchTimer);this.touchTimer=null;this.touchPoints=[];this.gestures.reset();this.resetTouchEngine();}
+  setKeyboardSurface(node){
+    if(node===this.keyboardSurface)return;
+    this.release();for(const dispose of this.keyboardDisposers)dispose();this.keyboardDisposers=[];this.keyboardSurface=node;this.enabled=false;
+    if(!node)return;
+    const focus=()=>{if(this.mode==='control'&&!document.hidden){this.enabled=true;this.onPause(t('input.active'));}},blur=()=>this.pause();
+    node.addEventListener('focus',focus);node.addEventListener('blur',blur);
+    this.keyboardDisposers.push(()=>node.removeEventListener('focus',focus),()=>node.removeEventListener('blur',blur));
+  }
+  consumeLatches(){for(const key of this.latches)this.keys.up(`latch:${key}`);this.latches.clear();}
+  text(value){
+    if(!this.active()||this.keys.snapshot().sources.some(source=>source.physical)||typeof value!=='string'||![...value].every(char=>{const n=char.codePointAt(0);return n>=32&&n<=255&&!(n>=127&&n<160);}))return false;
+    for(const char of value)this.textKey(`keysym:${char.codePointAt(0)}`);return true;
+  }
+  textKey(key){
+    if(!this.active()||!/^keysym:\d+$/.test(key))return false;
+    const keysym=Number(key.slice(7));if(!Number.isSafeInteger(keysym)||keysym<1||keysym>0xffff)return false;
+    if(this.keys.snapshot().sources.some(source=>source.physical))return false;
+    this.run(()=>{this.keys.down('soft:key',key,{physical:false});this.keys.up('soft:key');this.consumeLatches();});return !this.failed;
+  }
   run(fn){if(this.failed)return;try{fn();}catch{this.failed=true;this.protocolCounts.clear();this.enabled=false;this.onFailure('INPUT_FAILURE');}}
   /** Replace the Command keysym for this page only; held keys are released with the old mapping first. */
   setCommandKey(name) {
@@ -120,7 +220,7 @@ export class RemoteInput {
     const unit=event.deltaMode===1?PIXELS_PER_LINE:event.deltaMode===2?PIXELS_PER_PAGE:1,limit=WHEEL_BACKLOG_CLICKS*this.pixelsPerClick;
     this.wheelPixels=Math.max(-limit,Math.min(limit,this.wheelPixels+(Number.isFinite(event.deltaY)?event.deltaY:0)*unit));
     const box=this.pointerSurface.getBoundingClientRect?.();
-    this.wheelPoint=box?{x:event.clientX-box.left,y:event.clientY-box.top}:{x:this.pointer.x,y:this.pointer.y};
+    this.wheelPoint=box?this.displayPoint(event.clientX,event.clientY):{x:this.pointer.x,y:this.pointer.y};
     if(this.onWheel){
       // Pixel scrolling (host agent): hand the travel over as pixels; the receiver paces it. The speed setting scales it around 1:1 at the default.
       const pixels=(Number.isFinite(event.deltaY)?event.deltaY:0)*unit*SCROLL_SPEEDS[DEFAULT_SCROLL_SPEED]/this.pixelsPerClick;
@@ -150,7 +250,13 @@ export class RemoteInput {
     if(++this.scrollClicks>SCROLL_MAX_CLICKS){this.droppedWheelPress=true;return false;}
     return true;
   }
-  sendPointer(state,limitScroll=false){if(limitScroll&&!this.scrollAllowed(state))return;const display=this.client.getDisplay(),scale=display.getScale();const x=Math.max(0,Math.min(state.x,Math.max(0,display.getWidth()*scale-1))),y=Math.max(0,Math.min(state.y,Math.max(0,display.getHeight()*scale-1)));this.pointer=new this.Guacamole.Mouse.State(x,y,state.left,state.middle,state.right,state.up,state.down);this.run(()=>this.client.sendMouseState(this.pointer,true));}
+  sendPointer(state,limitScroll=false){
+    if(limitScroll&&!this.scrollAllowed(state))return;
+    const display=this.client.getDisplay(),scale=display.getScale();
+    const x=Math.max(0,Math.min(state.x,Math.max(0,(display.getWidth()-1)*scale))),y=Math.max(0,Math.min(state.y,Math.max(0,(display.getHeight()-1)*scale)));
+    this.pointer=new this.Guacamole.Mouse.State(x,y,state.left,state.middle,state.right,state.up,state.down);
+    this.run(()=>this.client.sendMouseState(this.pointer,true));
+  }
   start(mode){this.mode=mode;this.enabled=false;this.surface.setAttribute?.('data-mode',mode);this.onPause(mode==='view'?t('input.viewOnly'):t('input.clickToControl'));}
   /** Ends a held Command+V: send the local text first (when there is any), then the V that pastes it. Nothing is queued or replayed. */
   settlePaste(text){
@@ -162,13 +268,10 @@ export class RemoteInput {
     Promise.resolve(sent).then(paste,error=>this.onPause(t(error?.message==='CLIPBOARD_TOO_LARGE'?'clipboard.tooLarge':'input.pasteFailed')));
   }
   release(){
-    this.metaHeld=false;this.pasteKeyHeld=false;if(this.pasteHold){this.cancel(this.pasteHold.timer);this.pasteHold=null;}
+    this.cancelTouch();this.metaHeld=false;this.pasteKeyHeld=false;if(this.pasteHold){this.cancel(this.pasteHold.timer);this.pasteHold=null;}
     this.cancel(this.wheelTimer);this.wheelTimer=null;this.wheelPixels=0;
     this.run(()=>this.keys.releaseAll());this.latches.clear();this.leftAltPhysical=false;this.altGraph=false;this.keyboard.reset();
-    if(this.mode==='control')this.run(()=>{
-      const s=this.pointer;this.client.sendMouseState(new this.Guacamole.Mouse.State(s.x,s.y,false,false,false,false,false),true);
-    });
-    this.pointer=new this.Guacamole.Mouse.State(0,0,false,false,false,false,false);
+    this.releasePointer();
     this.client.releaseAll?.();   // host agent: also drop anything the sender still holds back
   }
   pause(message=this.mode==='view'?t('input.viewOnly'):t('input.paused')){this.release();this.enabled=false;this.onPause(message);}
@@ -181,5 +284,5 @@ export class RemoteInput {
     if(this.keys.snapshot().sources.some(e=>e.physical)){this.onPause(t('input.releasePhysical'));return;}
     this.run(()=>this.keys.virtualChord(CHORDS[name]));this.release();}
   virtual(key){if(this.mode!=='control')return;this.run(()=>this.keys.virtualChord([key]));this.release();}
-  dispose(){this.pause();this.keyboard.onkeydown=null;this.keyboard.onkeyup=null;for(const fn of this.disposers)fn();}
+  dispose(){this.pause();for(const fn of this.keyboardDisposers)fn();this.keyboardDisposers=[];this.keyboardSurface=null;this.keyboard.onkeydown=null;this.keyboard.onkeyup=null;for(const fn of this.disposers)fn();}
 }

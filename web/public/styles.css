@@ -123,6 +123,9 @@ label.check { flex-direction: row; align-items: flex-start; gap: 10px; min-heigh
 .check span { overflow-wrap: anywhere; }
 .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 650; }
 .connect-action { display: flex; width: 100%; align-items: center; justify-content: space-between; margin-top: 10px; padding: 10px 16px; }
+.connection-settings > summary { font-size: 21px; font-weight: 700; cursor: pointer; padding-block: 8px; }
+.connection-settings[open] > summary { margin-bottom: 12px; }
+.workspace-advanced > summary { cursor: pointer; padding-block: 10px; font-weight: 650; }
 .connect-action span[aria-hidden] { font-size: 21px; line-height: 1; }
 .subtle { background: transparent; color: var(--muted); }
 .danger { color: var(--danger); }
@@ -173,7 +176,7 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
 
 /* Viewer controls overlay the desktop; opening them never changes display geometry. */
 .viewer-only { display: none; }
-body.viewing { height: 100dvh; overflow: hidden; }
+html:has(body.viewing), body.viewing { height: 100dvh; overflow: hidden; overscroll-behavior: none; }
 body.viewing > .bar { display: none; }
 body.viewing .viewer-only { display: flex; }
 #inputStatus { display: none; }
@@ -203,7 +206,7 @@ body.viewing:has(#updateBanner:not([hidden])) .controls-trigger::after { content
 .workspace-panel #status { font-size: 13px; font-weight: 650; }
 .workspace-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-bottom: 20px; }
 .workspace-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; }
-.workspace-panel-content > button, #workspaceAccount button, #workspacePreferences button { width: 100%; margin-bottom: 8px; text-align: left; }
+.workspace-panel-content > button, .workspace-advanced > button, #workspaceAccount button, #workspacePreferences button { width: 100%; margin-bottom: 8px; text-align: left; }
 .workspace-panel .preferences-label { display: inline; }
 .workspace-panel label { margin: 0 0 12px; }
 .menu-divider { height: 1px; background: var(--line); margin: 12px 0; }
@@ -211,13 +214,19 @@ body.viewing:has(#updateBanner:not([hidden])) .controls-trigger::after { content
 .workspace-panel-footer button { width: 100%; border-color: currentColor; }
 body.viewing .update-banner { position: static; flex-direction: column; align-items: stretch; padding: 12px; gap: 12px; border: 1px solid var(--line); border-radius: 12px; box-shadow: none; }
 body.viewing .update-banner button { width: 100%; }
-#workspace { position: fixed; inset: 0; width: 100%; height: 100dvh; min-height: 0; display: flex; }
-#surface { flex: 1; min-height: 0; min-width: 0; background: #07141b; overflow: auto; position: relative; touch-action: none; }
-#surface > div { margin: auto; }
-.capture { width: 100%; height: 100%; overflow: auto; touch-action: none; }
-/* View-only never sends touch input, so let the browser pan an Actual-size display. */
-.capture[data-mode="view"] { touch-action: pan-x pan-y; }
-.capture > div { margin: auto; }
+#workspace { position: fixed; inset: 0; width: 100%; height: 100dvh; min-height: 0; display: flex; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: #07141b; }
+#surface { flex: 1; min-height: 0; min-width: 0; background: #07141b; overflow: auto; position: relative; touch-action: none; overscroll-behavior: none; }
+.capture { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; touch-action: none; overscroll-behavior: none; }
+.capture > div { margin: 0; left: 0; top: 0; }
+.soft-keyboard-input { position: fixed; left: -100px; top: 0; width: 1px; height: 1px; min-height: 0; opacity: 0; padding: 0; border: 0; resize: none; font-size: 16px; }
+body:not(.viewing) .soft-keyboard-input { display: none; }
+.soft-keys { position: fixed; z-index: 16; inset-inline: 0; bottom: var(--soft-keyboard-bottom, 0px); display: flex; gap: 4px; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 6px max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); background: var(--panel); border-top: 1px solid var(--line); }
+.soft-keys button { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-width: 36px; min-height: 44px; padding: 6px; font-size: 14px; white-space: nowrap; }
+.soft-keys button[aria-pressed=true] { color: var(--accent-ink); background: var(--accent); }
+body.soft-keyboard-open #workspace { top: var(--soft-viewport-top, 0px); height: calc(var(--soft-viewport-height, 100dvh) - var(--soft-keyboard-height, 0px)); bottom: auto; }
+body.soft-keyboard-open .controls-trigger { bottom: calc(var(--soft-keyboard-bottom, 0px) + var(--soft-keyboard-height, 0px) + 12px); }
+.keyboard-notice { position: fixed; z-index: 17; left: 12px; right: 12px; top: calc(var(--soft-viewport-top, 0px) + env(safe-area-inset-top) + 8px); margin: 0; padding: 10px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; font-size: 13px; pointer-events: none; }
+body:not(.soft-keyboard-open) .keyboard-notice { display: none; }
 .agent-display canvas { display: block; }
 
 @media (max-width: 840px) {
@@ -258,6 +267,48 @@ body.viewing .update-banner button { width: 100%; }
   .dialog-heading { padding: 16px 20px; }
   .preferences-content { padding: 0 20px; }
   .dialog-footer { padding-right: 20px; padding-left: 20px; }
+}
+
+@media (max-width: 680px), (pointer: coarse) {
+  .controls-trigger { top: auto; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); transform: none; width: 52px; height: 52px; border-radius: 50%; }
+  .controls-trigger svg { transform: rotate(-90deg); }
+  .workspace-panel { inset: auto 0 0; width: 100%; height: auto; max-height: min(88dvh, 740px); border-radius: 22px 22px 0 0; }
+  .workspace-panel .dialog-heading { padding: 12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left)); }
+  .workspace-panel .dialog-heading h2 { margin-bottom: 6px; font-size: 18px; }
+  .workspace-identity .brand-icon, #workspaceProfile { display: none; }
+  .workspace-panel-content { padding-block: 10px; overscroll-behavior: contain; }
+  .workspace-panel-content > p { margin: 6px 0 12px; }
+  .workspace-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+  .workspace-actions button { min-height: 48px; }
+}
+
+@media (max-width: 680px) {
+  main { padding: 12px max(14px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+  .bar { flex-wrap: nowrap; gap: 6px; padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: 8px; }
+  .brand { font-size: 13px; gap: 6px; }
+  .brand-icon { width: 28px; height: 28px; font-size: 20px; }
+  .bar #status { font-size: 10px; max-width: 70px; }
+  #launcherAccount { width: auto; }
+  #launcherAccount button { font-size: 11px; padding: 4px 6px; max-width: 74px; }
+  .intro { margin-bottom: 10px; }
+  .intro .eyebrow, .intro p:last-child { display: none; }
+  h1 { margin: 0; font-size: 26px; }
+  .access-notice { margin-bottom: 10px; }
+  .notice { padding: 8px 10px; font-size: 12px; }
+  .device-column { padding: 12px 14px; }
+  .section-label { margin-bottom: 4px; }
+  .devices { gap: 10px; }
+  .device h2 { font-size: 19px; margin-bottom: 4px; }
+  .device p { margin-bottom: 4px; font-size: 12px; }
+  .device + .device { padding-top: 8px; }
+  .device small { font-size: 11px; }
+  .prepare { padding: 12px 14px; }
+  .shared-notice { font-size: 12px; margin-bottom: 4px; }
+  .connection-settings > summary { font-size: 14px; min-height: 44px; padding-block: 12px; }
+  .consent-group { padding: 0; }
+  .connect-action { margin-top: 4px; }
+  footer { margin-top: 8px; }
+  .footer-meta { font-size: 10px; gap: 4px; }
 }
 
 @media (max-width: 360px) {

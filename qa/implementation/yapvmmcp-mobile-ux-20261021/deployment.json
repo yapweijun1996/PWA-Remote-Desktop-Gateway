@@ -1,0 +1,27 @@
+{
+  "status": "DEPLOYED_FIXTURE_VERIFIED_OWNER_PHONE_PENDING",
+  "recordedAt": "2026-10-21",
+  "web": "1.4.0 (41c701fc31924172)",
+  "sourceCommits": ["c2d48d0 feat(web): add mobile desktop gestures and controls", "52c162e fix(web): compact mobile extra keys and match control icons"],
+  "implementedBy": "OMP gpt-6.1-sol (operator), reviewed by Claude (manager)",
+  "node": "yapvmmcp at https://remote.yapweijun1996.com",
+  "gatewayImageId": "sha256:b4b96bb6c889154070a8f9b74c44fb2079c8d645781e77103864ef1456cf2e63",
+  "rollbackGatewayImageId": "sha256:491b7e7787b2b9c4063cc27c7199e5e2c152941fc26d7aa77b82905e94bc9244",
+  "guacdImageId": "sha256:5586b6d3c7bfb7aa24823d3fb93b9935b15752faf429108a125b1f47b1ecb44f (unchanged)",
+  "change": "Gateway container only recreated; guacd, x11vnc, tunnel and Access unchanged",
+  "verification": {
+    "nodeTests": "255 pass, 0 fail (manager rerun)",
+    "browserSuite": "26 pass, 0 errors (manager rerun, Chromium fixture)",
+    "managerMobileAudit": {
+      "device": "Chromium iPhone 15 emulation, portrait and landscape, disposable fixture",
+      "baselineBefore": "display pinned to top, 45% of portrait screen; no pinch/pan; no keyboard entry; side drawer paused input until desktop tap; launcher 1495px",
+      "after": "display centred; pinch to 4x with 0 pointer instructions during pinch and pan; tap still clicks; Keyboard focuses hidden input and 'ab' sends 4 key events; extra keys one row 44px; bottom sheet resumes input on close; Open desktop in first screen on iPhone 15 and iPhone SE portrait"
+    },
+    "live": "health 200, unauthenticated API 401, wrong Host 403, public 302 to Access, served page contains the new controls"
+  },
+  "notObserved": [
+    "Real iPhone Safari and Android Chrome soft keyboards, safe areas and installed PWA",
+    "Gesture feel on the real Ubuntu desktop",
+    "Landscape launcher still needs a short scroll"
+  ]
+}

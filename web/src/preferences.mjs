@@ -1,7 +1,7 @@
 import {applyTranslations, getLocale, onLocaleChange, resolveLocale, setLocale, SUPPORTED_LOCALES, t} from './i18n.mjs';
 
 export const THEME_COLORS = Object.freeze({light: '#f3f6f5', dark: '#111d23'});
-export const PREFERENCE_STORAGE = Object.freeze({theme: 'rdg:theme', locale: 'rdg:locale'});
+export const PREFERENCE_STORAGE = Object.freeze({theme: 'rdg:theme', locale: 'rdg:locale', touchMode: 'rdg:touch-mode'});
 const THEMES = Object.freeze(['system', 'light', 'dark']);
 
 export function resolveTheme(value) { return THEMES.includes(value) ? value : 'system'; }
@@ -13,6 +13,17 @@ export function browserLocale(navigator = globalThis.navigator) {
 function readPreference(storage, key) { try { return storage?.getItem(key); } catch { return null; } }
 function savePreference(storage, key, value) { try { storage?.setItem(key, value); } catch { /* Private browsing may refuse storage. */ } }
 function browserStorage(window) { try { return window?.localStorage; } catch { return null; } }
+
+export function resolveTouchMode(value) { return value === 'touch' ? 'touch' : 'trackpad'; }
+/** Only the non-sensitive local input preference is retained; no input or view coordinates. */
+export function loadTouchMode(window = globalThis.window) {
+  return resolveTouchMode(readPreference(browserStorage(window), PREFERENCE_STORAGE.touchMode));
+}
+export function saveTouchMode(value, window = globalThis.window) {
+  const mode = resolveTouchMode(value);
+  savePreference(browserStorage(window), PREFERENCE_STORAGE.touchMode, mode);
+  return mode;
+}
 
 /** Apply preferences synchronously before the app starts network/session work. */
 export function setupPreferences(options = {}) {

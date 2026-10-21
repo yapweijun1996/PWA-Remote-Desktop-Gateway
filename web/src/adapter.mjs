@@ -1,6 +1,7 @@
 import {t} from './i18n.mjs';
 import {RemoteInput} from './input.mjs';
 import {TransportMetrics,observeTunnelTransfer} from './transport-metrics.mjs';
+import {ViewZoom} from './view-zoom.mjs';
 
 /**
  * Pinned Guacamole 1.6.0 decodes image streams with ImageDecoder and never closes the returned VideoFrame: unclosed frames
@@ -47,7 +48,10 @@ export class DesktopAdapter {
     this.display.onstatistics=statistics=>metrics.displayStatistics(statistics);
     const capture=document.createElement('div');capture.className='capture';capture.tabIndex=0;capture.setAttribute('role','application');capture.setAttribute('aria-label',t('workspace.surfaceLabel'));
     capture.append(this.display.getElement());this.surface.replaceChildren(capture);
-    this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:this.display.getElement(),client:this.client,Guacamole:G});
+    this.view=new ViewZoom({surface:this.surface,capture,element:this.display.getElement(),size:()=>({width:this.display.getWidth(),height:this.display.getHeight()}),applyScale:scale=>{
+      this.input?.scalePointer(scale,this.display.getScale());this.display.scale(scale);
+    }});
+    this.input=new RemoteInput({...this.options,surface:capture,pointerSurface:this.display.getElement(),client:this.client,Guacamole:G,view:this.view});
     const failure=reason=>queueMicrotask(()=>{if(this.tunnel===tunnel)this.onFailure(reason);});
     this.client.onerror=()=>failure('TARGET_UNAVAILABLE');
     // Official tunnel invokes onerror before setting CLOSED. Defer app cleanup
@@ -57,7 +61,7 @@ export class DesktopAdapter {
       if(state===3){this.input.start(mode);this.fit();this.onState('CONNECTED');}
       if(state===5)failure('DISCONNECTED');
     };
-    this.display.onresize=()=>this.fit();
+    this.display.onresize=()=>this.resize();
     this.client.onclipboard=(stream,mimetype)=>{
       if(!this.clipboard || mode!=='control' || mimetype!=='text/plain'){stream.sendAck('UNSUPPORTED',0x0100);return;}
       let total=0,text='';const reader=new G.StringReader(stream);
@@ -66,12 +70,8 @@ export class DesktopAdapter {
     };
     this.onState('CONNECTING');this.client.connect('');
   }
-  fit(mode=this.scaleMode??'fit'){
-    this.scaleMode=mode;this.input?.pause();
-    if(!this.display)return;
-    const width=this.display.getWidth(),height=this.display.getHeight();
-    if(width&&height)this.display.scale(mode==='actual'?1:Math.min(this.surface.clientWidth/width,this.surface.clientHeight/height));
-  }
+  fit(mode=this.scaleMode??'fit'){this.scaleMode=mode;this.input?.pause();this.view?.fit(mode);}
+  resize(){this.input?.releasePointer();this.view?.resize();}
   sendClipboard(text){
     if(!this.clipboard||!this.client||this.input.mode!=='control')throw new Error('CLIPBOARD_DISABLED');
     // An empty stream would clear the remote clipboard.
@@ -98,8 +98,8 @@ export class DesktopAdapter {
     this.input?.dispose();this.input=null;
     this.stopMetrics?.();this.stopMetrics=null;
     this.metrics?.dispose();this.metrics=null;
-    if(this.display)this.display.onstatistics=null;
+    if(this.display){this.display.onstatistics=null;this.display.onresize=null;}
     if(this.client)this.client.disconnect();
-    this.client=null;this.tunnel=null;this.display=null;this.surface.replaceChildren();
+    this.client=null;this.tunnel=null;this.display=null;this.view=null;this.surface.replaceChildren();
   }
 }

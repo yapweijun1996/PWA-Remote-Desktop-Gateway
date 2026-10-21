@@ -1,7 +1,7 @@
 {
   "status": "PASS",
-  "version": "151.0.7922.34",
-  "build": "045b4c19eb27f440",
+  "version": "153.0.8010.12",
+  "build": "41c701fc31924172",
   "fixture": true,
   "realMac": false,
   "results": [
@@ -39,6 +39,97 @@
       "test": "Trusted signout keeps generic failures visible and refreshes an expired application before successful revocation and login",
       "status": "PASS",
       "level": "LOCAL_UI_ROUTE_FIXTURE"
+    },
+    {
+      "test": "Mobile launcher first-screen controls and <=1.3 viewport height",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE",
+      "measurements": {
+        "height": 659,
+        "viewport": 659,
+        "connectBottom": 473.875,
+        "consentBottom": 406.875,
+        "cardBottom": 260.875,
+        "collapsed": true
+      }
+    },
+    {
+      "test": "393x659 mobile touch workspace centers the actual Guacamole display",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "CDP real touch pinch and zoomed pan change the view without remote instructions",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Mobile bottom sheet pauses on open and resumes on close; Fit resets the local view",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "393x659 extra keys stay on one row or scroll horizontally with >=40px tap height",
+      "status": "PASS",
+      "level": "LOCAL_UI_ROUTE_FIXTURE",
+      "measurements": {
+        "keys": [
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          },
+          {
+            "top": 609,
+            "height": 44
+          }
+        ],
+        "clientWidth": 393,
+        "scrollWidth": 393,
+        "overflowX": "auto"
+      }
+    },
+    {
+      "test": "Mobile Keyboard button owns focused textarea; 229 text is deduplicated and Unicode refused visibly",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Touch-enabled mobile landscape keeps display centered and page contained",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
+    },
+    {
+      "test": "Input mode persists across reload and fresh connection",
+      "status": "PASS",
+      "level": "LOCAL_PROTOCOL_FIXTURE"
     },
     {
       "test": "Signed bootstrap, truthful readiness and clean first worker activation",

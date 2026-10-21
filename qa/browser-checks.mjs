@@ -73,6 +73,133 @@ async function checkBlockedDesktopUI(){
     pass('BLOCKED policy disables desktop preparation, display, connect intents and clipboard while diagnostics remain available','LOCAL_UI_ROUTE_FIXTURE');
   }finally{await blockedContext.close();}
 }
+async function checkMobileWorkspace(){
+  const mobileContext=await browser.newContext({ignoreHTTPSErrors:true,serviceWorkers:'block',viewport:{width:393,height:659},isMobile:true,hasTouch:true,deviceScaleFactor:3,
+    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
+  const p=await mobileContext.newPage();
+  p.on('pageerror',error=>errors.push(error.message));
+  p.on('console',message=>{if(message.type()==='error')unexpectedConsoleErrors++;});
+  await p.addInitScript(()=>{
+    window.fixtureInputCounts={mouse:0,key:0};
+    const send=WebSocket.prototype.send;
+    WebSocket.prototype.send=function(data){
+      if(typeof data==='string'&&globalThis.Guacamole?.Parser){
+        const parser=new Guacamole.Parser();
+        parser.oninstruction=opcode=>{if(Object.hasOwn(window.fixtureInputCounts,opcode))window.fixtureInputCounts[opcode]++;};
+        parser.receive(data);
+      }
+      return send.call(this,data);
+    };
+  });
+  const counts=()=>p.evaluate(()=>({...window.fixtureInputCounts}));
+  const geometry=()=>p.evaluate(()=>{
+    const surface=document.getElementById('surface').getBoundingClientRect(),display=document.querySelector('.capture > div').getBoundingClientRect();
+    return {x:display.x,y:display.y,width:display.width,height:display.height,cx:surface.x+surface.width/2,cy:surface.y+surface.height/2,scroll:document.documentElement.scrollHeight,viewport:innerHeight};
+  });
+  const centered=g=>Math.abs(g.x+g.width/2-g.cx)<1&&Math.abs(g.y+g.height/2-g.cy)<1;
+  const cdp=await mobileContext.newCDPSession(p);
+  const touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map(([x,y,id])=>({x,y,id,radiusX:4,radiusY:4,force:1}))});
+  try{
+    await p.goto(url);await waitState(p,'READY');
+    const launcher=await p.evaluate(()=>{
+      const connect=document.getElementById('connect').getBoundingClientRect(),consent=document.getElementById('consent').getBoundingClientRect(),card=document.querySelector('.device').getBoundingClientRect();
+      return {height:document.documentElement.scrollHeight,viewport:innerHeight,connectBottom:connect.bottom,consentBottom:consent.bottom,cardBottom:card.bottom,collapsed:!document.getElementById('connectionSettings').open};
+    });
+    check(launcher.collapsed&&launcher.height<=launcher.viewport*1.3,'Mobile collapsed launcher height target');
+    check(launcher.connectBottom<=launcher.viewport&&launcher.consentBottom<=launcher.viewport&&launcher.cardBottom<=launcher.viewport,'Mobile device, consent and Open desktop on first screen');
+    await p.screenshot({path:'output/playwright/production-mobile-launcher-393.png',fullPage:true});
+    results.push({test:'Mobile launcher first-screen controls and <=1.3 viewport height',status:'PASS',level:'LOCAL_UI_ROUTE_FIXTURE',measurements:launcher});
+    await connect(p);await p.locator('.capture').focus();
+    await p.waitForFunction(()=>document.querySelector('.capture > div')?.getBoundingClientRect().width>0);
+    let g=await geometry();check(centered(g)&&g.scroll<=g.viewport+1,'Mobile remote display centered without page scroll');
+    await p.screenshot({path:'output/playwright/production-mobile-centered-393.png'});
+    pass('393x659 mobile touch workspace centers the actual Guacamole display');
+    await p.waitForTimeout(100);
+    const before=await counts(),fitWidth=g.width;
+    await touch('touchStart',[[150,320,1],[240,320,2]]);
+    await touch('touchMove',[[100,320,1],[290,320,2]]);
+    await touch('touchMove',[[60,320,1],[330,320,2]]);
+    await touch('touchEnd',[]);
+    await p.waitForTimeout(150);
+    g=await geometry();const after=await counts();
+    check(g.width>fitWidth*1.5&&g.width<=fitWidth*4+.5,'CDP pinch changes local zoom within bounds');
+    check(after.mouse===before.mouse&&after.key===before.key,'Pinch sends no pointer or key instructions');
+    const panStart=await geometry(),beforePan=await counts();
+    await touch('touchStart',[[140,300,1],[240,300,2]]);
+    await touch('touchMove',[[100,270,1],[200,270,2]]);
+    await touch('touchEnd',[]);await p.waitForTimeout(150);
+    const panEnd=await geometry(),afterPan=await counts();
+    check(Math.abs(panStart.x-panEnd.x)>5||Math.abs(panStart.y-panEnd.y)>5,'Zoomed two-finger drag pans local display');
+    check(afterPan.mouse===beforePan.mouse&&afterPan.key===beforePan.key,'Local pan sends no remote input');
+    pass('CDP real touch pinch and zoomed pan change the view without remote instructions');
+    await openWorkspaceControls(p);
+    check((await p.locator('#inputStatus').innerText()).includes('paused'),'Mobile sheet pauses input');
+    const sheet=await p.locator('#workspaceMenu').boundingBox();check(sheet.width>=390&&sheet.y>0,'Mobile controls use bottom sheet');
+    check(await p.locator('#fullscreen').isHidden(),'iPhone-identified fixture hides fullscreen even when Chromium provides the API');
+    await p.locator('#fitBtn').click();
+    await p.waitForFunction(()=>document.activeElement?.classList.contains('capture'));
+    check((await p.locator('#inputStatus').innerText()).includes('active'),'Closing mobile sheet automatically resumes input');
+    check(centered(await geometry())&&Math.abs((await geometry()).width-fitWidth)<1,'Fit resets zoom and center');
+    await openWorkspaceControls(p);await p.locator('#closeWorkspacePanel').click();
+    await p.waitForFunction(()=>document.activeElement?.classList.contains('capture'));
+    check((await p.locator('#inputStatus').innerText()).includes('active'),'Close button resumes without a desktop tap');
+    pass('Mobile bottom sheet pauses on open and resumes on close; Fit resets the local view');
+    await openWorkspaceControls(p);await p.locator('#touchModeBtn').click();
+    check(await p.evaluate(()=>localStorage.getItem('rdg:touch-mode'))==='touch','Touch mode preference persists');
+    await p.locator('#keyboardBtn').click();
+    await p.waitForFunction(()=>document.activeElement?.id==='softKeyboard');
+    check(await p.locator('#softKeys').isVisible(),'Keyboard action focuses off-screen textarea and exposes extra keys');
+    const softKeyRow=await p.locator('#softKeys').evaluate(row=>{
+      const keys=[...row.querySelectorAll('button')].map(button=>{
+        const rect=button.getBoundingClientRect();return {top:rect.top,height:rect.height};
+      });
+      return {keys,clientWidth:row.clientWidth,scrollWidth:row.scrollWidth,overflowX:getComputedStyle(row).overflowX};
+    });
+    check(softKeyRow.keys.length===9&&softKeyRow.keys.every(key=>key.height>=40&&Math.abs(key.top-softKeyRow.keys[0].top)<1)
+      &&(softKeyRow.scrollWidth<=softKeyRow.clientWidth+1||['auto','scroll'].includes(softKeyRow.overflowX)),
+      '393x659 extra keys stay on one row, scrolling horizontally if needed, with >=40px tap height');
+    results.push({test:'393x659 extra keys stay on one row or scroll horizontally with >=40px tap height',status:'PASS',level:'LOCAL_UI_ROUTE_FIXTURE',measurements:softKeyRow});
+    await p.evaluate(()=>{
+      Object.defineProperty(visualViewport,'height',{configurable:true,value:459});
+      visualViewport.dispatchEvent(new Event('resize'));
+    });
+    const keyboardLayout=await p.evaluate(()=>{
+      const desktop=document.getElementById('workspace').getBoundingClientRect(),keys=document.getElementById('softKeys').getBoundingClientRect();
+      return {bottom:desktop.bottom,row:keys.height,focused:document.activeElement?.id};
+    });
+    check(keyboardLayout.bottom<=459-keyboardLayout.row+1&&keyboardLayout.focused==='softKeyboard','visualViewport shrink keeps desktop above keyboard and extra keys without losing ownership');
+    await p.evaluate(()=>{delete visualViewport.height;visualViewport.dispatchEvent(new Event('resize'));});
+    const beforeText=await counts();
+    await p.evaluate(()=>{
+      const sink=document.getElementById('softKeyboard');
+      sink.dispatchEvent(new KeyboardEvent('keydown',{bubbles:true,key:'Unidentified',keyCode:229}));
+      sink.dispatchEvent(new InputEvent('beforeinput',{bubbles:true,cancelable:true,inputType:'insertText',data:'a'}));
+      sink.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:'a'}));
+    });
+    check((await counts()).key===beforeText.key+2,'229/Unidentified soft input sends one Latin-1 press/release');
+    check(await p.locator('#softKeyboard').inputValue()==='','Soft keyboard sink retains no text');
+    await p.evaluate(()=>document.getElementById('softKeyboard').dispatchEvent(new InputEvent('beforeinput',{bubbles:true,cancelable:true,inputType:'insertText',data:'你'})));
+    check((await counts()).key===beforeText.key+2&&await p.locator('#keyboardNotice').isVisible(),'Unverified Unicode blocked with visible Text/Clipboard notice');
+    const beforeLatch=await counts();
+    await p.locator('[data-soft-key="ControlLeft"]').click();
+    await p.evaluate(()=>document.getElementById('softKeyboard').dispatchEvent(new InputEvent('beforeinput',{bubbles:true,cancelable:true,inputType:'insertText',data:'c'})));
+    check((await counts()).key===beforeLatch.key+4&&await p.locator('[data-soft-key="ControlLeft"]').getAttribute('aria-pressed')==='false','Extra Ctrl is a one-shot latch through existing key path');
+    await p.screenshot({path:'output/playwright/production-mobile-keyboard-393.png'});
+    pass('Mobile Keyboard button owns focused textarea; 229 text is deduplicated and Unicode refused visibly');
+    await openWorkspaceControls(p);await p.locator('#closeWorkspacePanel').click();
+    await p.setViewportSize({width:659,height:393});
+    await openWorkspaceControls(p);await p.locator('#fitBtn').click();
+    check(centered(await geometry()),'Mobile landscape display centered');
+    check(await p.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'Mobile landscape no page scrolling');
+    await p.screenshot({path:'output/playwright/production-mobile-landscape.png'});
+    pass('Touch-enabled mobile landscape keeps display centered and page contained');
+    await endWorkspace(p);await waitState(p,'READY');
+    await p.reload();await waitState(p,'READY');await connect(p);await openWorkspaceControls(p);
+    check(await p.locator('#touchModeBtn').innerText()==='Touch','Touch mode restored after reload');
+    await endWorkspace(p);await waitState(p,'READY');
+    pass('Input mode persists across reload and fresh connection');
+  }finally{await cdp.detach();await mobileContext.close();}
+}
 async function checkOwnerSetupUI(){
   // These routes prove UI behavior only: no credential store, trusted-cookie crypto or real VNC.
   const uiContext=await browser.newContext({ignoreHTTPSErrors:true,serviceWorkers:'block',viewport:{width:390,height:850}});
@@ -180,6 +307,7 @@ async function checkOwnerSetupUI(){
     check(await password.inputValue()===''&&await uiPage.getByRole('button',{name:'Save desktop password',exact:true}).isDisabled(),'Password cleared before credential response is released');
     check(await noPasswordStorage()&&credentialRequests===5&&credentialShapeValid&&credentialCsrfPresent,'UI credential requests keep expected JSON and CSRF shape without password storage');
     releaseCredentialResponse();await waitState(uiPage,'READY');
+    if(!await uiPage.locator('#connectionSettings').evaluate(node=>node.open))await uiPage.locator('#connectionSettings > summary').click();
     check(!await uiPage.locator('#credentialSetup').isVisible()&&await uiPage.locator('#prepare').isVisible(),'Configured OWNER_SETUP directly displays connection settings');
     check(!await uiPage.locator('#profile').isDisabled(),'Configured desktop preparation enabled');
     check(await uiPage.locator('#mode option').evaluateAll(options=>options.map(option=>option.value).join(','))==='control,view','Control and view options available together');
@@ -245,6 +373,9 @@ const workerPath='web/dist/sw.js',originalWorker=await readFile(workerPath,'utf8
 try{
   await checkBlockedDesktopUI();
   await checkOwnerSetupUI();
+  // Bootstrap-heavy UI fixtures and mobile reload checks share one identity: preserve the server's 10/minute limit.
+  await new Promise(resolve=>setTimeout(resolve,61000));
+  await checkMobileWorkspace();
   await page.goto(url);await waitState(page,'READY');await page.waitForFunction(()=>navigator.serviceWorker.controller);
   check(await page.getByText('Gateway reachable — desktop not tested',{exact:true}).isVisible(),'Truthful readiness');
   check(!await page.locator('#updateBanner').isVisible(),'Initial install must not produce update prompt');pass('Signed bootstrap, truthful readiness and clean first worker activation');
@@ -281,6 +412,6 @@ try{
   check(errors.length===0,'Browser JavaScript errors: '+errors.join(';'));check(unexpectedConsoleErrors===0,'Unexpected browser console errors');
   await writeArtifact('qa/implementation/browser-results.json',JSON.stringify({status:'PASS',version:browser.version(),build:JSON.parse(await readFile('web/dist/build.json','utf8')).build,fixture:true,realMac:false,results,errors,unexpectedConsoleErrors,expectedOfflineErrors,expectedUiErrors},null,2)+'\n');
   console.log(JSON.stringify({browser:browser.version(),passed:results.length,errors:errors.length}));
-}catch(error){await writeArtifact('qa/implementation/browser-results.json',JSON.stringify({status:'FAIL',fixture:true,realMac:false,results,errors,unexpectedConsoleErrors},null,2)+'\n');await page.screenshot({path:'output/playwright/browser-failure.png',fullPage:true});console.error(JSON.stringify({state:await page.locator('#status').innerText(),notice:await page.locator('#notice').innerText(),errors}));throw error;}finally{await writeFile(workerPath,originalWorker);await browser.close();}
+}catch(error){await writeArtifact('qa/implementation/browser-results.json',JSON.stringify({status:'FAIL',fixture:true,realMac:false,results,errors,unexpectedConsoleErrors},null,2)+'\n');await page.screenshot({path:'output/playwright/browser-failure.png',fullPage:true});console.error(JSON.stringify({reason:error.message,...await page.evaluate(()=>({state:document.getElementById('status')?.textContent,notice:document.getElementById('notice')?.textContent})),errors}));throw error;}finally{await writeFile(workerPath,originalWorker);await browser.close();}
 
 }
