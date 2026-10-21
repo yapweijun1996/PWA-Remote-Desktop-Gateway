@@ -180,3 +180,13 @@ test('fit scales the canvas to the surface and keeps pointer math on the same sc
   r.surface.clientWidth=640;r.surface.clientHeight=720;r.adapter.fit('fit');assert.equal(canvas.style.width,'640px');assert.equal(canvas.style.height,'360px');assert.equal(r.adapter.scale,0.5);
   r.adapter.fit('actual');assert.equal(canvas.style.width,'1280px');assert.equal(r.adapter.scale,1);
 });
+
+test('agent view pinch and resize preserve input ownership and send coordinates through exactly one scale division',async()=>{
+  const r=rig();await r.connect();r.surface.clientWidth=640;r.surface.clientHeight=480;r.adapter.fit('fit');
+  r.adapter.input.resume();assert.equal(r.adapter.input.active(),true);
+  r.adapter.view.pinch({anchor:{x:320,y:240},scale:0.75});assert.equal(r.adapter.scale,0.75);
+  r.adapter.input.sendPointer(new Guacamole.Mouse.State(300,150,false,false,false,false,false));r.runFrames();
+  const move=r.log.sent.filter(message=>message.t==='m').at(-1);assert.deepEqual([move.x,move.y],[400,200]);
+  r.surface.clientWidth=512;r.adapter.resize();assert.ok(Math.abs(r.adapter.view.snapshot().zoom-1.5)<1e-9);assert.equal(r.adapter.input.active(),true);
+  r.adapter.fit('fit');assert.equal(r.adapter.view.snapshot().zoom,1);r.adapter.disconnect();
+});

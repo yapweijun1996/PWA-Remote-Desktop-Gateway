@@ -99,3 +99,9 @@ test('dispose cancels the frame callback and ignores later input',()=>{
   const r=rig();r.sink.sendMouseState(new r.State(1,1));assert.equal(r.pending(),1);
   r.sink.dispose();assert.equal(r.pending(),0);r.sink.sendKeyEvent(1,99);r.sink.wheel(1,1,5);r.frame(100);assert.equal(r.sent.length,0);
 });
+
+test('local gesture takeover discards coalesced pointer and wheel without sending a release or replay',()=>{
+  const r=rig();r.sink.sendMouseState(new r.State(12,34));r.sink.wheel(12,34,80);assert.equal(r.pending(),1);
+  r.sink.discardPending();assert.equal(r.pending(),0);r.frame(100);assert.deepEqual(r.sent,[]);
+  r.sink.sendMouseState(new r.State(12,34,true));assert.deepEqual(r.sent,[{t:'m',x:12,y:34,b:1}]);r.sink.discardPending();r.sink.sendMouseState(new r.State(12,34,false));assert.equal(r.sent.at(-1).b,0);
+});

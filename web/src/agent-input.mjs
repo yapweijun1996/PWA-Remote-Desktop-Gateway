@@ -38,6 +38,11 @@ export class AgentInputSink {
   }
   /** RemoteInput's `onWheel` hook: `x`,`y` in element pixels, `dy` in remote pixels (positive scrolls down). */
   wheel(x,y,dy){const point=this.toVideo(x,y);this.addWheel(point.x,point.y,dy,false);}
+  /** Local-only gesture takeover must discard coalesced traffic without emitting any remote instruction. */
+  discardPending(){
+    this.pendingMove=null;this.pendingWheel=0;
+    if(this.frameId!==null)this.cancelFrame(this.frameId);this.frameId=null;
+  }
   /** Called after RemoteInput released keys and buttons (pause, blur, hide, disconnect, profile change). */
   releaseAll(){
     this.pendingMove=null;this.pendingWheel=0;this.lastMask=0;this.pointerUp=this.pointerDown=false;

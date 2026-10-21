@@ -4,8 +4,10 @@ import {AgentAdapter} from './agent-adapter.mjs';
 import {setupUpdates} from './pwa.mjs';
 import {release} from './release.mjs';
 import {t,applyTranslations,onLocaleChange,formatDate,TRANSLATIONS} from './i18n.mjs';
-import {setupPreferences} from './preferences.mjs';
+import {setupPreferences,loadTouchMode,saveTouchMode} from './preferences.mjs';
 import {NetworkHealth,connectionAssessment} from './connection-health.mjs';
+import {setupSoftKeyboard} from './soft-keyboard.mjs';
+import {setupMobileControls} from './mobile-controls.mjs';
 
 const $=id=>document.getElementById(id),api=new GatewayAPI();
 let adapter=null,desktopIntentId=null,recoveryIntentId=null,device=null,diag=null,nodeId='',epoch=0,busy=false,update=null,updateSetup=false;
@@ -18,6 +20,15 @@ let activeDisplayQuality=null,metricsTimer=null,latencyRequest=0;
 const networkHealth=new NetworkHealth();let nextNetworkProbe=0;
 const displayQualities=['low','balanced','clear'];
 const backendNames=['agent','vnc'];
+let touchMode=loadTouchMode();
+const softKeyboard=setupSoftKeyboard({textarea:$('softKeyboard'),row:$('softKeys'),getInput:()=>adapter?.input,
+  getProfile:()=>$('profile').value,onNotice:message=>{$('inputStatus').textContent=message;$('keyboardNotice').textContent=message;$('keyboardNotice').hidden=false;},
+  onResize:()=>adapter?.resize?.()});
+function renderTouchMode(){
+  $('touchModeBtn').dataset.i18n=touchMode==='touch'?'mobile.touch':'mobile.trackpad';
+  $('touchModeBtn').textContent=t($('touchModeBtn').dataset.i18n);
+  $('touchModeBtn').setAttribute('aria-label',t('mobile.mode',{mode:$('touchModeBtn').textContent}));
+}
 /** The host agent needs a server opt-in (diagnostics list it) and a browser that can decode H.264 with WebCodecs. */
 function agentAvailable(){return Array.isArray(diag?.backends)&&diag.backends.includes('agent')&&typeof VideoDecoder==='function'&&typeof EncodedVideoChunk==='function';}
 function selectedBackend(){return agentAvailable()&&$('backend').value==='agent'?'agent':'vnc';}
@@ -40,6 +51,7 @@ function renderBackend(){
   applyTranslations();
 }
 function applyCapabilities({control,clipboard}){
+  $('keyboardBtn').disabled=!control;$('touchModeBtn').disabled=!control;
   $('clipboardBtn').disabled=!clipboard;$('clipboardBtn').dataset.i18nTitle=clipboard?'clipboard.transferTitle':'clipboard.enableTitle';$('clipboardBtn').title=t($('clipboardBtn').dataset.i18nTitle);
   $('keysBtn').disabled=!control;$('keysBtn').dataset.i18nTitle=control?'workspace.remoteKeys':'workspace.viewInputUnavailable';$('keysBtn').title=t($('keysBtn').dataset.i18nTitle);
   setMessage('clipboardStatus',clipboard?'clipboard.enabled':'clipboard.disabled');
@@ -100,8 +112,7 @@ function updateState(value,quiet=false){
 
 function closeWorkspaceMenu(restoreFocus=false){
   clearInterval(metricsTimer);metricsTimer=null;cancelNetworkProbe();
-  const wasOpen=$('workspaceMenu').open;if(wasOpen)$('workspaceMenu').close();$('moreBtn').setAttribute('aria-expanded','false');
-  if(wasOpen&&restoreFocus&&document.body.classList.contains('viewing'))$('moreBtn').focus();
+  controls.close({restoreFocus,resume:restoreFocus});
 }
 function workspaceLayout(viewing){
   closeWorkspaceMenu();document.body.classList.toggle('viewing',viewing);
@@ -118,6 +129,7 @@ function updateWorkspaceIdentity(){
 function clearCredentialInput(){$('desktopPassword').value='';}
 function clearPrivate(){
   clearNetworkMeasurements();
+  softKeyboard.close();
   clearCredentialInput();desktopIntentId=null;recoveryIntentId=null;$('recoverConnection').hidden=true;diag=null;$('credentialSetup').hidden=true;$('changeCredential').hidden=true;
   messages.delete($('credentialStatus'));$('credentialStatus').textContent='';$('trustedDevicesBtn').hidden=true;$('workspaceTrustedDevices').hidden=true;$('trustedDevicesList').replaceChildren();messages.delete($('trustedDevicesStatus'));$('trustedDevicesStatus').textContent='';
   workspaceLayout(false);
@@ -229,6 +241,7 @@ async function cancelIntent(intentId){
 }
 async function end(reason='READY',message){
   clearNetworkMeasurements();
+  softKeyboard.close();
   const intentId=desktopIntentId;desktopIntentId=null;const request=++epoch;busy=true;
   clearCredentialInput();adapter?.disconnect();adapter=null;$('surface').replaceChildren();$('localText').value='';$('remoteText').value='';
   for(const d of document.querySelectorAll('dialog[open]'))d.close();
@@ -279,8 +292,8 @@ async function connect(){
     rememberProfile();updateWorkspaceIdentity();
     $('liveProfile').value=$('profile').value;workspaceLayout(true);
     const connectingAdapter=new (engine==='agent'?AgentAdapter:DesktopAdapter)({surface:$('surface'),profile:$('profile').value,keysyms:diag.keysyms,clipboard,scrollSpeed:$('scrollSpeed').value,
-      onReady:capabilities=>{if(request!==epoch||adapter!==connectingAdapter)return;applyCapabilities(capabilities);},
-      onState:value=>{if(request!==epoch||adapter!==connectingAdapter)return;state(value);if(value==='CONNECTED'){busy=false;syncConnectButton();}},onFailure:reason=>{if(request===epoch&&adapter===connectingAdapter)void end(reason,'connection.'+reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
+      onReady:capabilities=>{if(request!==epoch||adapter!==connectingAdapter)return;applyCapabilities(capabilities);adapter.input?.setTouchMode(touchMode);},
+      onState:value=>{if(request!==epoch||adapter!==connectingAdapter)return;state(value);if(value==='CONNECTED'){adapter.input?.setTouchMode(touchMode);busy=false;syncConnectButton();}},onFailure:reason=>{if(request===epoch&&adapter===connectingAdapter)void end(reason,'connection.'+reason);},onInput:message=>{if(request!==epoch||adapter!==connectingAdapter)return;$('inputStatus').textContent=message;$('inputStatus').title=message;for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');},
       onClipboard:text=>{if(request!==epoch||adapter!==connectingAdapter)return;$('remoteText').value=text;setMessage('clipboardStatus','app.clipboardStatus.received_text_held_in_memory_copy');
         // Host agent: text copied on the Mac is also copied here. Browsers may refuse without a user gesture (Safari); the Copy button remains.
         if(connectingAdapter.backend==='agent'&&navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>{if(request===epoch&&adapter===connectingAdapter)setMessage('clipboardStatus','clipboard.autoCopied');},()=>{});}});
@@ -292,7 +305,7 @@ async function connect(){
 }
 function dialog(id){
   const opener=document.activeElement;
-  clearCredentialInput();adapter?.input?.pause();
+  clearCredentialInput();softKeyboard.close();adapter?.input?.pause();
   $(id).addEventListener('close',()=>{if(opener?.isConnected&&opener.getClientRects().length)opener.focus();},{once:true});
   $(id).showModal();
 }
@@ -317,12 +330,15 @@ $('logout').onclick=async()=>{
   state('AUTH_REQUIRED','app.notice.node_signed_out_access_sign_out');$('reauth').hidden=false;
 };
 $('release').onclick=()=>{adapter?.input?.pause();for(const b of document.querySelectorAll('[aria-pressed]'))b.setAttribute('aria-pressed','false');};
-$('pause').onclick=()=>{adapter?.input?.pause();closeWorkspaceMenu(true);};$('keysBtn').onclick=()=>dialog('keysDialog');$('clipboardBtn').onclick=()=>dialog('clipboardDialog');
-$('moreBtn').onclick=()=>{
-  if($('workspaceMenu').open){closeWorkspaceMenu(true);return;}
-  clearCredentialInput();adapter?.input?.pause();$('workspaceMenu').showModal();$('moreBtn').setAttribute('aria-expanded','true');$('closeWorkspacePanel').focus();
-  renderNetworkMeasurements();clearInterval(metricsTimer);metricsTimer=setInterval(renderNetworkMeasurements,1000);
-};
+$('pause').onclick=()=>{adapter?.input?.pause();controls.close({restoreFocus:true,resume:false});};$('keysBtn').onclick=()=>dialog('keysDialog');$('clipboardBtn').onclick=()=>dialog('clipboardDialog');
+const controls=setupMobileControls({button:$('moreBtn'),panel:$('workspaceMenu'),closeButton:$('closeWorkspacePanel'),
+  launcherSettings:$('connectionSettings'),workspaceSettings:$('workspaceAdvanced'),fullscreen:$('fullscreen'),getInput:()=>adapter?.input,
+  beforeOpen:()=>{clearCredentialInput();softKeyboard.close();$('keyboardNotice').hidden=true;},
+  onOpen:()=>{renderNetworkMeasurements();clearInterval(metricsTimer);metricsTimer=setInterval(renderNetworkMeasurements,1000);},
+  onClose:()=>{clearInterval(metricsTimer);metricsTimer=null;cancelNetworkProbe();}});
+$('keyboardBtn').onclick=()=>{controls.close({restoreFocus:false,resume:false});softKeyboard.open();};
+$('fitBtn').onclick=()=>{$('scale').value='fit';adapter?.fit('fit');closeWorkspaceMenu(true);};
+$('touchModeBtn').onclick=()=>{softKeyboard.close();touchMode=saveTouchMode(touchMode==='trackpad'?'touch':'trackpad');adapter?.input?.setTouchMode(touchMode);renderTouchMode();};
 $('displayQuality').onchange=rememberDisplayQuality;
 $('liveDisplayQuality').onchange=()=>{$('applyDisplayQuality').disabled=busy||!adapter||$('liveDisplayQuality').value===activeDisplayQuality;};
 $('applyDisplayQuality').onclick=async()=>{
@@ -348,29 +364,12 @@ async function measureNetwork(){
 }
 $('measureNetwork').onclick=measureNetwork;
 $('liveNetwork').onchange=()=>{nextNetworkProbe=performance.now()+5000;if($('liveNetwork').checked)void measureNetwork();else cancelNetworkProbe();};
-$('closeWorkspacePanel').onclick=()=>closeWorkspaceMenu(true);
-$('workspaceMenu').addEventListener('cancel',event=>{event.preventDefault();closeWorkspaceMenu(true);});
-$('workspaceMenu').addEventListener('keydown',event=>{
-  if(event.key!=='Tab')return;
-  const controls=[...$('workspaceMenu').querySelectorAll('button:not(:disabled),select:not(:disabled),a[href],[tabindex]:not([tabindex="-1"])')].filter(node=>node.getClientRects().length);
-  const first=controls[0],last=controls.at(-1);
-  if(first&&last&&((event.shiftKey&&document.activeElement===first)||(!event.shiftKey&&document.activeElement===last))){event.preventDefault();(event.shiftKey?last:first).focus();}
-});
-$('workspaceMenu').addEventListener('close',()=>{
-  if($('workspaceMenu').open)return;
-  clearInterval(metricsTimer);metricsTimer=null;cancelNetworkProbe();
-  $('moreBtn').setAttribute('aria-expanded','false');
-  if(document.body.classList.contains('viewing')&&!document.querySelector('dialog[open]'))$('moreBtn').focus();
-});
-$('workspaceMenu').addEventListener('click',event=>{
-  const r=$('workspaceMenu').getBoundingClientRect();
-  if(event.target===$('workspaceMenu')&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom))closeWorkspaceMenu(true);
-});
 $('workspaceProfileBtn').onclick=()=>dialog('keysDialog');
 $('backend').onchange=()=>{rememberBackend();renderBackend();};
 $('profile').onchange=()=>{rememberProfile();updateProfileHelp();};
-$('liveProfile').onchange=()=>{adapter?.input?.setProfile($('liveProfile').value);$('profile').value=$('liveProfile').value;rememberProfile();updateProfileHelp();updateWorkspaceIdentity();};
-$('scale').onchange=()=>adapter?.fit($('scale').value);$('scrollSpeed').onchange=()=>adapter?.input?.setScrollSpeed($('scrollSpeed').value);$('commandKey').onchange=()=>adapter?.input?.setCommandKey($('commandKey').value);window.addEventListener('resize',()=>adapter?.fit($('scale').value));
+$('liveProfile').onchange=()=>{softKeyboard.close();adapter?.input?.setProfile($('liveProfile').value);$('profile').value=$('liveProfile').value;rememberProfile();updateProfileHelp();updateWorkspaceIdentity();softKeyboard.refresh();};
+$('scale').onchange=()=>adapter?.fit($('scale').value);$('scrollSpeed').onchange=()=>adapter?.input?.setScrollSpeed($('scrollSpeed').value);$('commandKey').onchange=()=>adapter?.input?.setCommandKey($('commandKey').value);
+window.addEventListener('resize',()=>{if(!controls.mobile()&&!document.body.classList.contains('soft-keyboard-open'))adapter?.input?.pause();adapter?.resize?.();});
 $('fullscreen').onclick=async()=>{closeWorkspaceMenu(true);try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{setMessage('inputStatus','app.inputStatus.fullscreen_unavailable_all_remote_controls_remain');}};
 for(const [label,key] of [['Command','CommandLeft'],['Option','OptionLeft'],['Control','ControlLeft'],['Shift','ShiftLeft'],['Esc','keysym:65307'],['Tab','keysym:65289'],['←','keysym:65361'],['↑','keysym:65362'],['→','keysym:65363'],['↓','keysym:65364'],['Backspace','keysym:65288'],['Delete','keysym:65535'],['Enter','keysym:65293']]){
   const b=document.createElement('button');b.textContent=label;const keyNames={Command:'command',Option:'option',Control:'control',Shift:'shift',Esc:'escape',Tab:'tab',Backspace:'backspace',Delete:'delete',Enter:'enter'};if(keyNames[label])setMessage(b,'keys.'+keyNames[label]);
@@ -422,9 +421,10 @@ onLocaleChange(()=>{
   for(const button of document.querySelectorAll('[data-trusted-id]'))button.setAttribute('aria-label',t('trusted.revokeLabel',{id:button.dataset.trustedId}));
   updateProfileHelp();updateWorkspaceIdentity();adapter?.input?.pause();
   renderNetworkMeasurements();
+  renderTouchMode();softKeyboard.refresh();
   if($('moreBtn').dataset.updateDescription)$('moreBtn').setAttribute('aria-description',t($('moreBtn').dataset.updateDescription));
   if(adapter?.input?.surface)adapter.input.surface.setAttribute('aria-label',t('workspace.surfaceLabel'));
 });
 setupPreferences({onChange:()=>adapter?.input?.pause()});
-applyTranslations();renderVersion({current:release,target:null});
+applyTranslations();renderTouchMode();renderVersion({current:release,target:null});
 void initialize();

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {setImmediate} from 'node:timers/promises';
 import {getLocale, setLocale} from './i18n.mjs';
-import {browserLocale, PREFERENCE_STORAGE, resolveTheme, setupPreferences, THEME_COLORS} from './preferences.mjs';
+import {browserLocale, loadTouchMode, saveTouchMode, PREFERENCE_STORAGE, resolveTheme, setupPreferences, THEME_COLORS} from './preferences.mjs';
 
 class Element extends EventTarget {
   constructor(attributes = {}) { super(); this.attributes = new Map(Object.entries(attributes)); this.dataset = {}; this.style = {}; this.value = ''; this.textContent = ''; this.hidden = false; this.disabled = false; }
@@ -26,6 +26,19 @@ function fixture({dark = false, standalone = false, saved = {}, navigator = {lan
   const document = {nodeType: 9, documentElement: new Element(), getElementById: id => nodes[id] ?? null, querySelectorAll: selector => selector === 'meta[name="theme-color"]' ? metas : []};
   return {window, document, navigator, nodes, metas, darkQuery, displayQuery, stored};
 }
+
+test('touch preference persists only valid modes and tolerates denied browser storage', () => {
+  const f=fixture({saved:{'rdg:touch-mode':'injected'}});
+  assert.equal(loadTouchMode(f.window),'trackpad');
+  assert.equal(saveTouchMode('touch',f.window),'touch');
+  assert.equal(loadTouchMode(f.window),'touch');
+  assert.deepEqual([...f.stored],[[PREFERENCE_STORAGE.touchMode,'touch']]);
+  saveTouchMode('untrusted',f.window);
+  assert.equal(loadTouchMode(f.window),'trackpad');
+  const denied={get localStorage(){throw new Error('Denied');}};
+  assert.equal(loadTouchMode(denied),'trackpad');
+  assert.equal(saveTouchMode('touch',denied),'touch');
+});
 
 test('system theme and browser locale apply synchronously; system changes only affect system choice', () => {
   setLocale('en');
