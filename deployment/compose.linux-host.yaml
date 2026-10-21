@@ -1,0 +1,16 @@
+# Overlay for a Linux Docker host (for example the yapvmmcp UTM guest).
+# Use with compose.owner-setup.yaml. On Linux, host.docker.internal is not built in:
+# map it to the host gateway (docker0, normally 172.17.0.1), where the VNC server
+# must listen. The fixed backend subnet lets the host firewall allow only this project.
+services:
+  guacd:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  gateway:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+networks:
+  backend:
+    ipam:
+      config:
+        - subnet: 172.31.120.0/24

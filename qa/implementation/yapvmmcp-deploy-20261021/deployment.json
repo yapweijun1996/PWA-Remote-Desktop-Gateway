@@ -1,0 +1,64 @@
+{
+  "status": "LIVE_OWNER_DESKTOP_OBSERVED",
+  "recordedAt": "2026-10-21",
+  "sourceCommit": "0f1b37af6ab5f9194a5153224a7936858657e0d7",
+  "deploymentBranchCommits": ["814feab", "ea3c87d"],
+  "scope": "OWNER_APPROVED_YAPVMMCP_UTM_GUEST_ONLY",
+  "url": "https://remote.yapweijun1996.com",
+  "replaces": "Mac mini node (qa/implementation/mac-mini-deploy-20261005); its connector LaunchAgent com.rdg.mac-mini.cloudflared was unloaded, plist kept for rollback. Root cause of that node's outage: OrbStack was not running on the Mac mini.",
+  "target": {
+    "host": "yapvmmcp UTM guest, Ubuntu 24.04.5 LTS arm64, XFCE on X11 display :0",
+    "vncServer": "x11vnc 0.9.16-10, systemd x11vnc-rdg.service as ai-agent, -rfbauth password file, listens only on 172.17.0.1:5900 (IPv6 disabled with -noipv6 -rfbportv6 -1)",
+    "firewall": "UFW allow 172.31.120.0/24 -> 172.17.0.1:5900/tcp only; another container on the default bridge was blocked",
+    "configTargetOS": "macOS (schema-required value; actual target is Linux). Keysyms set for Linux: Command=Super, Option=Alt, Control=Control."
+  },
+  "mode": {
+    "desktopPolicy": "OWNER_SETUP",
+    "trustedDevices": false,
+    "hostAgent": false
+  },
+  "build": {
+    "nodeTests": "219 pass, 0 fail",
+    "dependencyLock": "11 runtime JAR digests, SQLite natives, official browser artifact and 393 Ubuntu package records verified",
+    "gatewayImageId": "sha256:491b7e7787b2b9c4063cc27c7199e5e2c152941fc26d7aa77b82905e94bc9244",
+    "guacdImageId": "sha256:5586b6d3c7bfb7aa24823d3fb93b9935b15752faf429108a125b1f47b1ecb44f",
+    "architecture": "linux/arm64",
+    "imageTests": "test:official-guacd PASS, test:os-lock PASS",
+    "buildNote": "Built in the guest (Node 22, JDK 21, buildx). The arm64 guacd locks were refreshed because the archive had retired locked security versions; the package set was unchanged."
+  },
+  "runtime": {
+    "composeProject": "rdg-yapvmmcp",
+    "composeFiles": ["deployment/compose.owner-setup.yaml", "deployment/compose.linux-host.yaml"],
+    "published": "127.0.0.1:32120 only; guacd 4822 not published; VNC on the docker0 address only",
+    "privateConfigDir": "/home/ai-agent/rdg-yapvmmcp (0700; device.json, rdg.env, compose copies 0600; ACL u:10001:r on device.json), outside Git",
+    "vncKey": "docker volume rdg-yapvmmcp_rdg-vnc-key, 32 bytes, 0600, uid 10001, value never displayed",
+    "encryptedCredential": "credentials/vnc.json 0600 uid 10001, seeded with deployment/tools/SeedVncCredential.java from a root-only file on stdin; the owner does not type a VNC password"
+  },
+  "access": {
+    "application": "Existing RDG remote application (unchanged)",
+    "team": "kb-api.cloudflareaccess.com",
+    "loginMethods": "One-time PIN to the owner email only",
+    "otherApplicationsChanged": 0
+  },
+  "tunnel": {
+    "id": "7843af56-012c-48f1-890d-1614d495aa5b",
+    "service": "vm-mcp-cloudflared (shared guest tunnel)",
+    "change": "Additive rule remote.yapweijun1996.com -> http://127.0.0.1:32120 before the 404 fallback; backup /etc/cloudflared/vm-mcp.yml.bak-before-rdg-20261021",
+    "dns": "cloudflared tunnel route dns --overwrite-dns with the explicit tunnel UUID and origin cert, no config file",
+    "incident": "The restart took every hostname on the shared tunnel offline from 09:08:47 to 09:09:18 UTC (about 31 s, graceful-shutdown wait); all recovered with 4 registered connections."
+  },
+  "verification": {
+    "localUnauthenticatedApi": "401",
+    "localForgedJwt": "401",
+    "localWebSocketUpgradeWithoutOrWithForgedJwt": "401",
+    "localWrongHost": "403",
+    "publicUnauthenticatedRootAndApi": "302 to Access login",
+    "ownerOtpLoginAndDesktopConnection": "OBSERVED_BY_OWNER on iPhone Safari: READY, desktop rendered, pointer hover reached the guest",
+    "upstreamEvidence": "Established TCP 172.31.120.2 (guacd) -> 172.17.0.1:5900 during the owner session"
+  },
+  "notObserved": [
+    "Keyboard, clipboard and modifier calibration on the Linux target",
+    "Desktop and macOS controller acceptance",
+    "Guest reboot recovery of x11vnc-rdg and the compose project"
+  ]
+}
