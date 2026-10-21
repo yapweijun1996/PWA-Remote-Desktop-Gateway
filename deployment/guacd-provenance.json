@@ -48,7 +48,7 @@
     },
     "guacd-builder-arm64": {
       "path": "deployment/deb-locks/guacd-builder-arm64.lock",
-      "sha256": "19fb4308330dc57e61e0e6d6c0fcb9f550c295edc066c6f49627a61c69afbd80",
+      "sha256": "68eea13cc531b01d283021c6112812b3a63af61910d1cd16e220666d260721f1",
       "artifacts": 163,
       "sourceRepositories": [
         "https://ports.ubuntu.com/ubuntu-ports",
@@ -68,7 +68,7 @@
     },
     "guacd-runtime-arm64": {
       "path": "deployment/deb-locks/guacd-runtime-arm64.lock",
-      "sha256": "70121e32d19c8db2a22c1381e33919a5b3c80831f4077680c38d1766b1527d2d",
+      "sha256": "637bbb41d6a8acee7623344ffe5e5900ce2eceb70b98fdd2a8329e72262f0a10",
       "artifacts": 32,
       "sourceRepositories": [
         "https://ports.ubuntu.com/ubuntu-ports",
